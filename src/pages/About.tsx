@@ -96,35 +96,35 @@ const TeamSection = () => {
   const team = [
     {
       id: "member-1",
-      name: "Alex Morgan",
-      role: "Founder & Technical Lead",
-      desc: "Product vision, core architecture, and strategic direction.",
-      image: "/images/team/team-1.jpeg",
-      placeholderLabel: "team-1.jpeg"
+      name: "Aditya Gupta",
+      role: "Founder & Chief Executive Officer",
+      desc: "Leads the company vision, product direction, and long-term growth strategy.",
+      image: "/images/team/team-1.png",
+      placeholderLabel: "team-1.png"
     },
     {
       id: "member-2",
-      name: "Priya Desai",
-      role: "Co-Founder & Operations Lead",
-      desc: "System scaling, client success, and operational execution.",
+      name: "Krishna Maddheshiya",
+      role: "Co-Founder & Strategy Director",
+      desc: "Shapes business strategy, client partnerships, and scalable delivery systems.",
       image: "/images/team/team-2.jpeg",
       placeholderLabel: "team-2.jpeg"
     },
     {
       id: "member-3",
-      name: "Marcus Lee",
-      role: "Head of Growth & Marketing",
-      desc: "Outreach engines, paid acquisition, and client pipeline growth.",
+      name: "Nitesh Singh",
+      role: "Head of Media & Operations",
+      desc: "Oversees media production, operational coordination, and seamless execution.",
       image: "/images/team/team-3.jpeg",
       placeholderLabel: "team-3.jpeg"
     },
     {
       id: "member-4",
-      name: "Sofia Alvarez",
-      role: "Lead UI/UX & Web Architect",
-      desc: "High-performance web applications and interface design.",
-      image: "/images/team/team-4.jpeg",
-      placeholderLabel: "team-4.jpeg"
+      name: "Creative & Management",
+      role: "Creative & Community Manager",
+      desc: "Builds our visual identity, creative campaigns, and audience relationships.",
+      image: "/images/team/team-4.png",
+      placeholderLabel: "team-4.png"
     }
   ];
 
@@ -198,8 +198,8 @@ const TeamSection = () => {
 
               {/* Member Details */}
               <div className="pt-6 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="border-accent/30 text-accent uppercase tracking-widest text-[9px] font-mono font-bold py-0.5">
+                <div className="flex items-start justify-between gap-2">
+                  <Badge variant="outline" className="h-auto max-w-[calc(100%-2.5rem)] whitespace-normal leading-tight border-accent/30 text-accent uppercase tracking-widest text-[9px] font-mono font-bold py-0.5">
                     {member.role}
                   </Badge>
                   <span className="text-[9px] font-mono text-zinc-400">
