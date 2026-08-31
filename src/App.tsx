@@ -2248,7 +2248,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <div className="min-h-screen bg-white font-sans selection:bg-accent selection:text-white relative" style={{ minWidth: '1280px', width: '100%', height: '100%', overflowX: 'auto', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <div className="min-h-screen bg-white font-sans selection:bg-accent selection:text-white relative" style={{ minWidth: '1280px', width: '100%', overflowX: 'auto' }}>
           <AuthPortal />
           <Routes>
             <Route path="/about" element={<AboutPage />} />
