@@ -569,48 +569,56 @@ const AuthPortal = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowWelcome(false)}
-              className="absolute inset-0 bg-white/95 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             />
             <motion.div 
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative z-[210] w-full max-w-md text-center"
+              className="relative z-[210] w-full max-w-md bg-white rounded-2xl shadow-2xl border border-zinc-200 p-10 md:p-12 text-center"
             >
+              <button 
+                onClick={() => setShowWelcome(false)}
+                className="absolute top-4 right-4 text-zinc-400 hover:text-black transition-colors p-2"
+                aria-label="Close"
+              >
+                <X size={24} />
+              </button>
+
               <div className="space-y-8">
-                <div className="w-24 h-24 bg-black text-white rounded-full flex items-center justify-center mx-auto">
-                  <ArrowRight size={48} />
+                <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mx-auto">
+                  <ArrowRight size={40} />
                 </div>
                 
-                <div className="space-y-3">
-                  <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-tight">
+                <div className="space-y-2">
+                  <h2 className="text-4xl font-black uppercase tracking-tighter leading-tight">
                     Log In
                   </h2>
-                  <p className="text-gray-300 font-bold text-2xl md:text-3xl uppercase tracking-wide">
+                  <p className="text-gray-400 font-bold text-xl uppercase tracking-wide">
                     First
                   </p>
                 </div>
 
-                <p className="text-gray-500 font-medium text-base leading-relaxed max-w-sm mx-auto">
+                <p className="text-gray-600 font-medium text-sm leading-relaxed">
                   Sign in to explore our collection of AI tools designed to help you work smarter, not harder.
                 </p>
 
-                <div className="space-y-4 pt-4">
+                <div className="space-y-3 pt-4">
                   <Button 
                     onClick={async () => {
                       await handleSignIn();
                       setShowWelcome(false);
                     }}
-                    className="w-full h-14 rounded-full bg-black text-white font-bold text-sm uppercase tracking-widest hover:bg-zinc-800 transition-all"
+                    className="w-full h-12 rounded-full bg-black text-white font-bold text-xs uppercase tracking-widest hover:bg-zinc-800 transition-all"
                   >
                     Connect with Google
                   </Button>
                   <button 
                     onClick={() => setShowWelcome(false)}
-                    className="text-[12px] font-bold uppercase tracking-[0.15em] text-gray-400 hover:text-gray-600 transition-colors"
+                    className="text-[11px] font-bold uppercase tracking-[0.15em] text-gray-500 hover:text-black transition-colors"
                   >
-                    Ready to Boost Your Workflow?
+                    Continue as Guest
                   </button>
                 </div>
               </div>
