@@ -244,7 +244,7 @@ const Navbar = ({
               variant="ghost" 
               size="icon"
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden w-8 h-8 rounded-full text-white hover:bg-white/10 shrink-0"
+              className="hidden w-8 h-8 rounded-full text-white hover:bg-white/10 shrink-0"
             >
               {isOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </Button>
@@ -254,12 +254,12 @@ const Navbar = ({
 
       {/* Mobile Overlay Menu */}
       <AnimatePresence>
-        {isOpen && (
+        {false && isOpen && (
           <motion.div
             initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
             animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            className="fixed inset-0 z-[55] bg-black/95 flex items-center justify-center p-6 md:hidden"
+            className="hidden fixed inset-0 z-[55] bg-black/95 flex items-center justify-center p-6"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -2240,7 +2240,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <div className="min-h-screen bg-white font-sans selection:bg-accent selection:text-white relative">
+        <div className="min-h-screen bg-white font-sans selection:bg-accent selection:text-white relative" style={{ minWidth: '1280px', width: '100%', overflowX: 'auto' }}>
           <AuthPortal />
           <Routes>
             <Route path="/about" element={<AboutPage />} />
