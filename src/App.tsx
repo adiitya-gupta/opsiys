@@ -244,7 +244,9 @@ const Navbar = ({
               variant="ghost" 
               size="icon"
               onClick={() => setIsOpen(!isOpen)}
-              className="hidden w-8 h-8 rounded-full text-white hover:bg-white/10 shrink-0"
+              aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={isOpen}
+              className="md:hidden w-8 h-8 rounded-full text-white hover:bg-white/10 shrink-0"
             >
               {isOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </Button>
@@ -254,18 +256,18 @@ const Navbar = ({
 
       {/* Mobile Overlay Menu */}
       <AnimatePresence>
-        {false && isOpen && (
+        {isOpen && (
           <motion.div
             initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
             animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            className="hidden fixed inset-0 z-[55] bg-black/95 flex items-center justify-center p-6"
+            className="fixed inset-0 z-[55] bg-black/95 flex items-center justify-center p-6 md:hidden"
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-full max-w-sm space-y-12"
+              className="w-full max-w-sm max-h-[calc(100dvh-3rem)] space-y-12 overflow-y-auto no-scrollbar py-10"
             >
               <div className="flex flex-col items-center gap-8">
                 {navItems.map((item, idx) => (
@@ -423,7 +425,7 @@ const AuthPortal = () => {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="bg-white max-w-md w-full relative z-10 shadow-2xl border border-border p-8 rounded-none overflow-hidden"
+              className="bg-white max-w-md w-full max-h-[90dvh] relative z-10 shadow-2xl border border-border p-5 sm:p-8 rounded-none overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-8 border-b border-border pb-4">
                 <h3 className="text-2xl font-black uppercase tracking-tighter">Account Management</h3>
@@ -500,7 +502,7 @@ const AuthPortal = () => {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="bg-white max-w-2xl w-full relative z-10 shadow-2xl border border-border p-8 rounded-none overflow-hidden"
+              className="bg-white max-w-2xl w-full max-h-[90dvh] relative z-10 shadow-2xl border border-border p-5 sm:p-8 rounded-none overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-8 border-b border-border pb-4">
                 <h3 className="text-2xl font-black uppercase tracking-tighter">Project History</h3>
@@ -576,7 +578,7 @@ const AuthPortal = () => {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative z-[210] w-full max-w-md bg-white rounded-2xl shadow-2xl border border-zinc-200 p-10 md:p-12 text-center"
+              className="relative z-[210] w-full max-w-md max-h-[90dvh] overflow-y-auto bg-white rounded-2xl shadow-2xl border border-zinc-200 p-6 sm:p-10 md:p-12 text-center"
             >
               <button 
                 onClick={() => setShowWelcome(false)}
@@ -2248,7 +2250,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <div className="min-h-screen bg-white font-sans selection:bg-accent selection:text-white relative" style={{ minWidth: '1280px', width: '100%', overflowX: 'auto' }}>
+        <div className="min-h-screen min-w-0 w-full overflow-x-hidden bg-white font-sans selection:bg-accent selection:text-white relative">
           <AuthPortal />
           <Routes>
             <Route path="/about" element={<AboutPage />} />

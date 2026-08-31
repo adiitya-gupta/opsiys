@@ -384,7 +384,7 @@ export default function AboutPage() {
             rel="noopener noreferrer"
             className="inline-block"
           >
-            <Button size="lg" className="rounded-none px-16 py-9 bg-white text-black hover:bg-accent transition-all font-bold uppercase tracking-[0.3em] text-xs md:text-sm group shadow-2xl">
+            <Button size="lg" className="w-full sm:w-auto rounded-none px-8 sm:px-16 py-9 bg-white text-black hover:bg-accent transition-all font-bold uppercase tracking-[0.15em] sm:tracking-[0.3em] text-xs md:text-sm group shadow-2xl">
               Get in Touch <ArrowRight className="ml-4 group-hover:translate-x-3 transition-transform" />
             </Button>
           </a>
