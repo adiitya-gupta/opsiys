@@ -348,7 +348,7 @@ const AuthPortal = () => {
   const [profile, setProfile] = React.useState<any>(null);
   const [leads, setLeads] = React.useState<any[]>([]);
   const [isSaving, setIsSaving] = React.useState(false);
-  const [showWelcome, setShowWelcome] = React.useState(false);
+  const [showWelcome, setShowWelcome] = React.useState(true);
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -569,57 +569,51 @@ const AuthPortal = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowWelcome(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              className="absolute inset-0 bg-white/95 backdrop-blur-sm"
             />
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 40 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 40 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white max-w-lg w-full relative z-[210] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border border-zinc-100 overflow-hidden rounded-[3rem] p-10 md:p-16 text-center"
+              className="relative z-[210] w-full max-w-md text-center"
             >
-              <button 
-                onClick={() => setShowWelcome(false)} 
-                className="absolute top-8 right-8 text-zinc-300 hover:text-black transition-colors"
-                aria-label="Close"
-              >
-                <X size={28} />
-              </button>
-
-              <div className="space-y-10">
-                <div className="w-20 h-20 bg-black text-white rounded-full flex items-center justify-center mx-auto shadow-2xl">
-                  <Bot size={40} />
+              <div className="space-y-8">
+                <div className="w-24 h-24 bg-black text-white rounded-full flex items-center justify-center mx-auto">
+                  <ArrowRight size={48} />
                 </div>
                 
-                <div className="space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-tight">
-                    Partner <br/> <span className="text-zinc-300">Access</span>
+                <div className="space-y-3">
+                  <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter leading-tight">
+                    Log In
                   </h2>
-                  <p className="text-zinc-500 font-medium text-sm md:text-lg leading-relaxed max-w-xs mx-auto">
-                    Sign in to access your project dashboard and proprietary resource libraries.
+                  <p className="text-gray-300 font-bold text-2xl md:text-3xl uppercase tracking-wide">
+                    First
                   </p>
                 </div>
 
-                <div className="space-y-4">
+                <p className="text-gray-500 font-medium text-base leading-relaxed max-w-sm mx-auto">
+                  Sign in to explore our collection of AI tools designed to help you work smarter, not harder.
+                </p>
+
+                <div className="space-y-4 pt-4">
                   <Button 
                     onClick={async () => {
                       await handleSignIn();
                       setShowWelcome(false);
                     }}
-                    className="w-full h-16 rounded-full bg-black text-white font-black text-sm uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-xl"
+                    className="w-full h-14 rounded-full bg-black text-white font-bold text-sm uppercase tracking-widest hover:bg-zinc-800 transition-all"
                   >
-                    Continue with Google
+                    Connect with Google
                   </Button>
                   <button 
                     onClick={() => setShowWelcome(false)}
-                    className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-300 hover:text-zinc-500 transition-colors"
+                    className="text-[12px] font-bold uppercase tracking-[0.15em] text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    I'll Explore First
+                    Ready to Boost Your Workflow?
                   </button>
                 </div>
               </div>
-
-              <div className="absolute bottom-0 inset-x-0 h-2 bg-gradient-to-r from-transparent via-zinc-100 to-transparent" />
             </motion.div>
           </div>
         )}
