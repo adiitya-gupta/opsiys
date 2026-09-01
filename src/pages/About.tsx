@@ -100,6 +100,7 @@ const TeamSection = () => {
       role: "Founder & Chief Executive Officer",
       desc: "Leads the company vision, product direction, and long-term growth strategy.",
       image: "/images/team/team-1.png",
+      imageClassName: "translate-y-[4%] scale-[1.28] group-hover:scale-[1.32]",
       placeholderLabel: "team-1.png"
     },
     {
@@ -120,7 +121,7 @@ const TeamSection = () => {
     },
     {
       id: "member-4",
-      name: "Creative & Management",
+      name: "Kunal Kushwaha",
       role: "Creative & Community Manager",
       desc: "Builds our visual identity, creative campaigns, and audience relationships.",
       image: "/images/team/team-4.png",
@@ -188,7 +189,7 @@ const TeamSection = () => {
                     alt={member.name} 
                     onLoad={() => setImgLoaded(true)}
                     onError={() => setImgError(true)}
-                    className={`w-full h-full object-cover grayscale hover:grayscale-0 transform group-hover:scale-105 transition-all duration-700 z-10 relative ${
+                    className={`w-full h-full object-cover grayscale hover:grayscale-0 transform transition-all duration-700 z-10 relative ${member.imageClassName || "scale-100 group-hover:scale-105"} ${
                       imgLoaded ? "opacity-100" : "opacity-0"
                     }`} 
                     referrerPolicy="no-referrer"
