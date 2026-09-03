@@ -28,6 +28,7 @@ import {
   Twitter,
   Github,
   Linkedin,
+  Instagram,
   LogIn,
   LogOut,
   Info,
@@ -84,6 +85,28 @@ const Logo = ({ variant = "navbar" }: { variant?: "navbar" | "footer" }) => (
   <LogoPlaceholder variant={variant} />
 );
 
+const ScrollToRoute = () => {
+  const { pathname, hash } = useLocation();
+
+  React.useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      if (hash) {
+        const target = document.getElementById(hash.slice(1));
+        if (target) {
+          window.scrollTo({ top: Math.max(0, target.offsetTop - 104), behavior: "auto" });
+          return;
+        }
+      }
+
+      window.scrollTo({ top: 0, behavior: "auto" });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [pathname, hash]);
+
+  return null;
+};
+
 const Navbar = ({ 
   user, 
   handleSignIn, 
@@ -114,9 +137,9 @@ const Navbar = ({
   const navItems = isAboutPage 
     ? [{ name: "Home", href: "/" }] 
     : [
-        { name: "Services", href: "#services" },
-        { name: "Process", href: "#process" },
-        { name: "Discovery", href: "#discovery" },
+        { name: "Services", href: "/services" },
+        { name: "Process", href: "/process" },
+        { name: "Discovery", href: "/discovery" },
         { name: "About", href: "/about" }
       ];
 
@@ -670,7 +693,7 @@ const Hero = () => {
               </Badge>
             </div>
             
-            <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.95] uppercase">
+            <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-tight leading-[0.95] uppercase">
               We build AI <br/>
               <span className="relative inline-block min-w-[150px] xs:min-w-[200px] sm:min-w-[280px]">
                 <AnimatePresence mode="wait">
@@ -692,7 +715,7 @@ const Hero = () => {
             </h1>
           </motion.div>
           
-          <motion.div variants={fadeIn} className="space-y-8 md:space-y-10">
+          <motion.div variants={fadeIn} className="relative space-y-8 md:space-y-10">
             <p className="text-sm md:text-xl text-muted-foreground max-w-md leading-relaxed font-medium">
               AI automation, growth marketing, search intelligence, and bespoke web platforms engineered for high-performance teams. Clarity over complexity.
             </p>
@@ -703,12 +726,28 @@ const Hero = () => {
                   Book a Call <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </a>
-              <a href="#services" className="w-full sm:w-auto">
+              <Link to="/services" className="w-full sm:w-auto">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto rounded-none px-8 py-7 md:px-10 md:py-8 text-xs md:text-sm font-bold uppercase tracking-[0.2em] border-2 border-zinc-100 hover:border-black transition-all">
                   Explore Services
                 </Button>
-              </a>
+              </Link>
             </div>
+
+            <div className="2xl:hidden flex items-center gap-2 pt-1">
+              <a href="https://github.com/adiitya-gupta/opsiys" target="_blank" rel="noopener noreferrer" aria-label="Visit OPSIYS on GitHub" className="h-8 w-8 rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-md flex items-center justify-center transition-all hover:-translate-y-1 hover:bg-black hover:text-white">
+                <Github size={14} />
+              </a>
+              <a href="https://x.com/Opsiys" target="_blank" rel="noopener noreferrer" aria-label="Follow OPSIYS on X" className="h-8 w-8 rounded-full border border-zinc-200 bg-white text-zinc-700 shadow-md flex items-center justify-center transition-all hover:-translate-y-1 hover:bg-black hover:text-white">
+                <Twitter size={14} />
+              </a>
+              <a href="https://www.instagram.com/opsiys/" target="_blank" rel="noopener noreferrer" aria-label="Follow OPSIYS on Instagram" className="h-8 w-8 rounded-full bg-[#e1306c] text-white shadow-[0_8px_18px_rgba(225,48,108,0.3)] flex items-center justify-center transition-all hover:-translate-y-1 hover:scale-105">
+                <Instagram size={14} />
+              </a>
+              <span title="LinkedIn profile coming soon" className="h-8 w-8 rounded-full border border-zinc-200 bg-zinc-100 text-zinc-400 shadow-sm flex items-center justify-center cursor-not-allowed">
+                <Linkedin size={14} />
+              </span>
+            </div>
+
           </motion.div>
         </motion.div>
 
@@ -773,7 +812,7 @@ const Hero = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 1.5 }}
-              className="mt-10 p-6 bg-zinc-50 rounded-lg border border-zinc-100 shadow-inner"
+              className="relative mt-10 p-6 bg-zinc-50 rounded-lg border border-zinc-100 shadow-inner overflow-hidden"
             >
               <div className="flex items-center gap-4">
                 <Zap className="text-accent w-6 h-6 animate-pulse" />
@@ -784,6 +823,46 @@ const Hero = () => {
               </div>
             </motion.div>
           </motion.div>
+
+          {/* Premium social dock — displayed beside the hero card on wide screens. */}
+          <aside className="hidden 2xl:flex absolute -right-32 top-1/2 z-30 -translate-y-1/2 flex-col items-center gap-3">
+            <span className="[writing-mode:vertical-rl] rotate-180 rounded-full border border-zinc-200 bg-white/95 px-2 py-3 text-[9px] font-black uppercase tracking-[0.24em] text-zinc-950 shadow-lg">
+              Connect with us
+            </span>
+            <div className="relative flex flex-col items-center gap-2 rounded-[2rem] border border-white/10 bg-zinc-950 p-2.5 shadow-[0_22px_55px_rgba(0,0,0,0.24)] ring-1 ring-black/5 before:absolute before:inset-x-3 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-accent before:to-transparent">
+              <a
+                href="https://github.com/adiitya-gupta/opsiys"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Visit OPSIYS on GitHub"
+                className="w-11 h-11 rounded-full border border-white/10 bg-white/[0.06] text-white flex items-center justify-center transition-all hover:-translate-y-1 hover:scale-110 hover:border-white hover:bg-white hover:text-black"
+              >
+                <Github size={18} strokeWidth={2.2} />
+              </a>
+              <a
+                href="https://x.com/Opsiys"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow OPSIYS on X"
+                className="w-11 h-11 rounded-full border border-white/10 bg-white/[0.06] text-white flex items-center justify-center transition-all hover:-translate-y-1 hover:scale-110 hover:border-white hover:bg-white hover:text-black"
+              >
+                <Twitter size={18} strokeWidth={2.2} />
+              </a>
+              <a
+                href="https://www.instagram.com/opsiys/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow OPSIYS on Instagram"
+                className="relative w-11 h-11 rounded-full bg-[#e1306c] text-white flex items-center justify-center shadow-[0_8px_22px_rgba(225,48,108,0.52)] transition-all hover:-translate-y-1 hover:bg-white hover:text-[#e1306c]"
+              >
+                <Instagram size={19} strokeWidth={2.3} />
+                <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full border-2 border-zinc-950 bg-emerald-400" />
+              </a>
+              <span title="LinkedIn profile coming soon" className="w-11 h-11 rounded-full border border-white/10 bg-white/[0.06] text-white flex items-center justify-center transition-transform hover:scale-110 cursor-not-allowed">
+                <Linkedin size={18} strokeWidth={2.2} />
+              </span>
+            </div>
+          </aside>
           
           {/* Subtle Background Elements */}
           <div className="absolute -top-10 -right-10 w-64 h-64 bg-accent/10 rounded-full blur-3xl -z-0" />
@@ -2127,19 +2206,14 @@ const Footer = () => {
             <p className="text-zinc-500 text-xs md:text-sm leading-relaxed max-w-sm">
               The premier AI automation agency for high-growth businesses. Building systems that scale while you sleep.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="text-zinc-500 hover:text-white transition-colors"><Twitter size={18} className="md:size-5" /></a>
-              <a href="#" className="text-zinc-500 hover:text-white transition-colors"><Github size={18} className="md:size-5" /></a>
-              <a href="#" className="text-zinc-500 hover:text-white transition-colors"><Linkedin size={18} className="md:size-5" /></a>
-            </div>
           </div>
 
           <div className="space-y-4">
             <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white">Navigation</h4>
             <div className="flex flex-col gap-2 md:gap-3 text-xs md:text-sm text-zinc-500 font-medium font-mono uppercase tracking-tight">
-              <a href="#services" className="hover:text-white transition-colors">Services</a>
-              <a href="#process" className="hover:text-white transition-colors">Process</a>
-              <a href="#discovery" className="hover:text-white transition-colors">Discovery</a>
+              <Link to="/services" className="hover:text-white transition-colors">Services</Link>
+              <Link to="/process" className="hover:text-white transition-colors">Process</Link>
+              <Link to="/discovery" className="hover:text-white transition-colors">Discovery</Link>
               <Link to="/about" className="hover:text-white transition-colors">About OPSIYS</Link>
             </div>
           </div>
@@ -2151,10 +2225,10 @@ const Footer = () => {
                 Based in India.<br/>
                 Serving globally.
               </p>
-              <div className="flex items-center gap-2 text-[10px] md:text-sm text-accent font-bold font-mono min-w-0">
+              <a href="mailto:opsiyss@gmail.com" className="flex items-center gap-2 text-[10px] md:text-sm text-accent font-bold font-mono min-w-0 hover:text-white transition-colors">
                 <Mail className="w-3 h-3 md:w-4 md:h-4" />
                 <span className="break-all">opsiyss@gmail.com</span>
-              </div>
+              </a>
             </div>
           </div>
         </div>
@@ -2188,6 +2262,26 @@ const HomePage = () => {
     </main>
   );
 };
+
+const ServicesPage = () => (
+  <main>
+    <Features />
+    <Contact />
+  </main>
+);
+
+const ProcessPage = () => (
+  <main>
+    <HowItWorks />
+    <Contact />
+  </main>
+);
+
+const DiscoveryPage = () => (
+  <main>
+    <ToolDiscovery />
+  </main>
+);
 
 // --- Error Boundary ---
 
@@ -2251,10 +2345,14 @@ export default function App() {
     <ErrorBoundary>
       <Router>
         <div className="min-h-screen min-w-0 w-full overflow-x-hidden bg-white font-sans selection:bg-accent selection:text-white relative">
+          <ScrollToRoute />
           <AuthPortal />
           <Routes>
             <Route path="/about" element={<AboutPage />} />
             <Route path="*/about" element={<AboutPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/process" element={<ProcessPage />} />
+            <Route path="/discovery" element={<DiscoveryPage />} />
             <Route path="/" element={<HomePage />} />
             <Route path="*" element={<HomePage />} />
           </Routes>
