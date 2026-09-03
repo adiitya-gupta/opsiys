@@ -10,6 +10,8 @@ import {
 import AboutPage from "./pages/About";
 import { PortfolioPlaceholder } from "./components/PortfolioPlaceholder";
 import { LogoPlaceholder } from "./components/LogoPlaceholder";
+import { GreetingMascot } from "./components/GreetingMascot";
+import { WebsiteChatbot } from "./components/WebsiteChatbot";
 import { 
   Search, 
   ArrowRight, 
@@ -743,9 +745,9 @@ const Hero = () => {
               <a href="https://www.instagram.com/opsiys/" target="_blank" rel="noopener noreferrer" aria-label="Follow OPSIYS on Instagram" className="h-8 w-8 rounded-full bg-[#e1306c] text-white shadow-[0_8px_18px_rgba(225,48,108,0.3)] flex items-center justify-center transition-all hover:-translate-y-1 hover:scale-105">
                 <Instagram size={14} />
               </a>
-              <span title="LinkedIn profile coming soon" className="h-8 w-8 rounded-full border border-zinc-200 bg-zinc-100 text-zinc-400 shadow-sm flex items-center justify-center cursor-not-allowed">
+              <a href="https://www.linkedin.com/company/opsiys/" target="_blank" rel="noopener noreferrer" aria-label="Follow OPSIYS on LinkedIn" className="h-8 w-8 rounded-full border border-zinc-200 bg-white text-[#0a66c2] shadow-sm flex items-center justify-center transition-all hover:-translate-y-1 hover:scale-105 hover:bg-[#0a66c2] hover:text-white">
                 <Linkedin size={14} />
-              </span>
+              </a>
             </div>
 
           </motion.div>
@@ -858,9 +860,15 @@ const Hero = () => {
                 <Instagram size={19} strokeWidth={2.3} />
                 <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full border-2 border-zinc-950 bg-emerald-400" />
               </a>
-              <span title="LinkedIn profile coming soon" className="w-11 h-11 rounded-full border border-white/10 bg-white/[0.06] text-white flex items-center justify-center transition-transform hover:scale-110 cursor-not-allowed">
+              <a
+                href="https://www.linkedin.com/company/opsiys/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Follow OPSIYS on LinkedIn"
+                className="w-11 h-11 rounded-full border border-white/10 bg-white/[0.06] text-white flex items-center justify-center transition-all hover:-translate-y-1 hover:scale-110 hover:border-[#0a66c2] hover:bg-[#0a66c2]"
+              >
                 <Linkedin size={18} strokeWidth={2.2} />
-              </span>
+              </a>
             </div>
           </aside>
           
@@ -2259,6 +2267,8 @@ const HomePage = () => {
       <HowItWorks />
       <ToolDiscovery />
       <Contact />
+      <GreetingMascot />
+      <WebsiteChatbot />
     </main>
   );
 };

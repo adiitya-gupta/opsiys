@@ -101,6 +101,142 @@
   }
 }
 
+.greeting-mascot {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 5rem;
+  z-index: 50;
+  width: 130px;
+  pointer-events: none;
+  filter: drop-shadow(0 16px 24px rgb(15 23 42 / 0.18));
+}
+
+.greeting-mascot__bubble {
+  position: relative;
+  z-index: 1;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto 0.25rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgb(229 57 53 / 0.18);
+  border-radius: 0.85rem;
+  background: rgb(255 255 255 / 0.96);
+  color: #17151d;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  box-shadow: 0 10px 22px rgb(15 23 42 / 0.12);
+  animation: greeting-bubble-float 2.6s ease-in-out infinite;
+}
+
+.greeting-mascot__bubble span:first-child {
+  color: #e53935;
+}
+
+.greeting-mascot__bubble::after {
+  position: absolute;
+  bottom: -0.34rem;
+  left: 50%;
+  width: 0.7rem;
+  height: 0.7rem;
+  background: #fff;
+  content: "";
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform: translateX(-50%);
+}
+
+.greeting-mascot__character {
+  margin: 0 auto;
+  width: 82px;
+  animation: greeting-mascot-bob 2.4s ease-in-out infinite;
+}
+
+.greeting-mascot__character svg,
+.greeting-mascot__shadow {
+  display: block;
+  width: 100%;
+}
+
+.greeting-mascot__antenna {
+  animation: greeting-antenna-pulse 1.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.greeting-mascot__eye {
+  animation: greeting-eye-blink 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.greeting-mascot__eye--right {
+  animation-delay: 0.05s;
+}
+
+.greeting-mascot__arm {
+  animation: greeting-arm-wave 2.4s ease-in-out 1s infinite;
+  transform-origin: 78px 92px;
+}
+
+.greeting-mascot__shadow {
+  width: 82px;
+  margin: -0.15rem auto 0;
+  opacity: 0.3;
+  animation: greeting-shadow-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes greeting-bubble-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes greeting-mascot-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(-1.5deg); }
+}
+
+@keyframes greeting-antenna-pulse {
+  0%, 100% { opacity: 0.65; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes greeting-eye-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+@keyframes greeting-arm-wave {
+  0%, 15%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-35deg); }
+  35% { transform: rotate(-10deg); }
+  45% { transform: rotate(-35deg); }
+  55% { transform: rotate(0deg); }
+}
+
+@keyframes greeting-shadow-pulse {
+  0%, 100% { opacity: 0.3; transform: scaleX(1); }
+  50% { opacity: 0.18; transform: scaleX(0.8); }
+}
+
+@media (max-width: 640px) {
+  .greeting-mascot {
+    right: 0.5rem;
+    bottom: 4.5rem;
+    width: 108px;
+  }
+
+  .greeting-mascot__character,
+  .greeting-mascot__shadow {
+    width: 68px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .greeting-mascot *,
+  .greeting-mascot {
+    animation: none !important;
+  }
+}
+
 @layer base {
   html {
     overflow-x: hidden;
