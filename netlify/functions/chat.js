@@ -41,6 +41,10 @@ export const handler = async (event) => {
         parts: [{ text: message.content.slice(0, 1200) }],
       }));
 
+    if (contents[0]?.role === "model") {
+      contents.shift();
+    }
+
     if (contents.length === 0) {
       return json(400, { error: "A valid message is required." });
     }
