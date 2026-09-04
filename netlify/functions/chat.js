@@ -22,6 +22,7 @@ export const handler = async (event) => {
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
+  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   if (!apiKey) {
     return json(503, { error: "The OPSIYS assistant is not configured yet." });
   }
@@ -45,7 +46,7 @@ export const handler = async (event) => {
     }
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
