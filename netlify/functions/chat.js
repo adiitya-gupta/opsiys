@@ -21,8 +21,8 @@ export const handler = async (event) => {
     return json(405, { error: "Method not allowed" });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const model = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
   if (!apiKey) {
     return json(503, { error: "The OPSIYS assistant is not configured yet." });
   }
@@ -63,8 +63,16 @@ export const handler = async (event) => {
     );
 
     if (!response.ok) {
-      console.error("Gemini request failed:", await response.text());
-      return json(502, { error: "The assistant is temporarily unavailable. Please try again shortly." });
+      const errorBody = await response.text();
+      console.error(`Gemini request failed (${response.status}):`, errorBody);
+
+      const errorMessage = response.status === 401 || response.status === 403
+        ? "The assistant API key is invalid or does not have Gemini API access."
+        : response.status === 429
+          ? "The assistant is temporarily rate-limited. Please try again shortly."
+          : "The assistant is temporarily unavailable. Please try again shortly.";
+
+      return json(502, { error: errorMessage });
     }
 
     const data = await response.json();
