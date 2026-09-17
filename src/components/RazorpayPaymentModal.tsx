@@ -428,7 +428,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
                     ) : (
                       <>
                         <CreditCard size={18} />
-                        <span>Pay ₹{totalAmount.toLocaleString("en-IN")} via Razorpay</span>
+                        <span>Pay ₹{totalAmount.toLocaleString("en-IN")}</span>
                         <ArrowRight size={18} />
                       </>
                     )}

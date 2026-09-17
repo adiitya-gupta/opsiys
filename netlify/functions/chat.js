@@ -63,9 +63,13 @@ D. SEO & AI SEARCH OPTIMIZATION (GEO):
 - Search & Data Analytics: Perplexity, Tableau AI, DeepEnrich.
 - Development Tools: Cursor, GitHub Copilot.
 
-6. PRICING & ENGAGEMENT MODEL:
-- Pricing: Custom project proposals tailored to client scope, features, and timeline requirements.
-- How to Get Started: Submit a project brief or book a free discovery call via the website, or email opsiyss@gmail.com directly.
+6. OPSIYS PACKAGES & PRICING PLANS:
+- Opsiys Signature (₹12,000 / month): Professional brand & social media presence, profile optimization, 12 monthly content assets (8 static posts + 4 reels). Tailored as a high-standard business solution for established brands and professional firms.
+- Opsiys Momentum (₹22,000 / month): Unified social presence + modern 4-5 page website, 20 monthly content assets (8 static, 6 carousels, 6 reels), WhatsApp & contact forms, basic SEO.
+- Opsiys Performance (₹35,000 / month): Most popular growth stage. Enhanced 6-7 page conversion website + Meta Ads lead generation strategy, 34 content assets (including 6 Meta ad creatives), technical SEO & tracking.
+- Opsiys Prime (₹55,000 / month): Autonomous growth system. Advanced 8-10 page site, Meta & Google Ads performance marketing, 48 content assets, up to 2 custom AI & business automation workflows/month, CRM integration, monthly live strategy session with Opsiys leadership.
+- Package Progression: Signature → Momentum → Performance → Prime.
+- How to Get Started: Select a package on /packages or submit a custom brief on /contact or /discovery.
 - Partner Portal: Features Google Login for clients to manage their accounts, track project submission history, and update settings.
 
 ==================================================

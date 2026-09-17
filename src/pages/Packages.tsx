@@ -33,17 +33,17 @@ import {
 
 export const PACKAGES_DATA = [
   {
-    id: "start",
+    id: "signature",
     level: "LEVEL 1",
     stage: "PRESENCE",
-    name: "Opsiys Start",
+    name: "Opsiys Signature",
     price: "₹12,000",
     numericPrice: 12000,
     period: "/ month",
     annualPrice: "₹10,200",
     annualNumericPrice: 10200,
-    positioning: "For businesses that need a consistent and professional social presence.",
-    bestFor: "New businesses, local shops, early-stage startups & personal brands.",
+    positioning: "For established businesses seeking a polished, high-authority brand & social presence.",
+    bestFor: "Established brands, professional service firms, executive profiles & growing businesses.",
     popular: false,
     badgeColor: "bg-zinc-100 text-zinc-800 border-zinc-200",
     accentColor: "border-zinc-300 hover:border-black",
@@ -72,16 +72,16 @@ export const PACKAGES_DATA = [
     adBudgetNotice: null
   },
   {
-    id: "grow",
+    id: "momentum",
     level: "LEVEL 2",
     stage: "VISIBILITY",
-    name: "Opsiys Grow",
+    name: "Opsiys Momentum",
     price: "₹22,000",
     numericPrice: 22000,
     period: "/ month",
     annualPrice: "₹18,700",
     annualNumericPrice: 18700,
-    positioning: "For businesses that need visibility across both social media and the web.",
+    positioning: "For businesses looking to accelerate growth with unified social presence and modern web visibility.",
     bestFor: "Growing local companies, professional services & established brands.",
     popular: false,
     badgeColor: "bg-blue-50 text-blue-700 border-blue-200",
@@ -105,22 +105,22 @@ export const PACKAGES_DATA = [
       socialPlatforms: "3 Platforms (Instagram, Facebook, LinkedIn/Google Business)",
       assetsBreakdown: "20 Assets: 8 Static + 6 Carousels + 6 Reels",
       websiteScope: "4–5 Page Static Informational Website (Home, About, Services, Contact, Gallery)",
-      adsManagement: "Organic content focus (Ads setup available on Scale/Growth Engine)",
+      adsManagement: "Organic content focus (Ads setup available on Performance/Prime)",
       strategyMeeting: "Monthly WhatsApp/Email performance review"
     },
     adBudgetNotice: "Static informational site only. Custom e-commerce or booking apps are quoted separately."
   },
   {
-    id: "scale",
+    id: "performance",
     level: "LEVEL 3",
     stage: "ACQUISITION",
-    name: "Opsiys Scale",
+    name: "Opsiys Performance",
     price: "₹35,000",
     numericPrice: 35000,
     period: "/ month",
     annualPrice: "₹29,750",
     annualNumericPrice: 29750,
-    positioning: "For businesses that want visibility PLUS customer acquisition.",
+    positioning: "For high-growth businesses that demand visibility PLUS predictable lead acquisition.",
     bestFor: "Clinics, real estate firms, coaching centers & high-ticket service providers.",
     popular: true,
     badgeColor: "bg-emerald-500 text-white border-emerald-400",
@@ -150,16 +150,16 @@ export const PACKAGES_DATA = [
     adBudgetNotice: "Ad budget (₹20K–₹50K/mo) is paid directly by client to ad platforms (Meta) and kept separate from package price."
   },
   {
-    id: "engine",
+    id: "prime",
     level: "LEVEL 4",
     stage: "GROWTH SYSTEM",
-    name: "Opsiys Growth Engine",
+    name: "Opsiys Prime",
     price: "₹55,000",
     numericPrice: 55000,
     period: "/ month",
     annualPrice: "₹46,750",
     annualNumericPrice: 46750,
-    positioning: "For businesses that want Opsiys to manage their broader digital growth system.",
+    positioning: "For market leaders seeking autonomous growth systems, multi-channel marketing & custom AI workflows.",
     bestFor: "Established enterprises, multi-location brands & scaling companies.",
     popular: false,
     badgeColor: "bg-accent/20 text-accent border-accent/40",
@@ -191,24 +191,24 @@ export const PACKAGES_DATA = [
 ];
 
 export const COMPARISON_FEATURES = [
-  { feature: "Monthly Price", start: "₹12,000", grow: "₹22,000", scale: "₹35,000", engine: "₹55,000" },
-  { feature: "Social Platforms Managed", start: "2", grow: "3", scale: "3", engine: "4" },
-  { feature: "Static Social Posts", start: "8", grow: "8", scale: "8", engine: "8" },
-  { feature: "Carousel Posts", start: "—", grow: "6", scale: "8", engine: "8" },
-  { feature: "Reels / Short Videos", start: "4", grow: "6", scale: "12", engine: "16" },
-  { feature: "Extra Ad Creatives", start: "—", grow: "—", scale: "6 / mo", engine: "8 / mo" },
-  { feature: "Total Monthly Content Assets", start: "12 Assets", grow: "20 Assets", scale: "34 Assets", engine: "48 Assets" },
-  { feature: "Custom Business Website", start: "—", grow: "4–5 Pages", scale: "6–7 Pages", engine: "8–10 Pages" },
-  { feature: "Responsive Mobile UI", start: "—", grow: "Included", scale: "Included", engine: "Included" },
-  { feature: "WhatsApp & Contact Forms", start: "—", grow: "Included", scale: "Included", engine: "Included" },
-  { feature: "On-Page Technical SEO", start: "—", grow: "Basic", scale: "Included", engine: "Advanced" },
-  { feature: "Analytics & Tracking", start: "Basic", grow: "Included", scale: "Included", engine: "Advanced + Search Console" },
-  { feature: "Meta Ads Management", start: "—", grow: "—", scale: "Included", engine: "Included" },
-  { feature: "Google Ads Management", start: "—", grow: "—", scale: "—", engine: "Included" },
-  { feature: "Lead Qualification & Funnel", start: "—", grow: "Basic", scale: "Included", engine: "Advanced" },
-  { feature: "CRM Integration", start: "—", grow: "—", scale: "—", engine: "Basic CRM Pipeline" },
-  { feature: "AI & Business Automation", start: "—", grow: "—", scale: "Basic Lead Flow", engine: "Up to 2 Workflows/mo" },
-  { feature: "Monthly Strategy Session", start: "—", grow: "—", scale: "—", engine: "Included (Monthly)" }
+  { feature: "Monthly Price", signature: "₹12,000", momentum: "₹22,000", performance: "₹35,000", prime: "₹55,000" },
+  { feature: "Social Platforms Managed", signature: "2", momentum: "3", performance: "3", prime: "4" },
+  { feature: "Static Social Posts", signature: "8", momentum: "8", performance: "8", prime: "8" },
+  { feature: "Carousel Posts", signature: "—", momentum: "6", performance: "8", prime: "8" },
+  { feature: "Reels / Short Videos", signature: "4", momentum: "6", performance: "12", prime: "16" },
+  { feature: "Extra Ad Creatives", signature: "—", momentum: "—", performance: "6 / mo", prime: "8 / mo" },
+  { feature: "Total Monthly Content Assets", signature: "12 Assets", momentum: "20 Assets", performance: "34 Assets", prime: "48 Assets" },
+  { feature: "Custom Business Website", signature: "—", momentum: "4–5 Pages", performance: "6–7 Pages", prime: "8–10 Pages" },
+  { feature: "Responsive Mobile UI", signature: "—", momentum: "Included", performance: "Included", prime: "Included" },
+  { feature: "WhatsApp & Contact Forms", signature: "—", momentum: "Included", performance: "Included", prime: "Included" },
+  { feature: "On-Page Technical SEO", signature: "—", momentum: "Basic", performance: "Included", prime: "Advanced" },
+  { feature: "Analytics & Tracking", signature: "Basic", momentum: "Included", performance: "Included", prime: "Advanced + Search Console" },
+  { feature: "Meta Ads Management", signature: "—", momentum: "—", performance: "Included", prime: "Included" },
+  { feature: "Google Ads Management", signature: "—", momentum: "—", performance: "—", prime: "Included" },
+  { feature: "Lead Qualification & Funnel", signature: "—", momentum: "Basic", performance: "Included", prime: "Advanced" },
+  { feature: "CRM Integration", signature: "—", momentum: "—", performance: "—", prime: "Basic CRM Pipeline" },
+  { feature: "AI & Business Automation", signature: "—", momentum: "—", performance: "Basic Lead Flow", prime: "Up to 2 Workflows/mo" },
+  { feature: "Monthly Strategy Session", signature: "—", momentum: "—", performance: "—", prime: "Included (Monthly)" }
 ];
 
 export const PackagesPage: React.FC = () => {
@@ -242,7 +242,7 @@ export const PackagesPage: React.FC = () => {
     <>
       <SEO
         title="Opsiys Packages | Business Growth Plans & Pricing"
-        description="Explore Opsiys growth packages for online presence, visibility, customer acquisition and growth systems, from Start to Growth Engine."
+        description="Explore Opsiys growth packages for online presence, visibility, customer acquisition and growth systems, from Signature to Prime."
         canonical="https://opsiys.in/packages"
       />
 
@@ -278,7 +278,7 @@ export const PackagesPage: React.FC = () => {
             </h1>
 
             <p className="text-zinc-600 text-base sm:text-xl font-medium leading-relaxed max-w-2xl">
-              Start with presence. Build visibility. Generate opportunities. Scale with autonomous systems.
+              Start with signature presence. Accelerate visibility. Generate opportunities. Scale with autonomous systems.
             </p>
 
             {/* Interactive Billing Cycle Toggle & Stage Stepper */}
@@ -288,10 +288,10 @@ export const PackagesPage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-2 font-mono text-xs font-bold">
                 <span className="text-[10px] text-zinc-400 uppercase tracking-widest mr-1 block sm:inline">Stage Progression:</span>
                 {[
-                  { id: "start", label: "1. PRESENCE (₹12K)", color: "border-zinc-300 bg-zinc-100 text-black" },
-                  { id: "grow", label: "2. VISIBILITY (₹22K)", color: "border-blue-200 bg-blue-50 text-blue-800" },
-                  { id: "scale", label: "3. ACQUISITION (₹35K)", color: "border-emerald-500 bg-emerald-500 text-white" },
-                  { id: "engine", label: "4. GROWTH SYSTEM (₹55K)", color: "border-zinc-800 bg-zinc-900 text-white" }
+                  { id: "signature", label: "1. SIGNATURE (₹12K)", color: "border-zinc-300 bg-zinc-100 text-black" },
+                  { id: "momentum", label: "2. MOMENTUM (₹22K)", color: "border-blue-200 bg-blue-50 text-blue-800" },
+                  { id: "performance", label: "3. PERFORMANCE (₹35K)", color: "border-emerald-500 bg-emerald-500 text-white" },
+                  { id: "prime", label: "4. PRIME (₹55K)", color: "border-zinc-800 bg-zinc-900 text-white" }
                 ].map((s) => (
                   <button
                     key={s.id}
@@ -473,7 +473,7 @@ export const PackagesPage: React.FC = () => {
                     </AnimatePresence>
                   </div>
 
-                  {/* Razorpay Payment CTA */}
+                  {/* Payment CTA */}
                   <div className="p-6 pt-0 space-y-2">
                     <Button
                       onClick={() => handleOpenPayment(pkg)}
@@ -484,7 +484,7 @@ export const PackagesPage: React.FC = () => {
                       }`}
                     >
                       <CreditCard size={15} />
-                      <span>Pay {activePrice} via Razorpay</span>
+                      <span>Pay {activePrice}</span>
                     </Button>
 
                     <Link to={`/contact?package=${pkg.id}`} className="block text-center">
@@ -529,20 +529,20 @@ export const PackagesPage: React.FC = () => {
                   <thead>
                     <tr className="bg-zinc-900 text-white font-mono text-[11px] uppercase tracking-wider border-b border-zinc-800">
                       <th className="p-4 border-r border-zinc-800">Feature</th>
-                      <th className="p-4 border-r border-zinc-800 text-center">Start (₹12K)</th>
-                      <th className="p-4 border-r border-zinc-800 text-center">Grow (₹22K)</th>
-                      <th className="p-4 border-r border-zinc-800 text-center bg-accent text-white">Scale (₹35K)</th>
-                      <th className="p-4 text-center">Growth Engine (₹55K)</th>
+                      <th className="p-4 border-r border-zinc-800 text-center">Signature (₹12K)</th>
+                      <th className="p-4 border-r border-zinc-800 text-center">Momentum (₹22K)</th>
+                      <th className="p-4 border-r border-zinc-800 text-center bg-accent text-white">Performance (₹35K)</th>
+                      <th className="p-4 text-center">Prime (₹55K)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-100 font-medium">
                     {COMPARISON_FEATURES.map((row, idx) => (
                       <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-zinc-50/50"}>
                         <td className="p-4 border-r border-zinc-200 font-bold text-black">{row.feature}</td>
-                        <td className="p-4 border-r border-zinc-200 text-center">{row.start}</td>
-                        <td className="p-4 border-r border-zinc-200 text-center">{row.grow}</td>
-                        <td className="p-4 border-r border-zinc-200 text-center font-bold text-black bg-accent/5">{row.scale}</td>
-                        <td className="p-4 text-center font-bold text-black">{row.engine}</td>
+                        <td className="p-4 border-r border-zinc-200 text-center">{row.signature}</td>
+                        <td className="p-4 border-r border-zinc-200 text-center">{row.momentum}</td>
+                        <td className="p-4 border-r border-zinc-200 text-center font-bold text-black bg-accent/5">{row.performance}</td>
+                        <td className="p-4 text-center font-bold text-black">{row.prime}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -574,7 +574,7 @@ export const PackagesPage: React.FC = () => {
                 </Button>
               </Link>
               <Link to="/discovery">
-                <Button size="lg" variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 font-bold uppercase tracking-widest text-xs h-14 rounded-full">
+                <Button size="lg" className="w-full border-2 border-white/40 text-white bg-white/10 hover:bg-white/20 font-extrabold uppercase tracking-widest text-xs h-14 rounded-full shadow-lg">
                   Request Custom Plan
                 </Button>
               </Link>

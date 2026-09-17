@@ -173,10 +173,10 @@ To resolve Google Search Console indexing redirects and consolidate domain autho
 - **Alternative Route**: `/pricing` (redirects directly to canonical `/packages`)
 - **Visual Design**: Growth stage progression hero (Presence → Visibility → Acquisition → Growth System), 4 visual pricing cards with expandable detail accordions.
 - **Exact Pricing Hierarchy**:
-  - **Opsiys Start**: ₹12,000 / month (Presence)
-  - **Opsiys Grow**: ₹22,000 / month (Presence + Credibility)
-  - **Opsiys Scale**: ₹35,000 / month (Credibility + Acquisition)
-  - **Opsiys Growth Engine**: ₹55,000 / month (Acquisition + Automation + Optimization)
+  - **Opsiys Signature**: ₹12,000 / month (Presence)
+  - **Opsiys Momentum**: ₹22,000 / month (Presence + Visibility)
+  - **Opsiys Performance**: ₹35,000 / month (Visibility + Acquisition)
+  - **Opsiys Prime**: ₹55,000 / month (Acquisition + Automation + Growth Systems)
 - **Ad Budget Notice**: Explicitly clarifies that Meta/Google advertising budgets (e.g. ₹20,000–₹50,000/mo) are paid directly by client to ad platforms and kept separate from package prices.
 - **Comparison Section**: Responsive expandable feature matrix comparing platforms, content assets, website deliverables, ad campaigns, AI workflows, and strategy meetings.
 
