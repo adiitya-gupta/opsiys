@@ -196,11 +196,25 @@ export const COMPARISON_TABLE = [
 ];
 
 export const PackagesPage: React.FC = () => {
-  const [expandedCard, setExpandedCard] = useState<string | null>("scale");
-  const [showTable, setShowTable] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [showTable, setShowTable] = useState(true);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedPaymentPackage, setSelectedPaymentPackage] = useState<PackageItemForPayment | null>(null);
 
   const toggleExpand = (id: string) => {
-    setExpandedCard(prev => (prev === id ? null : id));
+    setExpandedCard(expandedCard === id ? null : id);
+  };
+
+  const handleOpenPayment = (pkg: typeof PACKAGES_DATA[0]) => {
+    // Extract numeric price from string e.g. "₹12,000" -> 12000
+    const rawPrice = parseInt(pkg.price.replace(/[^\d]/g, ""), 10) || 12000;
+    setSelectedPaymentPackage({
+      name: pkg.name,
+      priceInINR: rawPrice,
+      description: pkg.positioning,
+      level: pkg.level
+    });
+    setPaymentModalOpen(true);
   };
 
   return (
@@ -209,6 +223,12 @@ export const PackagesPage: React.FC = () => {
         title="Opsiys Packages | Business Growth Plans & Pricing"
         description="Explore Opsiys growth packages for online presence, visibility, customer acquisition and growth systems, from Start to Growth Engine."
         canonical="https://opsiys.in/packages"
+      />
+
+      <RazorpayPaymentModal
+        isOpen={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        selectedPackage={selectedPaymentPackage}
       />
 
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">
@@ -383,17 +403,27 @@ export const PackagesPage: React.FC = () => {
                     </AnimatePresence>
                   </div>
 
-                  {/* CTA Button */}
-                  <div className="p-6 pt-0">
-                    <Link to={`/contact?package=${pkg.id}`}>
+                  {/* Razorpay Payment CTA */}
+                  <div className="p-6 pt-0 space-y-2">
+                    <Button
+                      onClick={() => handleOpenPayment(pkg)}
+                      className={`w-full py-6 font-extrabold uppercase tracking-widest text-xs rounded-none transition-all flex items-center justify-center gap-2 shadow-lg ${
+                        isPopular
+                          ? "bg-white text-black hover:bg-zinc-200"
+                          : "bg-black text-white hover:bg-zinc-800"
+                      }`}
+                    >
+                      <CreditCard size={15} />
+                      <span>Pay {pkg.price} with Razorpay</span>
+                    </Button>
+                    <Link to={`/contact?package=${pkg.id}`} className="block">
                       <Button
-                        className={`w-full py-6 font-extrabold uppercase tracking-widest text-xs rounded-none transition-all ${
-                          isPopular
-                            ? "bg-white text-black hover:bg-zinc-200"
-                            : "bg-black text-white hover:bg-zinc-800"
+                        variant="ghost"
+                        className={`w-full py-2 font-mono text-[10px] uppercase tracking-wider ${
+                          isPopular ? "text-zinc-400 hover:text-white" : "text-zinc-500 hover:text-black"
                         }`}
                       >
-                        Select {pkg.name}
+                        or Request Custom Quote
                       </Button>
                     </Link>
                   </div>

@@ -50,6 +50,17 @@ async function startServer() {
     }
   });
 
+  // API Route: Razorpay Order Creation
+  app.post("/api/create-razorpay-order", async (req, res) => {
+    try {
+      const razorpayHandler = (await import("./api/create-razorpay-order.js")).default;
+      return razorpayHandler(req, res);
+    } catch (error) {
+      console.error("Razorpay order handler error:", error);
+      return res.status(500).json({ error: "Razorpay order creation failed" });
+    }
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
