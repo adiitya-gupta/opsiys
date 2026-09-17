@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { SEO } from "../components/SEO";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -63,11 +64,16 @@ export const LocationsPage: React.FC = () => {
         canonical="https://www.opsiys.in/locations"
       />
 
-      <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20">
+      <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">
         <Breadcrumbs items={[{ label: "Locations" }]} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 space-y-12">
-          <div className="text-left space-y-4 max-w-3xl">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-left space-y-4 max-w-3xl"
+          >
             <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest">
               Regional Presence
             </Badge>
@@ -77,12 +83,17 @@ export const LocationsPage: React.FC = () => {
             <p className="text-zinc-600 text-base sm:text-lg leading-relaxed font-medium">
               We deliver tailored digital growth strategies, local search authority, and customer automation systems built for key commercial regions.
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {LOCATIONS_LIST.map((loc) => (
-              <div 
+            {LOCATIONS_LIST.map((loc, idx) => (
+              <motion.div 
                 key={loc.slug}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: idx * 0.08 }}
+                whileHover={{ y: -4 }}
                 className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-8 flex flex-col justify-between hover:border-black transition-all hover:shadow-xl group"
               >
                 <div className="space-y-4">
@@ -118,11 +129,17 @@ export const LocationsPage: React.FC = () => {
                     </Button>
                   </Link>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
-          <div className="bg-black text-white rounded-2xl p-8 sm:p-12 text-center space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="bg-black text-white rounded-2xl p-8 sm:p-12 text-center space-y-6"
+          >
             <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight">
               Serving Businesses Across India & Globally
             </h2>
@@ -134,10 +151,11 @@ export const LocationsPage: React.FC = () => {
                 Get Started
               </Button>
             </a>
-          </div>
+          </motion.div>
         </div>
       </div>
     </>
   );
 };
 export default LocationsPage;
+

@@ -5,6 +5,7 @@ import { Breadcrumbs } from "../components/Breadcrumbs";
 import { BLOG_POSTS } from "./Blog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "motion/react";
 import { Calendar, User, Clock, CheckCircle2, ArrowRight } from "lucide-react";
 
 export const BlogPostPage: React.FC = () => {
@@ -59,7 +60,12 @@ export const BlogPostPage: React.FC = () => {
           ]}
         />
 
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 md:px-10 space-y-12">
+        <motion.article 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-4xl mx-auto px-4 sm:px-6 md:px-10 space-y-10"
+        >
           {/* Header */}
           <div className="space-y-4 text-left border-b border-zinc-200 pb-8">
             <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest">
@@ -76,7 +82,7 @@ export const BlogPostPage: React.FC = () => {
               <span>•</span>
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>Published September 15, 2026</span>
+                <span>Published Sept 15, 2026</span>
               </span>
               <span>•</span>
               <span className="flex items-center gap-1.5">
@@ -86,84 +92,80 @@ export const BlogPostPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Featured Image */}
+          <div className="rounded-2xl overflow-hidden shadow-xl border border-zinc-200 bg-zinc-900 max-h-[420px]">
+            <img 
+              src={post.image} 
+              alt={post.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+
           {/* Body Content */}
           <div className="prose prose-zinc max-w-none space-y-8 text-zinc-800 text-sm sm:text-base leading-relaxed font-sans">
             <p className="text-base sm:text-lg font-medium text-zinc-700 leading-relaxed bg-zinc-100 p-6 rounded-xl border border-zinc-200">
-              In today's digital landscape, building a strong online presence is far more than having a static website. It requires a connected strategy combining search engine optimization (SEO), performance marketing, high-converting digital platforms, and automated lead management.
+              For small and growing businesses, establishing a strong online presence doesn't require complex corporate budgets. It requires connecting three core elements: local Google search authority, a clean mobile website, and instant automated lead follow-ups.
             </p>
 
             <h2 className="text-2xl font-bold uppercase tracking-tight text-black pt-4">
-              1. Optimize Your Website for Speed & Search Intent
+              1. Dominate Local Search & Google Maps
             </h2>
             <p>
-              Your website is the foundation of your digital presence. Search engines like Google prioritize fast-loading, mobile-optimized sites that deliver immediate value to visitors. Ensure your site uses modern semantic HTML tags, responsive layouts, and clean structured schema data.
+              Most local clients search Google before contacting a clinic, real estate broker, or local service provider. Claiming and optimizing your Google Business Profile with verified details, local keywords, and customer reviews builds instant local search visibility.
             </p>
-            <div className="bg-white p-4 rounded-lg border border-zinc-200 space-y-2">
+            <div className="bg-white p-5 rounded-xl border border-zinc-200 space-y-2">
               <span className="font-bold text-xs font-mono text-accent uppercase tracking-wider block">Recommended Solution:</span>
               <p className="text-xs text-zinc-600">
-                Explore our <Link to="/services/website-development" className="text-black font-bold underline">Modern Website Development</Link> and <Link to="/services/seo" className="text-black font-bold underline">SEO Services</Link> engineered to maximize crawlability and visitor conversion.
+                Explore our <Link to="/services/seo" className="text-black font-bold underline">Local SEO Services</Link> engineered to put your business in top Google Map Pack results.
               </p>
             </div>
 
             <h2 className="text-2xl font-bold uppercase tracking-tight text-black pt-4">
-              2. Build Local Search Authority & Google Maps Placement
+              2. Build a Fast, Mobile-First Website
             </h2>
             <p>
-              For local service providers, clinics, real estate brokers, and restaurants, capturing top positions in the Google Map Pack is critical. Claiming and optimizing your Google Business Profile, accumulating verified reviews, and maintaining consistent regional contact information allows nearby customers to find you instantly.
+              Over 70% of local search traffic originates from smartphones. If your site is slow or difficult to navigate on mobile, potential clients immediately hit the back button. Ensure your pages load in under 2 seconds with clear call-to-action buttons.
             </p>
-            <div className="bg-white p-4 rounded-lg border border-zinc-200 space-y-2">
-              <span className="font-bold text-xs font-mono text-accent uppercase tracking-wider block">Industry Application:</span>
+            <div className="bg-white p-5 rounded-xl border border-zinc-200 space-y-2">
+              <span className="font-bold text-xs font-mono text-accent uppercase tracking-wider block">Web Platform:</span>
               <p className="text-xs text-zinc-600">
-                See how we help <Link to="/industries/clinics" className="text-black font-bold underline">Clinics</Link> and <Link to="/industries/real-estate" className="text-black font-bold underline">Real Estate Firms</Link> dominate local search catchments.
+                Discover our <Link to="/services/website-development" className="text-black font-bold underline">Modern Website Development</Link> built for speed and lead conversion.
               </p>
             </div>
 
             <h2 className="text-2xl font-bold uppercase tracking-tight text-black pt-4">
-              3. Deploy Targeted Paid Acquisition (Meta & Search Ads)
+              3. Implement Instant WhatsApp Follow-Ups
             </h2>
             <p>
-              While organic search builds exponential long-term authority, paid social advertising on Facebook and Instagram provides immediate customer acquisition. Focus on high-impact visual creative, compelling ad hooks, and direct lead capture forms that sync straight into your CRM.
+              When a prospect submits an inquiry form on your site, response time determines whether they convert or contact a competitor. Automated WhatsApp messaging ensures every lead receives an instant automated response and brochure within seconds.
             </p>
-
-            <h2 className="text-2xl font-bold uppercase tracking-tight text-black pt-4">
-              4. Automate Follow-Ups via WhatsApp & Email
-            </h2>
-            <p>
-              Lead speed is the single biggest factor in closing online inquiries. Implementing automated WhatsApp Business messaging and instant email sequences guarantees that every prospect receives immediate personal engagement, drastically reducing drop-offs.
-            </p>
-            <div className="bg-white p-4 rounded-lg border border-zinc-200 space-y-2">
-              <span className="font-bold text-xs font-mono text-accent uppercase tracking-wider block">Messaging Automation:</span>
-              <p className="text-xs text-zinc-600">
-                Learn how our <Link to="/services/whatsapp-automation" className="text-black font-bold underline">WhatsApp Business Automation</Link> setup delivers 24/7 instant client responses.
-              </p>
-            </div>
           </div>
 
           {/* Related Links */}
           <div className="pt-8 border-t border-zinc-200 space-y-4">
             <h3 className="text-base font-bold uppercase tracking-wider text-black">
-              Explore Related Solutions & Markets
+              Explore Related Growth Solutions
             </h3>
             <div className="flex flex-wrap gap-2">
-              <Link to="/services/business-growth">
-                <Badge variant="outline" className="px-3 py-1.5 text-xs font-bold border-zinc-300 hover:border-black">Business Growth Solutions</Badge>
+              <Link to="/services/seo">
+                <Badge variant="outline" className="px-3 py-1.5 text-xs font-bold border-zinc-300 hover:border-black">SEO Services</Badge>
               </Link>
-              <Link to="/services/meta-ads">
-                <Badge variant="outline" className="px-3 py-1.5 text-xs font-bold border-zinc-300 hover:border-black">Meta Ads Management</Badge>
+              <Link to="/services/whatsapp-automation">
+                <Badge variant="outline" className="px-3 py-1.5 text-xs font-bold border-zinc-300 hover:border-black">WhatsApp Automation</Badge>
               </Link>
               <Link to="/locations/noida">
-                <Badge variant="outline" className="px-3 py-1.5 text-xs font-bold border-zinc-300 hover:border-black">Noida Market Growth</Badge>
+                <Badge variant="outline" className="px-3 py-1.5 text-xs font-bold border-zinc-300 hover:border-black">Noida Market</Badge>
               </Link>
               <Link to="/locations/delhi-ncr">
-                <Badge variant="outline" className="px-3 py-1.5 text-xs font-bold border-zinc-300 hover:border-black">Delhi NCR Growth</Badge>
+                <Badge variant="outline" className="px-3 py-1.5 text-xs font-bold border-zinc-300 hover:border-black">Delhi NCR Market</Badge>
               </Link>
             </div>
           </div>
 
-          {/* CTA */}
+          {/* CTA Box */}
           <div className="bg-black text-white rounded-2xl p-8 sm:p-12 text-center space-y-6 shadow-2xl">
             <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight">
-              Ready to Build Your Online Presence?
+              Ready to Scale Your Online Presence?
             </h2>
             <p className="text-zinc-400 text-sm max-w-lg mx-auto leading-relaxed">
               Build Your Online Presence. Increase Your Visibility. Generate Opportunities. Automate Growth.
@@ -174,7 +176,7 @@ export const BlogPostPage: React.FC = () => {
               </Button>
             </a>
           </div>
-        </article>
+        </motion.article>
       </div>
     </>
   );

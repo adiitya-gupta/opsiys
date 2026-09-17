@@ -1,4 +1,5 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { SEO } from "../components/SEO";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -48,11 +49,16 @@ export const ContactPage: React.FC = () => {
         canonical="https://www.opsiys.in/contact"
       />
 
-      <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20">
+      <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">
         <Breadcrumbs items={[{ label: "Contact" }]} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 space-y-12">
-          <div className="text-left space-y-4 max-w-3xl">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-left space-y-4 max-w-3xl"
+          >
             <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest">
               Direct Communication
             </Badge>
@@ -62,11 +68,16 @@ export const ContactPage: React.FC = () => {
             <p className="text-zinc-600 text-base sm:text-lg leading-relaxed font-medium">
               Ready to build your online presence, increase search visibility, generate leads, and automate growth? Let's connect.
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* Form */}
-            <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-10 shadow-sm">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-10 shadow-sm"
+            >
               {submitted ? (
                 <div className="text-center py-12 space-y-4">
                   <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
@@ -180,10 +191,15 @@ export const ContactPage: React.FC = () => {
                   </Button>
                 </form>
               )}
-            </div>
+            </motion.div>
 
             {/* Verification Info */}
-            <div className="space-y-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="space-y-8"
+            >
               <div className="bg-zinc-900 text-white rounded-2xl p-6 sm:p-10 space-y-6 shadow-xl">
                 <h2 className="text-2xl font-bold uppercase tracking-tight text-white">
                   Contact Information
@@ -228,7 +244,7 @@ export const ContactPage: React.FC = () => {
                   We don't sell vanity metrics. We construct connected acquisition systems, search engine visibility, and automated lead workflows engineered for genuine revenue expansion.
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
@@ -236,3 +252,4 @@ export const ContactPage: React.FC = () => {
   );
 };
 export default ContactPage;
+

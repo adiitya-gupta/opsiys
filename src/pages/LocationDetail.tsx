@@ -1,5 +1,6 @@
 import React from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { SEO } from "../components/SEO";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -157,7 +158,7 @@ export const LocationDetailPage: React.FC = () => {
         canonical={`https://www.opsiys.in/locations/${slug}`}
       />
 
-      <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20">
+      <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">
         <Breadcrumbs
           items={[
             { label: "Locations", href: "/locations" },
@@ -166,7 +167,12 @@ export const LocationDetailPage: React.FC = () => {
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 space-y-16">
-          <div className="space-y-4 max-w-4xl text-left">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-4 max-w-4xl text-left"
+          >
             <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest flex items-center gap-1.5 w-fit">
               <MapPin className="w-3.5 h-3.5" />
               <span>{location.region}</span>
@@ -177,9 +183,15 @@ export const LocationDetailPage: React.FC = () => {
             <p className="text-zinc-600 text-base sm:text-lg leading-relaxed font-medium">
               {location.overview}
             </p>
-          </div>
+          </motion.div>
 
-          <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-8 space-y-3">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-8 space-y-3"
+          >
             <span className="text-xs font-mono font-bold text-accent uppercase tracking-widest">
               [ Market Context ]
             </span>
@@ -189,9 +201,15 @@ export const LocationDetailPage: React.FC = () => {
             <p className="text-zinc-600 text-sm leading-relaxed">
               {location.marketLandscape}
             </p>
-          </div>
+          </motion.div>
 
-          <div className="space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="space-y-6"
+          >
             <h2 className="text-2xl font-bold uppercase tracking-tight text-black">
               Key Growth Services for {location.name} Businesses
             </h2>
@@ -214,9 +232,15 @@ export const LocationDetailPage: React.FC = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="space-y-4"
+          >
             <h2 className="text-2xl font-bold uppercase tracking-tight text-black">
               Key Industries We Support in {location.name}
             </h2>
@@ -229,10 +253,16 @@ export const LocationDetailPage: React.FC = () => {
                 </Link>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {location.faqs && location.faqs.length > 0 && (
-            <div className="space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-6"
+            >
               <h2 className="text-2xl font-bold uppercase tracking-tight text-black">
                 {location.name} Business FAQs
               </h2>
@@ -249,10 +279,16 @@ export const LocationDetailPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
-          <div className="bg-black text-white rounded-2xl p-8 sm:p-12 text-center space-y-6 shadow-2xl">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="bg-black text-white rounded-2xl p-8 sm:p-12 text-center space-y-6 shadow-2xl"
+          >
             <h2 className="text-2xl sm:text-4xl font-extrabold uppercase tracking-tight">
               Expand Your Business in {location.name}
             </h2>
@@ -264,10 +300,11 @@ export const LocationDetailPage: React.FC = () => {
                 Request a Growth Consultation
               </Button>
             </a>
-          </div>
+          </motion.div>
         </div>
       </div>
     </>
   );
 };
 export default LocationDetailPage;
+

@@ -4,6 +4,7 @@ import { SEO } from "../components/SEO";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "motion/react";
 import { 
   ArrowRight, 
   BarChart3, 
@@ -27,7 +28,7 @@ export const SERVICES_LIST = [
     seoTitle: "Business Growth Solutions & Partner Services | Opsiys",
     seoDesc: "Opsiys helps companies scale with connected business growth strategies, digital visibility, lead generation, and automated workflows.",
     icon: BarChart3,
-    tagline: "Strategic Scaling for Ambitious Companies",
+    tagline: "Strategic Scaling for Growing Companies",
     description: "End-to-end growth partner services combining brand strategy, digital acquisition, and automated execution systems.",
     highlights: ["Revenue Pipeline Optimization", "Market Expansion Strategy", "Digital Growth Roadmaps"]
   },
@@ -37,9 +38,9 @@ export const SERVICES_LIST = [
     seoTitle: "Digital Marketing Services | Growth Marketing | Opsiys",
     seoDesc: "Drive measurable customer acquisition with data-backed digital marketing strategies across paid social, search, and content channels.",
     icon: Megaphone,
-    tagline: "High-ROI Performance Marketing Campaigns",
-    description: "Omnichannel digital marketing programs engineered to increase brand awareness, drive traffic, and generate sales leads.",
-    highlights: ["Omnichannel Campaigns", "Performance Marketing", "Conversion Rate Optimization"]
+    tagline: "Performance Acquisition Campaigns",
+    description: "Multi-channel digital marketing programs engineered to increase brand awareness, drive traffic, and generate customer inquiries.",
+    highlights: ["Omnichannel Campaigns", "Performance Ad Strategy", "Conversion Rate Optimization"]
   },
   {
     slug: "seo",
@@ -49,7 +50,7 @@ export const SERVICES_LIST = [
     icon: Search,
     tagline: "Dominate Search Results & Organic Visibility",
     description: "Technical SEO, search authority building, and content optimization designed to put your business in front of ready-to-buy customers.",
-    highlights: ["Technical & On-Page SEO", "Local SEO & Map Pack", "Organic Lead Generation"]
+    highlights: ["Technical & On-Page SEO", "Local SEO & Map Pack", "Organic Lead Flow"]
   },
   {
     slug: "meta-ads",
@@ -143,6 +144,23 @@ export const SERVICES_LIST = [
   }
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.4, ease: "easeOut" } 
+  }
+};
+
 export const ServicesPage: React.FC = () => {
   return (
     <>
@@ -155,24 +173,54 @@ export const ServicesPage: React.FC = () => {
         <Breadcrumbs items={[{ label: "Services" }]} />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 space-y-12">
-          <div className="text-left space-y-4 max-w-3xl">
-            <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest">
-              Connected Growth Solutions
-            </Badge>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase tracking-tight text-black leading-tight">
-              Growth Solutions Engine
-            </h1>
-            <p className="text-zinc-600 text-base sm:text-lg leading-relaxed font-medium">
-              We design, build, and optimize the digital infrastructure your business needs to increase online visibility, generate qualified opportunities, and automate growth.
-            </p>
+          {/* Header Banner */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-white border border-zinc-200 rounded-2xl p-6 sm:p-10 shadow-sm">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className="lg:col-span-7 space-y-4 text-left"
+            >
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest flex items-center gap-1.5 w-fit">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Connected Solutions Engine</span>
+              </Badge>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase tracking-tight text-black leading-tight">
+                Growth Solutions
+              </h1>
+              <p className="text-zinc-600 text-base sm:text-lg leading-relaxed font-medium">
+                We design, build, and optimize the digital infrastructure your business needs to build online presence, increase search visibility, generate leads, and automate growth.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="lg:col-span-5 rounded-xl overflow-hidden shadow-lg border border-zinc-200 bg-zinc-900"
+            >
+              <img 
+                src="/images/hero_growth.png" 
+                alt="Growth Solutions Engine"
+                className="w-full h-full object-cover max-h-[260px]"
+              />
+            </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Cards Grid */}
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+          >
             {SERVICES_LIST.map((service) => {
               const IconComp = service.icon;
               return (
-                <div 
+                <motion.div 
                   key={service.slug}
+                  variants={itemVariants}
+                  whileHover={{ y: -4 }}
                   className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-8 flex flex-col justify-between hover:border-black transition-all hover:shadow-xl group"
                 >
                   <div className="space-y-4">
@@ -208,12 +256,13 @@ export const ServicesPage: React.FC = () => {
                       </Button>
                     </Link>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
 
-          <div className="bg-black text-white rounded-2xl p-8 sm:p-12 text-center space-y-6">
+          {/* CTA Banner */}
+          <div className="bg-black text-white rounded-2xl p-8 sm:p-12 text-center space-y-6 shadow-2xl">
             <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight">
               Ready to Accelerate Your Business Growth?
             </h2>

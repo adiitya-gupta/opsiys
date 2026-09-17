@@ -1,5 +1,6 @@
 import React from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { SEO } from "../components/SEO";
 import { Breadcrumbs } from "../components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ interface IndustryData {
   seoDesc: string;
   tagline: string;
   heroCopy: string;
+  image: string;
   challenges: string[];
   solutions: string[];
   recommendedServices: { title: string; slug: string }[];
@@ -25,6 +27,7 @@ const INDUSTRY_DETAILS_MAP: Record<string, IndustryData> = {
     seoDesc: "Opsiys helps medical clinics, dental practices, and specialist centers build local search presence, capture patient leads, and automate appointment reminders.",
     tagline: "Patient Acquisition & Local Search Dominance",
     heroCopy: "Modern medical practices need consistent patient acquisition, Google Maps pack visibility, and frictionless appointment booking systems.",
+    image: "/images/clinic_growth.png",
     challenges: [
       "Inconsistent patient bookings during off-peak periods",
       "Competitor clinics outranking your practice in local Google Maps searches",
@@ -54,6 +57,7 @@ const INDUSTRY_DETAILS_MAP: Record<string, IndustryData> = {
     seoDesc: "Drive high-intent home buyers and investors to real estate projects with targeted Meta ads, automated property brochure bots, and CRM lead pipelines.",
     tagline: "High-Intent Property Buyer Acquisition Systems",
     heroCopy: "Real estate firms need high-volume, pre-qualified buyer inquiries and zero-delay sales team notifications to close site visits.",
+    image: "/images/realestate_growth.png",
     challenges: [
       "Ad budgets spent on tire-kickers who don't have budget for property purchases",
       "Slow sales agent response time causing interested buyers to contact competing projects",
@@ -83,6 +87,7 @@ const INDUSTRY_DETAILS_MAP: Record<string, IndustryData> = {
     seoDesc: "Attract diners, boost table reservations, and build a magnetic brand presence with local search pack dominance, photography, and social campaigns.",
     tagline: "Local Search Dominance & Visual Media Production",
     heroCopy: "Restaurants and cafes thrive on high local search visibility, irresistible visual media content, and recurring customer loyalty.",
+    image: "/images/restaurant_growth.png",
     challenges: [
       "Low visibility on Google local maps when diners search 'restaurants near me'",
       "Outdated menu media and amateur social photography that fails to excite customers",
@@ -112,6 +117,7 @@ const INDUSTRY_DETAILS_MAP: Record<string, IndustryData> = {
     seoDesc: "Scale student enrollments for competitive exams, professional certifications, and coaching programs through conversion funnels and automated follow-ups.",
     tagline: "Predictable Student Enrollment & Course Marketing",
     heroCopy: "Coaching centers and education providers require predictable student lead flow, high landing page conversion rates, and automated parent/student communication.",
+    image: "/images/blog_online_presence.png",
     challenges: [
       "High cost per student enrollment across competitive education keywords",
       "Prospects dropping off after downloading course prospectuses",
@@ -141,6 +147,7 @@ const INDUSTRY_DETAILS_MAP: Record<string, IndustryData> = {
     seoDesc: "Opsiys helps financial planners, advisory firms, and professional practices build corporate search authority, enterprise web platforms, and compliant CRM pipelines.",
     tagline: "Enterprise Trust & High-Net-Worth Client Acquisition",
     heroCopy: "Financial advisory firms, wealth managers, and corporate consultants require high-trust branding, enterprise web platforms, and authoritative organic search positioning.",
+    image: "/images/hero_growth.png",
     challenges: [
       "Difficulty attracting high-net-worth clients online due to lack of visual brand authority",
       "Outdated web platforms that look unprofessional on mobile devices",
@@ -181,7 +188,7 @@ export const IndustryDetailPage: React.FC = () => {
         canonical={`https://www.opsiys.in/industries/${slug}`}
       />
 
-      <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20">
+      <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">
         <Breadcrumbs
           items={[
             { label: "Industries", href: "/industries" },
@@ -190,20 +197,47 @@ export const IndustryDetailPage: React.FC = () => {
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 space-y-16">
-          <div className="space-y-4 max-w-4xl text-left">
-            <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest">
-              {industry.tagline}
-            </Badge>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase tracking-tight text-black leading-tight">
-              {industry.title}
-            </h1>
-            <p className="text-zinc-600 text-base sm:text-lg leading-relaxed font-medium">
-              {industry.heroCopy}
-            </p>
+          {/* Hero section with image layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="lg:col-span-7 space-y-4 text-left"
+            >
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest">
+                {industry.tagline}
+              </Badge>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold uppercase tracking-tight text-black leading-tight">
+                {industry.title}
+              </h1>
+              <p className="text-zinc-600 text-base sm:text-lg leading-relaxed font-medium">
+                {industry.heroCopy}
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="lg:col-span-5 rounded-2xl overflow-hidden border border-zinc-200 shadow-xl bg-zinc-900 h-64 sm:h-80"
+            >
+              <img 
+                src={industry.image} 
+                alt={industry.title} 
+                className="w-full h-full object-cover object-center"
+              />
+            </motion.div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white border border-red-200/80 rounded-xl p-6 sm:p-8 space-y-4 shadow-sm">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="bg-white border border-red-200/80 rounded-xl p-6 sm:p-8 space-y-4 shadow-sm"
+            >
               <span className="text-xs font-mono font-bold uppercase tracking-widest text-red-500">
                 [ Industry Friction Points ]
               </span>
@@ -218,9 +252,15 @@ export const IndustryDetailPage: React.FC = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
 
-            <div className="bg-zinc-900 text-white border border-zinc-800 rounded-xl p-6 sm:p-8 space-y-4 shadow-xl">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-zinc-900 text-white border border-zinc-800 rounded-xl p-6 sm:p-8 space-y-4 shadow-xl"
+            >
               <span className="text-xs font-mono font-bold uppercase tracking-widest text-accent">
                 [ The Opsiys Growth Blueprint ]
               </span>
@@ -235,10 +275,16 @@ export const IndustryDetailPage: React.FC = () => {
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           </div>
 
-          <div className="space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="space-y-4"
+          >
             <h2 className="text-2xl font-bold uppercase tracking-tight text-black">
               Recommended Growth Solutions for {industry.title}
             </h2>
@@ -251,10 +297,16 @@ export const IndustryDetailPage: React.FC = () => {
                 </Link>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {industry.faqs && industry.faqs.length > 0 && (
-            <div className="space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-6"
+            >
               <h2 className="text-2xl font-bold uppercase tracking-tight text-black">
                 Industry FAQs
               </h2>
@@ -271,10 +323,16 @@ export const IndustryDetailPage: React.FC = () => {
                   </div>
                 ))}
               </div>
-            </div>
+            </motion.div>
           )}
 
-          <div className="bg-black text-white rounded-2xl p-8 sm:p-12 text-center space-y-6 shadow-2xl">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="bg-black text-white rounded-2xl p-8 sm:p-12 text-center space-y-6 shadow-2xl"
+          >
             <h2 className="text-2xl sm:text-4xl font-extrabold uppercase tracking-tight">
               Scale Your {industry.title} Operations
             </h2>
@@ -286,10 +344,11 @@ export const IndustryDetailPage: React.FC = () => {
                 Request a Growth Consultation
               </Button>
             </a>
-          </div>
+          </motion.div>
         </div>
       </div>
     </>
   );
 };
 export default IndustryDetailPage;
+

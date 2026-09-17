@@ -20,12 +20,22 @@ export default defineConfig(({mode}) => {
       minify: 'esbuild',
       cssCodeSplit: true,
       sourcemap: false,
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
-          manualChunks: {
-            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-motion': ['motion'],
-            'vendor-icons': ['lucide-react'],
+          manualChunks(id) {
+            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router-dom/')) {
+              return 'vendor-react';
+            }
+            if (id.includes('node_modules/firebase/')) {
+              return 'vendor-firebase';
+            }
+            if (id.includes('node_modules/lucide-react/')) {
+              return 'vendor-icons';
+            }
+            if (id.includes('node_modules/motion/') || id.includes('node_modules/framer-motion/')) {
+              return 'vendor-motion';
+            }
           },
         },
       },
