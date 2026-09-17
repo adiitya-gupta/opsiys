@@ -252,8 +252,8 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white text-[#0B0B0B] font-sans selection:bg-accent selection:text-white">
       <SEO
-        title="About Opsiys | Business Growth Partner"
-        description="Learn about Opsiys, your connected business growth partner. We build online presence, search visibility, lead pipelines, and automated growth systems."
+        title="About Opsiys | Business Growth & Digital Solutions Company"
+        description="Learn about Opsiys, a business growth partner helping companies strengthen their brand, digital presence, visibility, customer acquisition and business automation."
         canonical="https://opsiys.in/about"
       />
       {/* Hero Section */}
@@ -275,10 +275,10 @@ export default function AboutPage() {
             
             <motion.h1 
               variants={fadeIn}
-              className="text-5xl md:text-8xl font-extrabold tracking-tight leading-[0.95] uppercase max-w-5xl"
+              className="text-5xl md:text-8xl font-extrabold tracking-tight leading-[0.95] uppercase max-w-5xl text-black"
             >
-              We don’t just build tools. <br/>
-              <span className="text-accent underline underline-offset-[12px] decoration-accent/10">We build experiences.</span>
+              About Opsiys <br/>
+              <span className="text-accent underline underline-offset-[12px] decoration-accent/10">Business Growth Partner</span>
             </motion.h1>
             
             <motion.p 

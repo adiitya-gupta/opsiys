@@ -44,8 +44,8 @@ export const ContactPage: React.FC = () => {
   return (
     <>
       <SEO
-        title="Contact Opsiys | Request a Growth Consultation"
-        description="Get in touch with Opsiys to discuss your business growth, SEO, web development, Meta ads, and business automation requirements."
+        title="Contact Opsiys | Start Your Business Growth Journey"
+        description="Contact Opsiys for websites, SEO, Meta Ads, marketing, automation, CRM and other digital business growth solutions."
         canonical="https://opsiys.in/contact"
       />
 

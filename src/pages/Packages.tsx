@@ -206,8 +206,8 @@ export const PackagesPage: React.FC = () => {
   return (
     <>
       <SEO
-        title="Opsiys Packages & Pricing | Business Growth Solutions"
-        description="Explore Opsiys growth packages for social presence, websites, digital marketing, Meta Ads, lead generation, SEO, AI and automation."
+        title="Opsiys Packages | Business Growth Plans & Pricing"
+        description="Explore Opsiys growth packages for online presence, visibility, customer acquisition and growth systems, from Start to Growth Engine."
         canonical="https://opsiys.in/packages"
       />
 

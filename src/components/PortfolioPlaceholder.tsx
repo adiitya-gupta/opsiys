@@ -134,7 +134,7 @@ export const PortfolioPlaceholder: React.FC<PortfolioPlaceholderProps> = ({
                 <TrendingUp className="w-4 h-4 text-accent" />
                 <span className="text-[11px] font-bold text-zinc-200 uppercase tracking-wider">Growth Engine Graph</span>
               </div>
-              <span className="text-[9px] bg-accent/20 text-accent px-2 py-0.5 font-bold border border-accent/40">+320% ROAS</span>
+              <span className="text-[9px] bg-accent/20 text-accent px-2 py-0.5 font-bold border border-accent/40">Performance Ads</span>
             </div>
 
             {/* Growth chart graphic */}

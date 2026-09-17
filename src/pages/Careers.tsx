@@ -145,8 +145,8 @@ export const CareersPage: React.FC = () => {
   return (
     <>
       <SEO
-        title="Careers at Opsiys | Join Our Team"
-        description="Explore career opportunities at Opsiys and submit your profile for relevant full-time, internship, freelance and future opportunities."
+        title="Careers at Opsiys | Build What’s Next"
+        description="Explore career and collaboration opportunities at Opsiys across technology, marketing, creative, growth and digital solutions."
         canonical="https://opsiys.in/careers"
       />
 

@@ -895,7 +895,7 @@ const Trust = () => {
       
       <div className="max-w-7xl mx-auto px-6 mb-8">
         <p className="text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">
-          Trusted by Innovative Operations Teams
+          Tools &amp; Platforms
         </p>
       </div>
 
@@ -961,7 +961,7 @@ const Features = () => {
       subtitle: "Targeted Growth Campaigns",
       desc: "Reach the right customers with high-performing ads, automated outreach, and marketing campaigns designed to grow revenue.",
       icon: <Target className="w-6 h-6" />,
-      metric: "+320% Revenue Growth",
+      metric: "Omnichannel Acquisition",
       keyPoints: ["Targeted Social & Meta Ads", "High-Converting Sales Funnels", "Consistent Inbound Inquiries"]
     },
     {
@@ -972,7 +972,7 @@ const Features = () => {
       subtitle: "Google Rankings & Research",
       desc: "Rank higher on Google and modern search platforms with thorough research, optimized web pages, and continuous traffic growth.",
       icon: <Globe className="w-6 h-6" />,
-      metric: "Top Google Rankings",
+      metric: "Search Engine Authority",
       keyPoints: ["Higher Search Visibility", "Keyword & Market Research", "Fast Organic Traffic Growth"]
     },
     {
@@ -983,7 +983,7 @@ const Features = () => {
       subtitle: "Smart Daily Workflows",
       desc: "Automate repetitive daily tasks, connect your customer channels, and streamline operations so your business runs smoothly 24/7.",
       icon: <Workflow className="w-6 h-6" />,
-      metric: "Save 25+ Hrs/Week",
+      metric: "Streamlined Workflow",
       keyPoints: ["Automated Customer Replies", "Instant CRM & Lead Sync", "Hands-Off Daily Tasks"]
     }
   ];
@@ -2279,8 +2279,8 @@ const HomePage = () => {
   return (
     <main>
       <SEO
-        title="Opsiys | Business Growth Partner for Online Presence & Growth"
-        description="Opsiys is a business growth partner helping businesses build their online presence, increase visibility, generate leads and automate growth through marketing, SEO, Meta Ads, websites and automation."
+        title="Opsiys | Business Growth Partner for Digital Growth"
+        description="Opsiys helps businesses build their online presence, increase visibility, generate opportunities and automate growth through marketing, SEO, Meta Ads, websites and automation."
         canonical="https://opsiys.in/"
       />
       <Hero />
@@ -2298,8 +2298,8 @@ const HomePage = () => {
 const ProcessPage = () => (
   <main>
     <SEO
-      title="Our Growth Process | Opsiys"
-      description="Learn about our 4-stage connected growth blueprint for businesses."
+      title="Our Process | Strategy, Build, Create & Grow | Opsiys"
+      description="Discover the Opsiys process for turning business goals into stronger brands, digital presence, marketing systems and scalable growth."
       canonical="https://opsiys.in/process"
     />
     <HowItWorks />
@@ -2310,8 +2310,8 @@ const ProcessPage = () => (
 const DiscoveryPage = () => (
   <main>
     <SEO
-      title="Growth Discovery Tools | Opsiys"
-      description="Explore our interactive growth discovery tools and business calculators."
+      title="Business Discovery | Start Your Growth Journey | Opsiys"
+      description="Tell Opsiys about your business, goals and challenges so we can identify the right digital growth, marketing and automation opportunities."
       canonical="https://opsiys.in/discovery"
     />
     <ToolDiscovery />
