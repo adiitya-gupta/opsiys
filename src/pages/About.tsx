@@ -152,7 +152,11 @@ const TeamMemberCard = ({ member, idx }: { member: TeamMember; idx: number; key?
           {!imgError && (
             <img 
               src={member.image} 
-              alt={member.name} 
+              alt={member.name}
+              width={400}
+              height={500}
+              loading="lazy"
+              decoding="async" 
               ref={(el) => {
                 if (el && el.complete && el.naturalWidth > 0 && !imgLoaded) {
                   setImgLoaded(true);
