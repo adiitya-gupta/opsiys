@@ -54,26 +54,28 @@ D. SEO & GENERATIVE ENGINE OPTIMIZATION (GEO):
 
 4. NON-NEGOTIABLE PACKAGES & PRICING PLANS (PROGRESSION: Signature → Momentum → Performance → Prime):
 
-• 1. Opsiys Signature (₹12,000 / month) — [Level 1 • Presence Stage]
-  - Positioning: Professional brand & social media presence for established businesses, professional firms, and executive profiles seeking high-authority online reputation.
+• 1. Opsiys Signature — [Level 1 • Presence Stage]
+  - Monthly Plan: ₹12,000 / month (Billed monthly, cancel anytime).
+  - Annual Plan: ₹1,22,400 / year upfront (Equivalent to ₹10,200/mo — Save ₹21,600 / year with 15% OFF).
   - Included Deliverables: 2 Social Platforms (Instagram & Facebook), 12 Monthly Content Assets (8 Static Posts + 4 Reels), Profile Optimization, Monthly Performance Report, Caption & Hashtag Strategy.
-  - Annual Price: ₹10,200 / month (Save 15%).
 
-• 2. Opsiys Momentum (₹22,000 / month) — [Level 2 • Visibility Stage]
-  - Positioning: Unified social presence + modern 4–5 page informational website for growing local companies and professional services.
+• 2. Opsiys Momentum — [Level 2 • Visibility Stage]
+  - Monthly Plan: ₹22,000 / month (Billed monthly).
+  - Annual Plan: ₹2,24,400 / year upfront (Equivalent to ₹18,700/mo — Save ₹39,600 / year with 15% OFF).
   - Included Deliverables: 3 Social Platforms, 20 Monthly Content Assets (8 Static + 6 Carousels + 6 Reels), 4–5 Page Modern Business Website (Home, About, Services, Portfolio, Contact), WhatsApp button & Contact Forms, Basic On-Page SEO & Analytics.
-  - Annual Price: ₹18,700 / month (Save 15%).
 
-• 3. Opsiys Performance (₹35,000 / month) — [Level 3 • Acquisition Stage] — MOST POPULAR
-  - Positioning: High-growth solution for clinics, real estate firms, coaching centers & service providers demanding visibility PLUS predictable lead acquisition.
+• 3. Opsiys Performance — [Level 3 • Acquisition Stage] — MOST POPULAR
+  - Monthly Plan: ₹35,000 / month (Billed monthly).
+  - Annual Plan: ₹3,57,000 / year upfront (Equivalent to ₹29,750/mo — Save ₹63,000 / year with 15% OFF).
   - Included Deliverables: 3 Social Platforms, 34 Monthly Content Assets (8 Static + 8 Carousels + 12 Reels + 6 Meta Ad Creatives), Enhanced 6–7 Page Conversion Website, Meta Ads Setup & Lead Generation Campaign, Technical SEO & Conversion Tracking.
-  - Note: Ad spend budget (₹20,000–₹50,000/mo) is paid directly by the client to Meta/ad platforms.
-  - Annual Price: ₹29,750 / month (Save 15%).
+  - Note: Ad spend budget (₹20,000–₹50,000/mo) is paid directly by client to Meta/ad platforms.
 
-• 4. Opsiys Prime (₹55,000 / month) — [Level 4 • Growth System Stage]
-  - Positioning: Autonomous growth system for market leaders, scaling enterprises & multi-location brands.
+• 4. Opsiys Prime — [Level 4 • Growth System Stage]
+  - Monthly Plan: ₹55,000 / month (Billed monthly).
+  - Annual Plan: ₹5,61,000 / year upfront (Equivalent to ₹46,750/mo — Save ₹99,000 / year with 15% OFF).
   - Included Deliverables: 4 Social Platforms, 48 Monthly Content Assets (8 Static + 8 Carousels + 16 Reels + 8 Ad Creatives), Advanced 8–10 Page Business Site, Meta & Google Ads Campaigns, Up to 2 Custom AI & Business Automation Workflows/month, Basic CRM Integration, Monthly 1-on-1 Strategy Session with Opsiys Leadership.
-  - Annual Price: ₹46,750 / month (Save 15%).
+
+• GST & Invoicing Terms: All prices exclude 18% GST where applicable. Official B2B Tax Invoices with GSTIN compliance are issued for all subscriptions for claiming Input Tax Credit (ITC).
 
 5. INDUSTRY SPECIFIC GROWTH SOLUTIONS:
 - Healthcare & Medical Clinics: Patient booking funnels, doctor authority reels, Google Maps ranking, WhatsApp appointment bots.
