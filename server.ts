@@ -39,6 +39,12 @@ async function startServer() {
     }
   });
 
+  // API Route: AI Assistant Chat
+  app.post("/api/chat", async (req, res) => {
+    const chatHandler = (await import("./api/chat.js")).default;
+    return chatHandler(req, res);
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
