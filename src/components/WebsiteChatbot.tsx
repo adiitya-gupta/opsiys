@@ -8,7 +8,7 @@ type Message = {
 
 const welcomeMessage: Message = {
   role: "assistant",
-  content: "Hi! I’m the OPSIYS AI Assistant. Ask me about our founder, team, services, workflow, or how we can help automate and scale your business.",
+  content: "Hi! I’m the OPSIYS AI Assistant. Ask me anything about Opsiys — our growth packages, pricing plans, website development, AI automation, leadership team, or custom solutions!",
 };
 
 // Helper component to render bold text, lists, and line breaks nicely

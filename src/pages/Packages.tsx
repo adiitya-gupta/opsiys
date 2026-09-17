@@ -252,37 +252,34 @@ export const PackagesPage: React.FC = () => {
         selectedPackage={selectedPaymentPackage}
       />
 
-      <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 text-[#0B0B0B]">
+      <div className="bg-[#FAFAFA] min-h-screen pt-20 pb-12 text-[#0B0B0B]">
         <Breadcrumbs items={[{ label: "Packages & Pricing" }]} />
 
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 space-y-16">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-10 space-y-8">
           
           {/* PRICING PAGE HERO */}
-          <div className="text-center sm:text-left space-y-6 max-w-4xl">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
+          <div className="text-center sm:text-left space-y-3 max-w-4xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-[10px] border-accent/20 text-accent bg-accent/5 font-mono uppercase tracking-widest flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
                 <span>OPSIYS GROWTH PLANS</span>
               </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-xs border-emerald-500/20 text-emerald-600 bg-emerald-500/5 font-mono uppercase tracking-widest flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" />
+              <Badge variant="outline" className="rounded-full px-2.5 py-0.5 text-[10px] border-emerald-500/20 text-emerald-600 bg-emerald-500/5 font-mono uppercase tracking-widest flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3" />
                 <span>Transparent Non-Negotiable Pricing</span>
               </Badge>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold uppercase tracking-tight text-black leading-tight">
-              Choose Your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-black via-zinc-800 to-zinc-500">
-                Growth Stage.
-              </span>
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold uppercase tracking-tight text-black leading-none">
+              Choose Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-black via-zinc-800 to-zinc-500">Growth Stage.</span>
             </h1>
 
-            <p className="text-zinc-600 text-base sm:text-xl font-medium leading-relaxed max-w-2xl">
+            <p className="text-zinc-600 text-sm sm:text-base font-medium leading-relaxed max-w-2xl">
               Start with signature presence. Accelerate visibility. Generate opportunities. Scale with autonomous systems.
             </p>
 
             {/* Interactive Billing Cycle Toggle & Stage Stepper */}
-            <div className="pt-4 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white border border-zinc-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+            <div className="pt-2 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white border border-zinc-200 rounded-2xl p-3 sm:p-4 shadow-sm">
               
               {/* Stage Stepper */}
               <div className="flex flex-wrap items-center gap-2 font-mono text-xs font-bold">
@@ -296,7 +293,7 @@ export const PackagesPage: React.FC = () => {
                   <button
                     key={s.id}
                     onClick={() => setSelectedStageFilter(selectedStageFilter === s.id ? null : s.id)}
-                    className={`px-3 py-1.5 rounded-lg border transition-all active:scale-95 text-[11px] flex items-center gap-1.5 ${s.color} ${
+                    className={`px-2.5 py-1 rounded-lg border transition-all active:scale-95 text-[10px] flex items-center gap-1 ${s.color} ${
                       selectedStageFilter === s.id ? "ring-2 ring-black scale-105 shadow-md" : "opacity-85 hover:opacity-100"
                     }`}
                   >
@@ -306,10 +303,10 @@ export const PackagesPage: React.FC = () => {
               </div>
 
               {/* Annual Billing Toggle */}
-              <div className="flex items-center gap-3 bg-zinc-100 p-1.5 rounded-xl border border-zinc-200 shrink-0 self-start sm:self-auto">
+              <div className="flex items-center gap-2 bg-zinc-100 p-1 rounded-xl border border-zinc-200 shrink-0 self-start sm:self-auto">
                 <button
                   onClick={() => setBillingCycle("monthly")}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${
+                  className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${
                     billingCycle === "monthly" ? "bg-white text-black shadow-sm" : "text-zinc-500 hover:text-black"
                   }`}
                 >
@@ -317,12 +314,12 @@ export const PackagesPage: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setBillingCycle("annual")}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-1 ${
                     billingCycle === "annual" ? "bg-black text-white shadow-sm" : "text-zinc-600 hover:text-black"
                   }`}
                 >
                   <span>Annual</span>
-                  <Badge className="bg-emerald-500 text-white border-none text-[9px] font-mono px-1.5 py-0.2">
+                  <Badge className="bg-emerald-500 text-white border-none text-[8px] font-mono px-1 py-0">
                     Save 15%
                   </Badge>
                 </button>
@@ -332,7 +329,7 @@ export const PackagesPage: React.FC = () => {
           </div>
 
           {/* PACKAGE CARDS GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 xl:gap-5 items-stretch">
             {PACKAGES_DATA.map((pkg, idx) => {
               const isExpanded = expandedCard === pkg.id;
               const isPopular = pkg.popular;
@@ -342,84 +339,84 @@ export const PackagesPage: React.FC = () => {
               return (
                 <motion.div
                   key={pkg.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: idx * 0.08 }}
-                  className={`relative rounded-3xl overflow-hidden flex flex-col justify-between transition-all duration-300 ${
+                  transition={{ duration: 0.3, delay: idx * 0.06 }}
+                  className={`relative rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 ${
                     isPopular 
-                      ? "bg-[#0B0B0B] text-white border-2 border-black shadow-[0_20px_60px_rgba(0,0,0,0.25)] scale-[1.02] z-10" 
-                      : "bg-white text-black border border-zinc-200 shadow-sm hover:border-black hover:shadow-xl"
-                  } ${isSelectedStage ? "ring-4 ring-emerald-500 scale-[1.03]" : ""}`}
+                      ? "bg-[#0B0B0B] text-white border-2 border-emerald-500 shadow-xl z-10" 
+                      : "bg-white text-black border border-zinc-200 shadow-sm hover:border-black hover:shadow-md"
+                  } ${isSelectedStage ? "ring-2 ring-emerald-500" : ""}`}
                 >
                   {/* Badge for Popular Option */}
                   {isPopular && (
-                    <div className="bg-emerald-500 text-white text-[10px] font-mono font-extrabold uppercase tracking-widest text-center py-2 flex items-center justify-center gap-1.5">
-                      <Star size={12} className="fill-white" />
+                    <div className="bg-emerald-500 text-white text-[9px] font-mono font-extrabold uppercase tracking-widest text-center py-1 flex items-center justify-center gap-1">
+                      <Star size={10} className="fill-white" />
                       <span>MOST POPULAR GROWTH STAGE</span>
                     </div>
                   )}
 
-                  <div className="p-6 sm:p-8 space-y-6 flex-1">
+                  <div className="p-4 sm:p-5 space-y-3.5 flex-1">
                     {/* Level & Stage Badge */}
                     <div className="flex items-center justify-between">
-                      <span className={`text-[10px] font-mono font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full border ${pkg.badgeColor}`}>
+                      <span className={`text-[9px] font-mono font-extrabold uppercase tracking-widest px-2 py-0.5 rounded-full border ${pkg.badgeColor}`}>
                         {pkg.level} • {pkg.stage}
                       </span>
                       {billingCycle === "annual" && (
-                        <span className="text-[10px] font-mono text-emerald-500 font-bold flex items-center gap-1">
-                          <Percent size={10} /> 15% OFF
+                        <span className="text-[9px] font-mono text-emerald-500 font-bold flex items-center gap-0.5">
+                          <Percent size={9} /> 15% OFF
                         </span>
                       )}
                     </div>
 
                     {/* Package Name */}
-                    <div className="space-y-1">
-                      <h2 className="text-2xl sm:text-3xl font-extrabold uppercase tracking-tight">
+                    <div className="space-y-0.5">
+                      <h2 className="text-xl sm:text-2xl font-extrabold uppercase tracking-tight leading-tight">
                         {pkg.name}
                       </h2>
-                      <p className={`text-xs leading-relaxed font-medium ${isPopular ? "text-zinc-300" : "text-zinc-600"}`}>
+                      <p className={`text-[11px] leading-snug font-medium min-h-[32px] ${isPopular ? "text-zinc-300" : "text-zinc-500"}`}>
                         {pkg.positioning}
                       </p>
                     </div>
 
                     {/* Price Block */}
-                    <div className="space-y-1 pt-2 border-t border-zinc-100/20">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-3xl sm:text-4xl font-black tracking-tight">
+                    <div className="space-y-0.5 pt-1.5 border-t border-zinc-100/20">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-2xl sm:text-3xl font-black tracking-tight">
                           {activePrice}
                         </span>
-                        <span className={`text-xs font-mono font-medium ${isPopular ? "text-zinc-400" : "text-zinc-500"}`}>
+                        <span className={`text-[11px] font-mono font-medium ${isPopular ? "text-zinc-400" : "text-zinc-500"}`}>
                           {pkg.period}
                         </span>
                       </div>
                       {billingCycle === "annual" && (
-                        <span className="text-[10px] text-zinc-400 font-mono block">
+                        <span className="text-[9px] text-zinc-400 font-mono block">
                           Billed annually (Regular: {pkg.price}/mo)
                         </span>
                       )}
                     </div>
 
                     {/* Key Stats Grid */}
-                    <div className={`grid grid-cols-2 gap-2 p-3 rounded-2xl border text-center font-mono text-xs ${
+                    <div className={`grid grid-cols-2 gap-1.5 p-2 rounded-xl border text-center font-mono text-xs ${
                       isPopular ? "bg-zinc-900/90 border-zinc-800" : "bg-zinc-50 border-zinc-100"
                     }`}>
                       {pkg.stats.map((s, i) => (
-                        <div key={i} className="p-2 bg-white/5 rounded-xl">
-                          <span className="block font-black text-sm text-current">{s.value}</span>
-                          <span className={`text-[9px] uppercase tracking-wider block ${isPopular ? "text-zinc-400" : "text-zinc-500"}`}>{s.label}</span>
+                        <div key={i} className="p-1.5 bg-white/5 rounded-lg">
+                          <span className="block font-black text-xs text-current">{s.value}</span>
+                          <span className={`text-[8px] uppercase tracking-wider block ${isPopular ? "text-zinc-400" : "text-zinc-500"}`}>{s.label}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Deliverables Highlights */}
-                    <div className="space-y-3 pt-2">
-                      <span className={`text-[10px] font-mono font-bold uppercase tracking-widest block ${isPopular ? "text-zinc-400" : "text-zinc-500"}`}>
+                    <div className="space-y-1.5 pt-1">
+                      <span className={`text-[9px] font-mono font-bold uppercase tracking-widest block ${isPopular ? "text-zinc-400" : "text-zinc-500"}`}>
                         Included Deliverables:
                       </span>
-                      <ul className="space-y-2">
-                        {pkg.keyDeliverables.slice(0, 5).map((item, i) => (
-                          <li key={i} className="flex items-start gap-2 text-xs font-medium">
-                            <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isPopular ? "text-emerald-400" : "text-black"}`} />
+                      <ul className="space-y-1.5">
+                        {pkg.keyDeliverables.slice(0, 4).map((item, i) => (
+                          <li key={i} className="flex items-start gap-1.5 text-[11px] font-medium leading-tight">
+                            <CheckCircle2 className={`w-3 h-3 shrink-0 mt-0.5 ${isPopular ? "text-emerald-400" : "text-black"}`} />
                             <span className={isPopular ? "text-zinc-200" : "text-zinc-700"}>{item}</span>
                           </li>
                         ))}
@@ -429,14 +426,14 @@ export const PackagesPage: React.FC = () => {
                     {/* Accordion Toggle for Full Details */}
                     <button
                       onClick={() => toggleExpand(pkg.id)}
-                      className={`w-full py-2.5 flex items-center justify-between text-xs font-mono font-bold uppercase tracking-wider border-t transition-colors ${
+                      className={`w-full py-1 flex items-center justify-between text-[10px] font-mono font-bold uppercase tracking-wider border-t transition-colors ${
                         isPopular 
                           ? "border-zinc-800 text-zinc-300 hover:text-white" 
                           : "border-zinc-100 text-zinc-600 hover:text-black"
                       }`}
                     >
                       <span>{isExpanded ? "Hide Details" : "View Full Details"}</span>
-                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                     </button>
 
                     {/* Expanded Details Content */}
@@ -446,25 +443,25 @@ export const PackagesPage: React.FC = () => {
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
-                          className="space-y-4 pt-2 text-xs border-t border-dashed border-zinc-700/50"
+                          className="space-y-3 pt-2 text-[11px] border-t border-dashed border-zinc-700/50"
                         >
-                          <div className="space-y-1">
-                            <span className="font-mono font-bold text-[10px] text-accent uppercase tracking-widest">BEST FOR:</span>
+                          <div className="space-y-0.5">
+                            <span className="font-mono font-bold text-[9px] text-accent uppercase tracking-widest">BEST FOR:</span>
                             <p className={isPopular ? "text-zinc-300" : "text-zinc-600"}>{pkg.bestFor}</p>
                           </div>
 
-                          <div className="space-y-1">
-                            <span className="font-mono font-bold text-[10px] text-accent uppercase tracking-widest">WEBSITE SCOPE:</span>
+                          <div className="space-y-0.5">
+                            <span className="font-mono font-bold text-[9px] text-accent uppercase tracking-widest">WEBSITE SCOPE:</span>
                             <p className={isPopular ? "text-zinc-300" : "text-zinc-600"}>{pkg.details.websiteScope}</p>
                           </div>
 
-                          <div className="space-y-1">
-                            <span className="font-mono font-bold text-[10px] text-accent uppercase tracking-widest">ADS &amp; MARKETING:</span>
+                          <div className="space-y-0.5">
+                            <span className="font-mono font-bold text-[9px] text-accent uppercase tracking-widest">ADS &amp; MARKETING:</span>
                             <p className={isPopular ? "text-zinc-300" : "text-zinc-600"}>{pkg.details.adsManagement}</p>
                           </div>
 
                           {pkg.adBudgetNotice && (
-                            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[11px] leading-relaxed">
+                            <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[10px] leading-relaxed">
                               <strong>Note:</strong> {pkg.adBudgetNotice}
                             </div>
                           )}
@@ -474,23 +471,23 @@ export const PackagesPage: React.FC = () => {
                   </div>
 
                   {/* Payment CTA */}
-                  <div className="p-6 pt-0 space-y-2">
+                  <div className="p-4 pt-0 space-y-1.5">
                     <Button
                       onClick={() => handleOpenPayment(pkg)}
-                      className={`w-full py-6 font-extrabold uppercase tracking-widest text-xs rounded-full transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95 ${
+                      className={`w-full h-10 font-extrabold uppercase tracking-widest text-[11px] rounded-full transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 ${
                         isPopular
                           ? "bg-white text-black hover:bg-zinc-200 shadow-white/10"
                           : "bg-black text-white hover:bg-zinc-800"
                       }`}
                     >
-                      <CreditCard size={15} />
+                      <CreditCard size={14} />
                       <span>Pay {activePrice}</span>
                     </Button>
 
                     <Link to={`/contact?package=${pkg.id}`} className="block text-center">
                       <Button
                         variant="ghost"
-                        className={`w-full py-2 font-mono text-[10px] uppercase tracking-wider rounded-full ${
+                        className={`w-full py-1 font-mono text-[9px] uppercase tracking-wider rounded-full h-7 ${
                           isPopular ? "text-zinc-400 hover:text-white" : "text-zinc-500 hover:text-black"
                         }`}
                       >
