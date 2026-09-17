@@ -41,8 +41,13 @@ async function startServer() {
 
   // API Route: AI Assistant Chat
   app.post("/api/chat", async (req, res) => {
-    const chatHandler = (await import("./api/chat.js")).default;
-    return chatHandler(req, res);
+    try {
+      const chatHandler = (await import(`./api/chat.js?v=${Date.now()}`)).default;
+      return chatHandler(req, res);
+    } catch {
+      const chatHandler = (await import("./api/chat.js")).default;
+      return chatHandler(req, res);
+    }
   });
 
   if (process.env.NODE_ENV !== "production") {
