@@ -22,7 +22,7 @@ export const handler = async (event) => {
   }
 
   const apiKey = process.env.GEMINI_API_KEY?.trim();
-  const model = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
+  const model = process.env.GEMINI_MODEL?.trim() || "gemini-3.6-flash";
   if (!apiKey) {
     return json(503, { error: "The OPSIYS assistant is not configured yet." });
   }

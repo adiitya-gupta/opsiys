@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.GEMINI_API_KEY?.trim();
-  const model = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
+  const model = process.env.GEMINI_MODEL?.trim() || "gemini-3.6-flash";
   if (!apiKey) {
     return res.status(503).json({ error: "The OPSIYS assistant is not configured yet. GEMINI_API_KEY is missing in environment variables." });
   }
