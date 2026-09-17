@@ -92,8 +92,109 @@ const ServicesGrid = () => {
   );
 };
 
+type TeamMember = {
+  id: string;
+  name: string;
+  role: string;
+  desc: string;
+  image: string;
+  imageClassName?: string;
+  placeholderLabel: string;
+};
+
+const TeamMemberCard = ({ member, idx }: { member: TeamMember; idx: number; key?: string }) => {
+  const [imgLoaded, setImgLoaded] = React.useState(false);
+  const [imgError, setImgError] = React.useState(false);
+
+  return (
+    <motion.div
+      key={member.id}
+      variants={fadeIn}
+      className="group flex flex-col justify-between p-4 bg-white border border-zinc-200 hover:border-black transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-black/[0.03]"
+    >
+      <div>
+        {/* Photo Frame / Placeholder Container */}
+        <div className="aspect-[4/5] overflow-hidden bg-zinc-950 border border-zinc-800 relative group select-none">
+          {/* Fallback & Placeholder Wireframe */}
+          <div className="absolute inset-0 flex flex-col justify-between p-4 bg-[#0D0D11] text-white z-0">
+            {/* Top Bar */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-2 text-[9px] font-mono">
+              <span className="text-accent font-bold">0{idx + 1} // TEAM</span>
+              <span className="text-zinc-500 bg-white/5 px-1.5 py-0.5 border border-white/10">
+                PORTRAIT
+              </span>
+            </div>
+
+            {/* Center Silhouette / Icon */}
+            <div className="flex flex-col items-center justify-center my-auto space-y-2 py-4">
+              <div className="w-14 h-14 rounded-full bg-zinc-900 border border-dashed border-zinc-700 flex items-center justify-center group-hover:border-accent group-hover:scale-105 transition-all">
+                <Users className="w-6 h-6 text-zinc-400 group-hover:text-accent transition-colors" />
+              </div>
+              <div className="text-center space-y-0.5">
+                <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-300">
+                  [ PHOTO PLACEHOLDER ]
+                </p>
+                <p className="text-[9px] font-mono text-accent">
+                  public/{member.placeholderLabel}
+                </p>
+              </div>
+            </div>
+
+            {/* Bottom Bar */}
+            <div className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest border-t border-white/10 pt-1.5 flex justify-between">
+              <span>400 × 500 PX</span>
+              <span className="text-zinc-400">READY TO DROP</span>
+            </div>
+          </div>
+
+          {/* Actual Real Image */}
+          {!imgError && (
+            <img 
+              src={member.image} 
+              alt={member.name} 
+              ref={(el) => {
+                if (el && el.complete && el.naturalWidth > 0 && !imgLoaded) {
+                  setImgLoaded(true);
+                }
+              }}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgError(true)}
+              className={`w-full h-full object-cover grayscale hover:grayscale-0 transform transition-all duration-700 z-10 relative ${member.imageClassName || "scale-100 group-hover:scale-105"} ${
+                imgLoaded ? "opacity-100" : "opacity-0"
+              }`} 
+            />
+          )}
+        </div>
+
+        {/* Member Details */}
+        <div className="pt-6 space-y-2.5">
+          <div className="flex items-start justify-between gap-2">
+            <Badge variant="outline" className="h-auto max-w-[calc(100%-2.5rem)] whitespace-normal leading-tight border-accent/30 text-accent uppercase tracking-widest text-[9px] font-mono font-bold py-0.5">
+              {member.role}
+            </Badge>
+            <span className="text-[9px] font-mono text-zinc-400">
+              #0{idx + 1}
+            </span>
+          </div>
+          <h4 className="text-xl font-extrabold uppercase tracking-tight text-[#0B0B0B] group-hover:text-accent transition-colors">
+            {member.name}
+          </h4>
+          <p className="text-zinc-500 text-xs font-medium leading-relaxed">
+            {member.desc}
+          </p>
+        </div>
+      </div>
+
+      <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between text-[9px] font-mono text-zinc-400">
+        <span className="uppercase">OPSIYS Core</span>
+        <span className="text-zinc-300 group-hover:text-black font-bold uppercase transition-colors">Active</span>
+      </div>
+    </motion.div>
+  );
+};
+
 const TeamSection = () => {
-  const team = [
+  const team: TeamMember[] = [
     {
       id: "member-1",
       name: "Aditya Gupta",
@@ -137,92 +238,9 @@ const TeamSection = () => {
       viewport={{ once: true }}
       className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8"
     >
-      {team.map((member, idx) => {
-        const [imgLoaded, setImgLoaded] = React.useState(false);
-        const [imgError, setImgError] = React.useState(false);
-
-        return (
-          <motion.div
-            key={member.id}
-            variants={fadeIn}
-            className="group flex flex-col justify-between p-4 bg-white border border-zinc-200 hover:border-black transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-black/[0.03]"
-          >
-            <div>
-              {/* Photo Frame / Placeholder Container */}
-              <div className="aspect-[4/5] overflow-hidden bg-zinc-950 border border-zinc-800 relative group select-none">
-                {/* Fallback & Placeholder Wireframe */}
-                <div className="absolute inset-0 flex flex-col justify-between p-4 bg-[#0D0D11] text-white z-0">
-                  {/* Top Bar */}
-                  <div className="flex items-center justify-between border-b border-white/10 pb-2 text-[9px] font-mono">
-                    <span className="text-accent font-bold">0{idx + 1} // TEAM</span>
-                    <span className="text-zinc-500 bg-white/5 px-1.5 py-0.5 border border-white/10">
-                      PORTRAIT
-                    </span>
-                  </div>
-
-                  {/* Center Silhouette / Icon */}
-                  <div className="flex flex-col items-center justify-center my-auto space-y-2 py-4">
-                    <div className="w-14 h-14 rounded-full bg-zinc-900 border border-dashed border-zinc-700 flex items-center justify-center group-hover:border-accent group-hover:scale-105 transition-all">
-                      <Users className="w-6 h-6 text-zinc-400 group-hover:text-accent transition-colors" />
-                    </div>
-                    <div className="text-center space-y-0.5">
-                      <p className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-300">
-                        [ PHOTO PLACEHOLDER ]
-                      </p>
-                      <p className="text-[9px] font-mono text-accent">
-                        public/{member.placeholderLabel}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Bottom Bar */}
-                  <div className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest border-t border-white/10 pt-1.5 flex justify-between">
-                    <span>400 × 500 PX</span>
-                    <span className="text-zinc-400">READY TO DROP</span>
-                  </div>
-                </div>
-
-                {/* Actual Real Image if user drops into public/ */}
-                {!imgError && (
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    onLoad={() => setImgLoaded(true)}
-                    onError={() => setImgError(true)}
-                    className={`w-full h-full object-cover grayscale hover:grayscale-0 transform transition-all duration-700 z-10 relative ${member.imageClassName || "scale-100 group-hover:scale-105"} ${
-                      imgLoaded ? "opacity-100" : "opacity-0"
-                    }`} 
-                    referrerPolicy="no-referrer"
-                  />
-                )}
-              </div>
-
-              {/* Member Details */}
-              <div className="pt-6 space-y-2.5">
-                <div className="flex items-start justify-between gap-2">
-                  <Badge variant="outline" className="h-auto max-w-[calc(100%-2.5rem)] whitespace-normal leading-tight border-accent/30 text-accent uppercase tracking-widest text-[9px] font-mono font-bold py-0.5">
-                    {member.role}
-                  </Badge>
-                  <span className="text-[9px] font-mono text-zinc-400">
-                    #0{idx + 1}
-                  </span>
-                </div>
-                <h4 className="text-xl font-extrabold uppercase tracking-tight text-[#0B0B0B] group-hover:text-accent transition-colors">
-                  {member.name}
-                </h4>
-                <p className="text-zinc-500 text-xs font-medium leading-relaxed">
-                  {member.desc}
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-4 mt-4 border-t border-zinc-100 flex items-center justify-between text-[9px] font-mono text-zinc-400">
-              <span className="uppercase">OPSIYS Core</span>
-              <span className="text-zinc-300 group-hover:text-black font-bold uppercase transition-colors">Active</span>
-            </div>
-          </motion.div>
-        );
-      })}
+      {team.map((member, idx) => (
+        <TeamMemberCard key={member.id} member={member} idx={idx} />
+      ))}
     </motion.div>
   );
 };
