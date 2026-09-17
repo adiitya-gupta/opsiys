@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import { SEO } from "../components/SEO";
 import { Breadcrumbs } from "../components/Breadcrumbs";
+import { RazorpayPaymentModal, PackageItemForPayment } from "../components/RazorpayPaymentModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -21,7 +22,9 @@ import {
   Bot,
   Calendar,
   ShieldAlert,
-  HelpCircle
+  HelpCircle,
+  CreditCard,
+  Lock
 } from "lucide-react";
 
 export const PACKAGES_DATA = [
