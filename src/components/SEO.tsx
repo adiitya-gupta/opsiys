@@ -16,8 +16,8 @@ interface SEOProps {
 
 const DEFAULT_TITLE = "Opsiys | Business Growth Partner for Online Presence & Growth";
 const DEFAULT_DESCRIPTION = "Opsiys is a business growth partner helping businesses build their online presence, increase visibility, generate leads and automate growth through marketing, SEO, Meta Ads, websites and automation.";
-const DEFAULT_IMAGE = "https://www.opsiys.in/logos/opsiyslogo.png";
-const SITE_URL = "https://www.opsiys.in";
+const DEFAULT_IMAGE = "https://opsiys.in/logos/opsiyslogo.png";
+const SITE_URL = "https://opsiys.in";
 
 export const SEO: React.FC<SEOProps> = ({
   title = DEFAULT_TITLE,

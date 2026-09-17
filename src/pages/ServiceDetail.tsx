@@ -521,7 +521,7 @@ export const ServiceDetailPage: React.FC = () => {
     "provider": {
       "@type": "Organization",
       "name": "OPSIYS Systems Inc.",
-      "url": "https://www.opsiys.in/"
+      "url": "https://opsiys.in/"
     },
     "description": service.seoDesc,
     "areaServed": "Global",
@@ -556,7 +556,7 @@ export const ServiceDetailPage: React.FC = () => {
       <SEO
         title={service.seoTitle}
         description={service.seoDesc}
-        canonical={`https://www.opsiys.in/services/${slug}`}
+        canonical={`https://opsiys.in/services/${slug}`}
         schema={faqSchema ? [serviceSchema, faqSchema] : [serviceSchema]}
       />
       

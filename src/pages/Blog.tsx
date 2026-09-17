@@ -46,7 +46,7 @@ export const BlogPage: React.FC = () => {
       <SEO
         title="Blog & Business Growth Insights | Opsiys"
         description="Practical, actionable guides on business growth, local SEO, website performance, and messaging automations from Opsiys."
-        canonical="https://www.opsiys.in/blog"
+        canonical="https://opsiys.in/blog"
       />
 
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20">

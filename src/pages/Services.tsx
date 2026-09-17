@@ -167,7 +167,7 @@ export const ServicesPage: React.FC = () => {
       <SEO
         title="Services | Business Growth Solutions & Digital Partner | Opsiys"
         description="Explore Opsiys growth solutions: SEO, Meta Ads, web development, WhatsApp automation, email systems, AI business automation, and branding."
-        canonical="https://www.opsiys.in/services"
+        canonical="https://opsiys.in/services"
       />
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20">
         <Breadcrumbs items={[{ label: "Services" }]} />

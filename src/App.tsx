@@ -2275,7 +2275,7 @@ const HomePage = () => {
       <SEO
         title="Opsiys | Business Growth Partner for Online Presence & Growth"
         description="Opsiys is a business growth partner helping businesses build their online presence, increase visibility, generate leads and automate growth through marketing, SEO, Meta Ads, websites and automation."
-        canonical="https://www.opsiys.in/"
+        canonical="https://opsiys.in/"
       />
       <Hero />
       <Trust />
@@ -2294,7 +2294,7 @@ const ProcessPage = () => (
     <SEO
       title="Our Growth Process | Opsiys"
       description="Learn about our 4-stage connected growth blueprint for businesses."
-      canonical="https://www.opsiys.in/process"
+      canonical="https://opsiys.in/process"
     />
     <HowItWorks />
     <Contact />
@@ -2306,7 +2306,7 @@ const DiscoveryPage = () => (
     <SEO
       title="Growth Discovery Tools | Opsiys"
       description="Explore our interactive growth discovery tools and business calculators."
-      canonical="https://www.opsiys.in/discovery"
+      canonical="https://opsiys.in/discovery"
     />
     <ToolDiscovery />
   </main>

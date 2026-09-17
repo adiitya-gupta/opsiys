@@ -254,7 +254,7 @@ export default function AboutPage() {
       <SEO
         title="About Opsiys | Business Growth Partner"
         description="Learn about Opsiys, your connected business growth partner. We build online presence, search visibility, lead pipelines, and automated growth systems."
-        canonical="https://www.opsiys.in/about"
+        canonical="https://opsiys.in/about"
       />
       {/* Hero Section */}
       <section className="relative pt-28 pb-16 md:pt-32 md:pb-24 px-6 sm:px-10 overflow-hidden min-h-[70vh] flex items-center">

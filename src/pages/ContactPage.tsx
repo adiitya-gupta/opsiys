@@ -46,7 +46,7 @@ export const ContactPage: React.FC = () => {
       <SEO
         title="Contact Opsiys | Request a Growth Consultation"
         description="Get in touch with Opsiys to discuss your business growth, SEO, web development, Meta ads, and business automation requirements."
-        canonical="https://www.opsiys.in/contact"
+        canonical="https://opsiys.in/contact"
       />
 
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">
@@ -228,8 +228,8 @@ export const ContactPage: React.FC = () => {
                     <Globe className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                     <div>
                       <span className="text-zinc-500 uppercase block text-[10px] tracking-widest">Website</span>
-                      <a href="https://www.opsiys.in/" className="text-accent font-bold hover:underline">
-                        https://www.opsiys.in/
+                      <a href="https://opsiys.in/" className="text-accent font-bold hover:underline">
+                        https://opsiys.in/
                       </a>
                     </div>
                   </div>

@@ -155,7 +155,7 @@ export const LocationDetailPage: React.FC = () => {
       <SEO
         title={location.seoTitle}
         description={location.seoDesc}
-        canonical={`https://www.opsiys.in/locations/${slug}`}
+        canonical={`https://opsiys.in/locations/${slug}`}
       />
 
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">

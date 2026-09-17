@@ -61,7 +61,7 @@ export const LocationsPage: React.FC = () => {
       <SEO
         title="Locations We Serve | Regional Business Growth Partner | Opsiys"
         description="Opsiys serves businesses across Noida, Delhi NCR, Gorakhpur, Chandigarh, and Ludhiana with localized SEO, digital solutions, and growth marketing."
-        canonical="https://www.opsiys.in/locations"
+        canonical="https://opsiys.in/locations"
       />
 
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">

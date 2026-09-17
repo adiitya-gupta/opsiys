@@ -75,7 +75,7 @@ export const CaseStudiesPage: React.FC = () => {
       <SEO
         title="Case Studies & Real Client Results | Opsiys Growth Partner"
         description="See genuine client results achieved by Opsiys for clinics, real estate brokerages, and local businesses using SEO, Meta Ads, and WhatsApp automation."
-        canonical="https://www.opsiys.in/case-studies"
+        canonical="https://opsiys.in/case-studies"
       />
 
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20">
