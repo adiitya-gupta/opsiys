@@ -8,7 +8,59 @@ type Message = {
 
 const welcomeMessage: Message = {
   role: "assistant",
-  content: "Hi! I’m the OPSIYS assistant. Ask me about our services, process, or website.",
+  content: "Hi! I’m the OPSIYS AI Assistant. Ask me about our founder, team, services, workflow, or how we can help automate and scale your business.",
+};
+
+// Helper component to render bold text, lists, and line breaks nicely
+const FormattedMessage: React.FC<{ content: string }> = ({ content }) => {
+  const parseInline = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("**") && part.endsWith("**")) {
+        return <strong key={i} className="font-bold text-zinc-900">{part.slice(2, -2)}</strong>;
+      }
+      return part;
+    });
+  };
+
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+  let currentList: React.ReactNode[] = [];
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (currentList.length > 0) {
+        elements.push(<ul key={`ul-${index}`} className="my-1.5 space-y-1 pl-4 list-disc text-zinc-700">{currentList}</ul>);
+        currentList = [];
+      }
+      return;
+    }
+
+    if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+      const itemText = trimmed.substring(2);
+      currentList.push(<li key={`li-${index}`} className="leading-relaxed">{parseInline(itemText)}</li>);
+    } else if (/^\d+\.\s/.test(trimmed)) {
+      const itemText = trimmed.replace(/^\d+\.\s/, "");
+      currentList.push(<li key={`li-${index}`} className="leading-relaxed">{parseInline(itemText)}</li>);
+    } else {
+      if (currentList.length > 0) {
+        elements.push(<ul key={`ul-${index}`} className="my-1.5 space-y-1 pl-4 list-disc text-zinc-700">{currentList}</ul>);
+        currentList = [];
+      }
+      elements.push(
+        <p key={`p-${index}`} className="my-1 leading-relaxed">
+          {parseInline(trimmed)}
+        </p>
+      );
+    }
+  });
+
+  if (currentList.length > 0) {
+    elements.push(<ul key="ul-last" className="my-1.5 space-y-1 pl-4 list-disc text-zinc-700">{currentList}</ul>);
+  }
+
+  return <div className="space-y-1">{elements}</div>;
 };
 
 export const WebsiteChatbot = () => {
@@ -57,7 +109,7 @@ export const WebsiteChatbot = () => {
   return (
     <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-[70] flex flex-col items-start gap-3 sm:bottom-5 sm:left-5">
       {isOpen && (
-        <section className="w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.22)]">
+        <section className="w-[min(25rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.22)]">
           <header className="flex items-center justify-between bg-zinc-950 px-5 py-4 text-white">
             <div className="flex items-center gap-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-accent shadow-[0_8px_20px_rgba(229,57,53,0.45)]">
@@ -73,15 +125,19 @@ export const WebsiteChatbot = () => {
             </button>
           </header>
 
-          <div className="h-72 space-y-3 overflow-y-auto bg-zinc-50 p-4">
+          <div className="h-96 space-y-3 overflow-y-auto bg-zinc-50 p-4 text-xs">
             {messages.map((message, index) => (
               <div key={`${message.role}-${index}`} className={message.role === "user" ? "flex justify-end" : "flex justify-start"}>
-                <p className={message.role === "user"
+                <div className={message.role === "user"
                   ? "max-w-[85%] rounded-2xl rounded-br-sm bg-zinc-950 px-3.5 py-2.5 text-xs leading-relaxed text-white"
-                  : "max-w-[85%] rounded-2xl rounded-bl-sm border border-zinc-200 bg-white px-3.5 py-2.5 text-xs leading-relaxed text-zinc-700 shadow-sm"}
+                  : "max-w-[90%] rounded-2xl rounded-bl-sm border border-zinc-200 bg-white px-3.5 py-2.5 text-xs leading-relaxed text-zinc-700 shadow-sm"}
                 >
-                  {message.content}
-                </p>
+                  {message.role === "assistant" ? (
+                    <FormattedMessage content={message.content} />
+                  ) : (
+                    message.content
+                  )}
+                </div>
               </div>
             ))}
             {isSending && <p className="w-fit rounded-2xl border border-zinc-200 bg-white px-3.5 py-2.5 text-xs text-zinc-500 shadow-sm">Thinking…</p>}
