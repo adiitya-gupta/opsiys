@@ -7,7 +7,7 @@ import {
   useLocation,
   useNavigate
 } from "react-router-dom";
-import AboutPage from "./pages/About";
+const AboutPage = React.lazy(() => import("./pages/About"));
 import { PortfolioPlaceholder } from "./components/PortfolioPlaceholder";
 import { LogoPlaceholder } from "./components/LogoPlaceholder";
 import { GreetingMascot } from "./components/GreetingMascot";
@@ -2357,15 +2357,17 @@ export default function App() {
         <div className="min-h-screen min-w-0 w-full overflow-x-hidden bg-white font-sans selection:bg-accent selection:text-white relative">
           <ScrollToRoute />
           <AuthPortal />
-          <Routes>
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="*/about" element={<AboutPage />} />
-            <Route path="/services" element={<ServicesPage />} />
-            <Route path="/process" element={<ProcessPage />} />
-            <Route path="/discovery" element={<DiscoveryPage />} />
-            <Route path="/" element={<HomePage />} />
-            <Route path="*" element={<HomePage />} />
-          </Routes>
+          <React.Suspense fallback={<div className="min-h-screen bg-white" />}>
+            <Routes>
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="*/about" element={<AboutPage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/process" element={<ProcessPage />} />
+              <Route path="/discovery" element={<DiscoveryPage />} />
+              <Route path="/" element={<HomePage />} />
+              <Route path="*" element={<HomePage />} />
+            </Routes>
+          </React.Suspense>
           <Footer />
         </div>
       </Router>

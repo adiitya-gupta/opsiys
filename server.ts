@@ -42,11 +42,11 @@ async function startServer() {
   // API Route: AI Assistant Chat
   app.post("/api/chat", async (req, res) => {
     try {
-      const chatHandler = (await import(`./api/chat.js?v=${Date.now()}`)).default;
-      return chatHandler(req, res);
-    } catch {
       const chatHandler = (await import("./api/chat.js")).default;
       return chatHandler(req, res);
+    } catch (error) {
+      console.error("Chat handler error:", error);
+      return res.status(500).json({ error: "Server error" });
     }
   });
 
