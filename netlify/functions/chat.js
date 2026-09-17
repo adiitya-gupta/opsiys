@@ -8,7 +8,7 @@ EXHAUSTIVE OPSIYS KNOWLEDGE BASE
 1. COMPANY OVERVIEW & IDENTITY:
 - Company Name: OPSIYS Systems Inc. (OPSIYS)
 - Tagline & Slogans: "Efficiency Redefined" | "We build AI systems, marketing, automation, websites that run your business." | "Clarity over complexity."
-- About OPSIYS: Premier AI-powered business-solutions and digital agency. OPSIYS builds autonomous AI workflows, high-impact growth marketing campaigns, search authority architecture (SEO & GEO), bespoke modern websites, interactive dashboards, and client portals.
+- About OPSIYS: OPSIYS is a connected business growth partner & digital solutions company. OPSIYS builds autonomous AI workflows, high-impact growth marketing campaigns, search authority architecture (SEO & GEO), bespoke modern websites, interactive dashboards, and client portals.
 - Location: Headquartered in India, serving clients and enterprise teams globally.
 - Official Contact Email: opsiyss@gmail.com
 - Response SLA: 6 business hours for project brief reviews and discovery requests.

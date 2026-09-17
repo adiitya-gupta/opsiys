@@ -1,4 +1,5 @@
 import * as React from "react";
+import { SEO } from "../components/SEO";
 import { motion } from "motion/react";
 import { 
   Zap, 
@@ -250,6 +251,11 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-white text-[#0B0B0B] font-sans selection:bg-accent selection:text-white">
+      <SEO
+        title="About Opsiys | Business Growth Partner"
+        description="Learn about Opsiys, your connected business growth partner. We build online presence, search visibility, lead pipelines, and automated growth systems."
+        canonical="https://www.opsiys.in/about"
+      />
       {/* Hero Section */}
       <section className="relative pt-28 pb-16 md:pt-32 md:pb-24 px-6 sm:px-10 overflow-hidden min-h-[70vh] flex items-center">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-full bg-accent/5 blur-[120px] pointer-events-none" />
@@ -279,7 +285,7 @@ export default function AboutPage() {
               variants={fadeIn}
               className="text-xl md:text-2xl text-zinc-500 max-w-2xl font-medium leading-relaxed"
             >
-              OPSIYS is an AI automation agency focused on AI tools, agents, and high-performance digital systems.
+              OPSIYS is a connected business growth partner focused on building online presence, search engine authority, digital platforms, and autonomous workflows.
             </motion.p>
           </motion.div>
         </div>

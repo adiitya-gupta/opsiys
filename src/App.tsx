@@ -7,7 +7,19 @@ import {
   useLocation,
   useNavigate
 } from "react-router-dom";
+import { SEO } from "./components/SEO";
 const AboutPage = React.lazy(() => import("./pages/About"));
+const ServicesPage = React.lazy(() => import("./pages/Services"));
+const ServiceDetailPage = React.lazy(() => import("./pages/ServiceDetail"));
+const IndustriesPage = React.lazy(() => import("./pages/Industries"));
+const IndustryDetailPage = React.lazy(() => import("./pages/IndustryDetail"));
+const LocationsPage = React.lazy(() => import("./pages/Locations"));
+const LocationDetailPage = React.lazy(() => import("./pages/LocationDetail"));
+const CaseStudiesPage = React.lazy(() => import("./pages/CaseStudies"));
+const BlogPage = React.lazy(() => import("./pages/Blog"));
+const BlogPostPage = React.lazy(() => import("./pages/BlogPost"));
+const ContactPage = React.lazy(() => import("./pages/ContactPage"));
+const NotFoundPage = React.lazy(() => import("./pages/NotFound"));
 import { PortfolioPlaceholder } from "./components/PortfolioPlaceholder";
 import { LogoPlaceholder } from "./components/LogoPlaceholder";
 import { GreetingMascot } from "./components/GreetingMascot";
@@ -136,14 +148,15 @@ const Navbar = ({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = isAboutPage 
-    ? [{ name: "Home", href: "/" }] 
-    : [
-        { name: "Services", href: "/services" },
-        { name: "Process", href: "/process" },
-        { name: "Discovery", href: "/discovery" },
-        { name: "About", href: "/about" }
-      ];
+  const navItems = [
+    { name: "Services", href: "/services" },
+    { name: "Industries", href: "/industries" },
+    { name: "Locations", href: "/locations" },
+    { name: "Case Studies", href: "/case-studies" },
+    { name: "Blog", href: "/blog" },
+    { name: "About", href: "/about" },
+    { name: "Contact", href: "/contact" }
+  ];
 
   return (
     <>
@@ -695,31 +708,18 @@ const Hero = () => {
               </Badge>
             </div>
             
-            <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold tracking-tight leading-[0.95] uppercase">
-              We build AI <br/>
-              <span className="relative inline-block min-w-[150px] xs:min-w-[200px] sm:min-w-[280px]">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={index}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.4, ease: "circOut" }}
-                    className="text-accent absolute left-0"
-                  >
-                    {words[index]}
-                  </motion.span>
-                </AnimatePresence>
-                <span className="opacity-0">{words[0]}</span> {/* Spacer */}
-              </span>
-              <br/>
-              that run your business
+            <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-[5.25rem] font-extrabold tracking-tight leading-[0.95] uppercase">
+              Your Business <br/>
+              <span className="text-accent">Growth Partner</span>
             </h1>
+            <p className="text-base sm:text-xl font-bold text-zinc-900 uppercase tracking-tight leading-snug">
+              Build Your Online Presence. Increase Your Visibility. Generate Opportunities. Automate Growth.
+            </p>
           </motion.div>
           
           <motion.div variants={fadeIn} className="relative space-y-8 md:space-y-10">
-            <p className="text-sm md:text-xl text-muted-foreground max-w-md leading-relaxed font-medium">
-              AI automation, growth marketing, search intelligence, and bespoke web platforms engineered for high-performance teams. Clarity over complexity.
+            <p className="text-sm md:text-base text-muted-foreground max-w-md leading-relaxed font-medium">
+              We help ambitious companies build online presence, rank on search engines, generate qualified inquiries, and automate business growth.
             </p>
             
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4">
@@ -2209,34 +2209,45 @@ const Footer = () => {
     <footer className="py-12 md:py-20 px-6 sm:px-10 border-t border-zinc-800 bg-[#0B0B0B] text-zinc-400">
       <div className="max-w-7xl mx-auto space-y-12 md:space-y-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
-          <div className="col-span-1 sm:col-span-2 md:col-span-2 space-y-6">
+          <div className="col-span-1 sm:col-span-2 md:col-span-1 space-y-6">
             <Logo variant="footer" />
             <p className="text-zinc-500 text-xs md:text-sm leading-relaxed max-w-sm">
-              The premier AI automation agency for high-growth businesses. Building systems that scale while you sleep.
+              Your connected business growth partner. Building online presence, search engine visibility, lead pipelines, and automated growth systems.
             </p>
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white">Navigation</h4>
+            <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white">Growth Solutions</h4>
             <div className="flex flex-col gap-2 md:gap-3 text-xs md:text-sm text-zinc-500 font-medium font-mono uppercase tracking-tight">
-              <Link to="/services" className="hover:text-white transition-colors">Services</Link>
-              <Link to="/process" className="hover:text-white transition-colors">Process</Link>
-              <Link to="/discovery" className="hover:text-white transition-colors">Discovery</Link>
-              <Link to="/about" className="hover:text-white transition-colors">About OPSIYS</Link>
+              <Link to="/services" className="hover:text-white transition-colors">All Services</Link>
+              <Link to="/services/seo" className="hover:text-white transition-colors">SEO Services</Link>
+              <Link to="/services/meta-ads" className="hover:text-white transition-colors">Meta Ads</Link>
+              <Link to="/services/website-development" className="hover:text-white transition-colors">Web Development</Link>
+              <Link to="/services/whatsapp-automation" className="hover:text-white transition-colors">WhatsApp Automation</Link>
+              <Link to="/services/ai-business-automation" className="hover:text-white transition-colors">AI Automation</Link>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white">Office</h4>
-            <div className="space-y-3">
-              <p className="text-xs md:text-sm text-zinc-500 leading-relaxed font-mono uppercase tracking-tight">
-                Based in India.<br/>
-                Serving globally.
-              </p>
-              <a href="mailto:opsiyss@gmail.com" className="flex items-center gap-2 text-[10px] md:text-sm text-accent font-bold font-mono min-w-0 hover:text-white transition-colors">
-                <Mail className="w-3 h-3 md:w-4 md:h-4" />
-                <span className="break-all">opsiyss@gmail.com</span>
-              </a>
+            <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white">Markets &amp; Industry</h4>
+            <div className="flex flex-col gap-2 md:gap-3 text-xs md:text-sm text-zinc-500 font-medium font-mono uppercase tracking-tight">
+              <Link to="/industries" className="hover:text-white transition-colors">Industries Served</Link>
+              <Link to="/industries/clinics" className="hover:text-white transition-colors">Clinics</Link>
+              <Link to="/industries/real-estate" className="hover:text-white transition-colors">Real Estate</Link>
+              <Link to="/locations" className="hover:text-white transition-colors">Locations</Link>
+              <Link to="/locations/noida" className="hover:text-white transition-colors">Noida</Link>
+              <Link to="/locations/delhi-ncr" className="hover:text-white transition-colors">Delhi NCR</Link>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white">Company</h4>
+            <div className="flex flex-col gap-2 md:gap-3 text-xs md:text-sm text-zinc-500 font-medium font-mono uppercase tracking-tight">
+              <Link to="/about" className="hover:text-white transition-colors">About Opsiys</Link>
+              <Link to="/case-studies" className="hover:text-white transition-colors">Case Studies</Link>
+              <Link to="/blog" className="hover:text-white transition-colors">Blog &amp; Guides</Link>
+              <Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link>
+              <a href="mailto:opsiyss@gmail.com" className="hover:text-white transition-colors break-all">opsiyss@gmail.com</a>
             </div>
           </div>
         </div>
@@ -2261,6 +2272,11 @@ const Footer = () => {
 const HomePage = () => {
   return (
     <main>
+      <SEO
+        title="Opsiys | Business Growth Partner for Online Presence & Growth"
+        description="Opsiys is a business growth partner helping businesses build their online presence, increase visibility, generate leads and automate growth through marketing, SEO, Meta Ads, websites and automation."
+        canonical="https://www.opsiys.in/"
+      />
       <Hero />
       <Trust />
       <Features />
@@ -2273,15 +2289,13 @@ const HomePage = () => {
   );
 };
 
-const ServicesPage = () => (
-  <main>
-    <Features />
-    <Contact />
-  </main>
-);
-
 const ProcessPage = () => (
   <main>
+    <SEO
+      title="Our Growth Process | Opsiys"
+      description="Learn about our 4-stage connected growth blueprint for businesses."
+      canonical="https://www.opsiys.in/process"
+    />
     <HowItWorks />
     <Contact />
   </main>
@@ -2289,6 +2303,11 @@ const ProcessPage = () => (
 
 const DiscoveryPage = () => (
   <main>
+    <SEO
+      title="Growth Discovery Tools | Opsiys"
+      description="Explore our interactive growth discovery tools and business calculators."
+      canonical="https://www.opsiys.in/discovery"
+    />
     <ToolDiscovery />
   </main>
 );
@@ -2359,13 +2378,22 @@ export default function App() {
           <AuthPortal />
           <React.Suspense fallback={<div className="min-h-screen bg-white" />}>
             <Routes>
+              <Route path="/" element={<HomePage />} />
               <Route path="/about" element={<AboutPage />} />
-              <Route path="*/about" element={<AboutPage />} />
               <Route path="/services" element={<ServicesPage />} />
+              <Route path="/services/:slug" element={<ServiceDetailPage />} />
+              <Route path="/industries" element={<IndustriesPage />} />
+              <Route path="/industries/:slug" element={<IndustryDetailPage />} />
+              <Route path="/locations" element={<LocationsPage />} />
+              <Route path="/locations/:slug" element={<LocationDetailPage />} />
+              <Route path="/case-studies" element={<CaseStudiesPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/contact" element={<ContactPage />} />
               <Route path="/process" element={<ProcessPage />} />
               <Route path="/discovery" element={<DiscoveryPage />} />
-              <Route path="/" element={<HomePage />} />
-              <Route path="*" element={<HomePage />} />
+              <Route path="/404" element={<NotFoundPage />} />
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </React.Suspense>
           <Footer />
