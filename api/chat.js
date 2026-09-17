@@ -86,7 +86,6 @@ export default async function handler(req, res) {
   }
 
   const apiKey = process.env.GEMINI_API_KEY?.trim();
-  const model = process.env.GEMINI_MODEL?.trim() || "gemini-3.6-flash";
   if (!apiKey) {
     return res.status(503).json({ error: "The OPSIYS assistant is not configured yet. GEMINI_API_KEY is missing in environment variables." });
   }
@@ -113,41 +112,61 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "A valid message is required." });
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: WEBSITE_CONTEXT }] },
-          contents,
-          generationConfig: { temperature: 0.25, maxOutputTokens: 1200 },
-        }),
+    // Candidate fallback models to handle rate limits (429) & demand spikes (503)
+    const customModel = process.env.GEMINI_MODEL?.trim();
+    const candidateModels = [
+      customModel,
+      "gemini-3.6-flash",
+      "gemini-3.1-flash-lite",
+      "gemini-flash-latest",
+      "gemini-3.5-flash-lite"
+    ].filter((m, idx, self) => m && self.indexOf(m) === idx);
+
+    let lastErrorStatus = 500;
+    let lastErrorMessage = "The assistant is temporarily unavailable. Please try again shortly.";
+
+    for (const model of candidateModels) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: WEBSITE_CONTEXT }] },
+              contents,
+              generationConfig: { temperature: 0.25, maxOutputTokens: 1000 },
+            }),
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const reply = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim();
+          if (reply) {
+            return res.status(200).json({ reply });
+          }
+        } else {
+          const errorBody = await response.text();
+          console.warn(`Gemini model ${model} returned (${response.status}):`, errorBody.slice(0, 200));
+
+          if (response.status === 401 || response.status === 403) {
+            return res.status(502).json({ error: "The assistant API key is invalid or does not have Gemini API access." });
+          }
+
+          lastErrorStatus = response.status;
+          lastErrorMessage = response.status === 429
+            ? "The assistant is experiencing high volume. Retrying..."
+            : "The assistant is temporarily unavailable.";
+        }
+      } catch (err) {
+        console.warn(`Model ${model} fetch exception:`, err);
       }
-    );
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error(`Gemini request failed (${response.status}):`, errorBody);
-
-      const errorMessage =
-        response.status === 401 || response.status === 403
-          ? "The assistant API key is invalid or does not have Gemini API access."
-          : response.status === 429
-          ? "The assistant is temporarily rate-limited. Please try again shortly."
-          : "The assistant is temporarily unavailable. Please try again shortly.";
-
-      return res.status(502).json({ error: errorMessage });
     }
 
-    const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim();
-
-    if (!reply) {
-      return res.status(502).json({ error: "The assistant could not prepare a response. Please try again." });
-    }
-
-    return res.status(200).json({ reply });
+    return res.status(502).json({ 
+      error: "The assistant is currently experiencing heavy rate limits. Please wait 30 seconds and try again." 
+    });
   } catch (error) {
     console.error("Chat function error:", error);
     return res.status(500).json({ error: "Something went wrong. Please try again or email opsiyss@gmail.com." });

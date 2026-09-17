@@ -92,7 +92,6 @@ export const handler = async (event) => {
   }
 
   const apiKey = process.env.GEMINI_API_KEY?.trim();
-  const model = process.env.GEMINI_MODEL?.trim() || "gemini-3.6-flash";
   if (!apiKey) {
     return json(503, { error: "The OPSIYS assistant is not configured yet." });
   }
@@ -119,40 +118,48 @@ export const handler = async (event) => {
       return json(400, { error: "A valid message is required." });
     }
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: WEBSITE_CONTEXT }] },
-          contents,
-          generationConfig: { temperature: 0.25, maxOutputTokens: 1200 },
-        }),
-      },
-    );
+    const customModel = process.env.GEMINI_MODEL?.trim();
+    const candidateModels = [
+      customModel,
+      "gemini-3.6-flash",
+      "gemini-3.1-flash-lite",
+      "gemini-flash-latest",
+      "gemini-3.5-flash-lite"
+    ].filter((m, idx, self) => m && self.indexOf(m) === idx);
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error(`Gemini request failed (${response.status}):`, errorBody);
+    for (const model of candidateModels) {
+      try {
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: WEBSITE_CONTEXT }] },
+              contents,
+              generationConfig: { temperature: 0.25, maxOutputTokens: 1000 },
+            }),
+          },
+        );
 
-      const errorMessage = response.status === 401 || response.status === 403
-        ? "The assistant API key is invalid or does not have Gemini API access."
-        : response.status === 429
-          ? "The assistant is temporarily rate-limited. Please try again shortly."
-          : "The assistant is temporarily unavailable. Please try again shortly.";
-
-      return json(502, { error: errorMessage });
+        if (response.ok) {
+          const data = await response.json();
+          const reply = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim();
+          if (reply) {
+            return json(200, { reply });
+          }
+        } else {
+          console.warn(`Netlify Gemini model ${model} returned status (${response.status})`);
+          if (response.status === 401 || response.status === 403) {
+            return json(502, { error: "The assistant API key is invalid or does not have Gemini API access." });
+          }
+        }
+      } catch (err) {
+        console.warn(`Netlify model ${model} fetch exception:`, err);
+      }
     }
 
-    const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim();
-
-    if (!reply) {
-      return json(502, { error: "The assistant could not prepare a response. Please try again." });
-    }
-
-    return json(200, { reply });
+    return json(502, { error: "The assistant is currently experiencing heavy rate limits. Please wait 30 seconds and try again." });
   } catch (error) {
     console.error("Chat function error:", error);
     return json(500, { error: "Something went wrong. Please try again or email opsiyss@gmail.com." });
