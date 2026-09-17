@@ -153,7 +153,38 @@ To resolve Google Search Console indexing redirects and consolidate domain autho
 
 ---
 
-## 15. Recommended Next Steps
-1. Deploy updated code to Vercel / Netlify / production server.
-2. Submit `sitemap.xml` to Google Search Console.
-3. Monitor GSC Index Coverage and Performance reports weekly.
+## 16. Visual & Conversion Pages Added: Careers & Packages/Pricing
+
+### 1. Careers / Job Support Page (`/careers`)
+- **File**: [Careers.tsx](file:///d:/Downloads/opsiys2.0/src/pages/Careers.tsx)
+- **Canonical URL**: `https://opsiys.in/careers`
+- **Page Title**: `Careers at Opsiys | Join Our Team`
+- **Meta Description**: `Explore career opportunities at Opsiys and submit your profile for relevant full-time, internship, freelance and future opportunities.`
+- **Visual Design**: Modern tech visual hero ("Build What's Next With Us"), Think/Build/Create/Grow cards, opportunity type cards (Full-Time, Internship, Freelance/Contract, Future Opportunities).
+- **Vacancies State**: Transparent "No current openings" notice with candidate profile submission.
+- **Application Form**: Comprehensive candidate profile submission supporting Full Name, Email, Phone, Current City, Area of Interest, Employment Type, Experience, Resume Upload (PDF/DOC/DOCX up to 5MB, base64 validation), Portfolio/LinkedIn URL, Notice Period, and Short Introduction.
+- **Backend & Storage**: Integrates securely with Firebase Firestore (`career_applications` collection) storing submissions with timestamps. Does not publicly expose applicant data.
+
+### 2. Packages & Pricing Page (`/packages`)
+- **File**: [Packages.tsx](file:///d:/Downloads/opsiys2.0/src/pages/Packages.tsx)
+- **Canonical URL**: `https://opsiys.in/packages`
+- **Page Title**: `Opsiys Packages & Pricing | Business Growth Solutions`
+- **Meta Description**: `Explore Opsiys growth packages for social presence, websites, digital marketing, Meta Ads, lead generation, SEO, AI and automation.`
+- **Alternative Route**: `/pricing` (redirects directly to canonical `/packages`)
+- **Visual Design**: Growth stage progression hero (Presence → Visibility → Acquisition → Growth System), 4 visual pricing cards with expandable detail accordions.
+- **Exact Pricing Hierarchy**:
+  - **Opsiys Start**: ₹12,000 / month (Presence)
+  - **Opsiys Grow**: ₹22,000 / month (Presence + Credibility)
+  - **Opsiys Scale**: ₹35,000 / month (Credibility + Acquisition)
+  - **Opsiys Growth Engine**: ₹55,000 / month (Acquisition + Automation + Optimization)
+- **Ad Budget Notice**: Explicitly clarifies that Meta/Google advertising budgets (e.g. ₹20,000–₹50,000/mo) are paid directly by client to ad platforms and kept separate from package prices.
+- **Comparison Section**: Responsive expandable feature matrix comparing platforms, content assets, website deliverables, ad campaigns, AI workflows, and strategy meetings.
+
+---
+
+## 17. Final Checklist & Build Status
+- **Routes Added**: `/careers`, `/packages`, `/pricing`
+- **Sitemap**: Included `https://opsiys.in/careers` and `https://opsiys.in/packages`
+- **Navigation**: Integrated into Header Navbar and Footer
+- **Production Build**: Verified with `npm run build` (Clean build, 0 errors)
+

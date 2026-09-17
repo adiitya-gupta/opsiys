@@ -80,11 +80,13 @@ export const submitLead = async (leadData: {
   email: string;
   company: string;
   phone: string;
-  budget: string;
-  projectType: string;
-  urgency: string;
-  message: string;
+  budget?: string;
+  projectType?: string;
+  urgency?: string;
+  message?: string;
   userId?: string;
+  source?: string;
+  status?: string;
 }) => {
   try {
     const leadsRef = collection(db, "leads");
@@ -97,10 +99,45 @@ export const submitLead = async (leadData: {
     await addDoc(leadsRef, {
       ...submissionData,
       createdAt: serverTimestamp(),
-      status: "new",
+      status: leadData.status || "new",
     });
   } catch (error) {
     console.error("Error submitting lead:", error);
+    throw error;
+  }
+};
+
+export const submitCareerApplication = async (applicationData: {
+  fullName: string;
+  email: string;
+  phone: string;
+  city: string;
+  position: string;
+  employmentType: string;
+  experience: string;
+  portfolioUrl: string;
+  resumeFileName?: string;
+  resumeData?: string;
+  introduction: string;
+  noticePeriod: string;
+  expectedSalary?: string;
+  preferredWorkMode?: string;
+  additionalInfo?: string;
+}) => {
+  try {
+    const appsRef = collection(db, "career_applications");
+    
+    const cleanedData = Object.fromEntries(
+      Object.entries(applicationData).filter(([_, v]) => v !== undefined && v !== "")
+    );
+
+    await addDoc(appsRef, {
+      ...cleanedData,
+      createdAt: serverTimestamp(),
+      status: "under_review",
+    });
+  } catch (error) {
+    console.error("Error submitting career application:", error);
     throw error;
   }
 };

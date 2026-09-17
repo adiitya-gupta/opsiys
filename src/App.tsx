@@ -19,6 +19,8 @@ const CaseStudiesPage = React.lazy(() => import("./pages/CaseStudies"));
 const BlogPage = React.lazy(() => import("./pages/Blog"));
 const BlogPostPage = React.lazy(() => import("./pages/BlogPost"));
 const ContactPage = React.lazy(() => import("./pages/ContactPage"));
+const CareersPage = React.lazy(() => import("./pages/Careers"));
+const PackagesPage = React.lazy(() => import("./pages/Packages"));
 const NotFoundPage = React.lazy(() => import("./pages/NotFound"));
 import { PortfolioPlaceholder } from "./components/PortfolioPlaceholder";
 import { LogoPlaceholder } from "./components/LogoPlaceholder";
@@ -150,11 +152,13 @@ const Navbar = ({
 
   const navItems = [
     { name: "Services", href: "/services" },
+    { name: "Packages", href: "/packages" },
     { name: "Industries", href: "/industries" },
     { name: "Locations", href: "/locations" },
     { name: "Case Studies", href: "/case-studies" },
     { name: "Blog", href: "/blog" },
     { name: "About", href: "/about" },
+    { name: "Careers", href: "/careers" },
     { name: "Contact", href: "/contact" }
   ];
 
@@ -2220,6 +2224,7 @@ const Footer = () => {
             <h4 className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-white">Growth Solutions</h4>
             <div className="flex flex-col gap-2 md:gap-3 text-xs md:text-sm text-zinc-500 font-medium font-mono uppercase tracking-tight">
               <Link to="/services" className="hover:text-white transition-colors">All Services</Link>
+              <Link to="/packages" className="hover:text-white transition-colors font-bold text-accent">Packages &amp; Pricing</Link>
               <Link to="/services/seo" className="hover:text-white transition-colors">SEO Services</Link>
               <Link to="/services/meta-ads" className="hover:text-white transition-colors">Meta Ads</Link>
               <Link to="/services/website-development" className="hover:text-white transition-colors">Web Development</Link>
@@ -2246,6 +2251,7 @@ const Footer = () => {
               <Link to="/about" className="hover:text-white transition-colors">About Opsiys</Link>
               <Link to="/case-studies" className="hover:text-white transition-colors">Case Studies</Link>
               <Link to="/blog" className="hover:text-white transition-colors">Blog &amp; Guides</Link>
+              <Link to="/careers" className="hover:text-white transition-colors">Careers</Link>
               <Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link>
               <a href="mailto:opsiyss@gmail.com" className="hover:text-white transition-colors break-all">opsiyss@gmail.com</a>
             </div>
@@ -2382,6 +2388,8 @@ export default function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/services" element={<ServicesPage />} />
               <Route path="/services/:slug" element={<ServiceDetailPage />} />
+              <Route path="/packages" element={<PackagesPage />} />
+              <Route path="/pricing" element={<PackagesPage />} />
               <Route path="/industries" element={<IndustriesPage />} />
               <Route path="/industries/:slug" element={<IndustryDetailPage />} />
               <Route path="/locations" element={<LocationsPage />} />
@@ -2389,6 +2397,7 @@ export default function App() {
               <Route path="/case-studies" element={<CaseStudiesPage />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/blog/:slug" element={<BlogPostPage />} />
+              <Route path="/careers" element={<CareersPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/process" element={<ProcessPage />} />
               <Route path="/discovery" element={<DiscoveryPage />} />
