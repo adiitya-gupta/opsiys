@@ -19,6 +19,8 @@ const DEFAULT_DESCRIPTION = "Opsiys is a business growth partner helping busines
 const DEFAULT_IMAGE = "https://opsiys.in/logos/opsiyslogo.png";
 const SITE_URL = "https://opsiys.in";
 
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? React.useLayoutEffect : React.useEffect;
+
 export const SEO: React.FC<SEOProps> = ({
   title = DEFAULT_TITLE,
   description = DEFAULT_DESCRIPTION,
@@ -28,9 +30,21 @@ export const SEO: React.FC<SEOProps> = ({
   ogImage = DEFAULT_IMAGE,
   schema
 }) => {
-  const currentUrl = canonical || (typeof window !== "undefined" ? `${SITE_URL}${window.location.pathname}` : SITE_URL);
+  const computeCanonicalUrl = (): string => {
+    if (canonical) {
+      return canonical.replace("https://www.opsiys.in", SITE_URL);
+    }
+    if (typeof window !== "undefined") {
+      const pathname = window.location.pathname;
+      const cleanPath = pathname === "/" ? "/" : pathname.replace(/\/$/, "");
+      return `${SITE_URL}${cleanPath}`;
+    }
+    return `${SITE_URL}/`;
+  };
 
-  React.useEffect(() => {
+  const currentUrl = computeCanonicalUrl();
+
+  useIsomorphicLayoutEffect(() => {
     // Document Title
     document.title = title;
 
@@ -69,14 +83,20 @@ export const SEO: React.FC<SEOProps> = ({
     updateMeta("twitter:image", ogImage);
     updateMeta("twitter:site", "@Opsiys");
 
-    // Canonical Tag
-    let canonicalLink = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
-    if (!canonicalLink) {
-      canonicalLink = document.createElement("link");
-      canonicalLink.setAttribute("rel", "canonical");
-      document.head.appendChild(canonicalLink);
+    // Canonical Tag - Query all existing canonical tags to prevent duplicates
+    const canonicalLinks = document.head.querySelectorAll('link[rel="canonical"]');
+    if (canonicalLinks.length > 0) {
+      canonicalLinks[0].setAttribute("href", currentUrl);
+      // Remove extraneous canonical elements if any
+      for (let i = 1; i < canonicalLinks.length; i++) {
+        canonicalLinks[i].remove();
+      }
+    } else {
+      const newCanonical = document.createElement("link");
+      newCanonical.setAttribute("rel", "canonical");
+      newCanonical.setAttribute("href", currentUrl);
+      document.head.appendChild(newCanonical);
     }
-    canonicalLink.setAttribute("href", currentUrl);
 
     // Dynamic Schema injection
     const existingDynamicSchemas = document.head.querySelectorAll("script[data-dynamic-seo]");
@@ -97,3 +117,4 @@ export const SEO: React.FC<SEOProps> = ({
 
   return null;
 };
+
