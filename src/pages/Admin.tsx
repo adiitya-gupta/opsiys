@@ -56,7 +56,7 @@ import {
   Power
 } from "lucide-react";
 
-const ADMIN_EMAIL = "adityaofficial9918@gmail.com";
+const ADMIN_EMAILS = ["adityaofficial9918@gmail.com", "kushwahakunal644@gmail.com"];
 
 export const AdminPage: React.FC = () => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -131,7 +131,7 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  const isAdmin = (user && user.email === ADMIN_EMAIL) || isPasscodeUnlocked;
+  const isAdmin = (user && user.email && ADMIN_EMAILS.includes(user.email)) || isPasscodeUnlocked;
 
   // Attach Real-time Listeners when authenticated as Admin
   useEffect(() => {
@@ -205,7 +205,7 @@ export const AdminPage: React.FC = () => {
                 Opsiys Master Control
               </h1>
               <p className="text-zinc-400 text-xs leading-relaxed font-medium">
-                This administration console is restricted to authorized personnel ({ADMIN_EMAIL}).
+                This administration console is restricted to authorized personnel ({ADMIN_EMAILS.join(", ")}).
               </p>
             </div>
 
@@ -219,7 +219,7 @@ export const AdminPage: React.FC = () => {
               </div>
             )}
 
-            {user && user.email !== ADMIN_EMAIL && (
+            {user && user.email && !ADMIN_EMAILS.includes(user.email) && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono">
                 Signed in as {user.email} (Not Authorized)
               </div>

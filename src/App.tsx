@@ -270,7 +270,7 @@ const Navbar = ({
                         >
                           <User size={12} className="mr-2 group-hover:text-blue-600" /> Account Settings
                         </Button>
-                        {user?.email === "adityaofficial9918@gmail.com" && (
+                        {(user?.email === "adityaofficial9918@gmail.com" || user?.email === "kushwahakunal644@gmail.com") && (
                           <Link to="/admin" onClick={() => setPortalOpen(false)}>
                             <Button 
                               variant="ghost" 
