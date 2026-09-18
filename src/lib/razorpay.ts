@@ -42,7 +42,7 @@ export const loadRazorpayScript = (): Promise<boolean> => {
  * Returns the active Razorpay Key ID from environment variables or fallback
  */
 export const getRazorpayKeyId = (): string => {
-  const envKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+  const envKey = (import.meta as any).env?.VITE_RAZORPAY_KEY_ID;
   if (envKey && envKey !== "your_razorpay_key_id_here") {
     return envKey;
   }
@@ -70,6 +70,8 @@ export interface InitiatePaymentParams {
   amountInINR: number;
   packageName: string;
   customer: RazorpayCustomerDetails;
+  isDeposit?: boolean;
+  depositNote?: string;
   onSuccess: (payload: RazorpayPaymentSuccessPayload) => void;
   onFailure?: (error: any) => void;
 }
@@ -87,6 +89,8 @@ export const savePaymentRecordToFirestore = async (recordData: {
   customerPhone: string;
   company?: string;
   gstin?: string;
+  isDeposit?: boolean;
+  depositNote?: string;
   status: "success" | "failed";
 }) => {
   try {
@@ -143,6 +147,8 @@ export const initiateRazorpayPayment = async ({
   amountInINR,
   packageName,
   customer,
+  isDeposit = false,
+  depositNote = "",
   onSuccess,
   onFailure
 }: InitiatePaymentParams): Promise<boolean> => {
@@ -156,7 +162,7 @@ export const initiateRazorpayPayment = async ({
   const keyId = getRazorpayKeyId();
   const serverOrderId = await createServerRazorpayOrder({
     amountInINR,
-    packageName,
+    packageName: isDeposit ? `${packageName} (Token Deposit)` : packageName,
     customerName: customer.name,
     customerEmail: customer.email
   });
@@ -168,7 +174,7 @@ export const initiateRazorpayPayment = async ({
     amount: amountInPaise,
     currency: "INR",
     name: "OPSIYS Systems Inc.",
-    description: `Package Subscription: ${packageName}`,
+    description: isDeposit ? `Booking Deposit: ${packageName}` : `Package Subscription: ${packageName}`,
     image: "https://opsiys.in/logos/opsiyslogo.png",
     order_id: serverOrderId || undefined,
     prefill: {
@@ -178,6 +184,8 @@ export const initiateRazorpayPayment = async ({
     },
     notes: {
       package: packageName,
+      isDeposit: isDeposit ? "Yes" : "No",
+      depositNote: depositNote || "N/A",
       company: customer.company || "Individual",
       gstin: customer.gstin || "N/A"
     },
@@ -204,6 +212,8 @@ export const initiateRazorpayPayment = async ({
         customerPhone: customer.phone,
         company: customer.company,
         gstin: customer.gstin,
+        isDeposit,
+        depositNote,
         status: "success"
       });
 

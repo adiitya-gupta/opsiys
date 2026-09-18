@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   X, 
@@ -6,18 +6,15 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   Lock, 
-  Smartphone, 
+  User, 
+  Mail, 
+  Phone, 
   Building2, 
   Receipt, 
-  Sparkles,
-  ArrowRight,
-  Download,
-  User,
-  Mail,
-  Phone,
-  HelpCircle,
-  Zap,
-  Check
+  ArrowRight, 
+  Download, 
+  Check,
+  Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +32,7 @@ export interface PackageItemForPayment {
   level: string;
   stage?: string;
   keyDeliverables?: string[];
+  isAnnual?: boolean;
 }
 
 interface RazorpayPaymentModalProps {
@@ -42,6 +40,8 @@ interface RazorpayPaymentModalProps {
   onClose: () => void;
   selectedPackage: PackageItemForPayment | null;
 }
+
+export const TOKEN_DEPOSIT_BASE = 50000;
 
 export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
   isOpen,
@@ -56,6 +56,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
     gstin: ""
   });
   const [includeGst, setIncludeGst] = useState(true);
+  const [paymentMode, setPaymentMode] = useState<"deposit" | "full">("deposit");
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentSuccessData, setPaymentSuccessData] = useState<{
     payload: RazorpayPaymentSuccessPayload;
@@ -63,13 +64,29 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
     customer: RazorpayCustomerDetails;
     timestamp: string;
     totalAmount: number;
+    isDeposit: boolean;
+    balanceDue: number;
   } | null>(null);
+
+  const isHighAmount = (selectedPackage?.priceInINR || 0) > 100000;
+
+  useEffect(() => {
+    if (isOpen) {
+      setPaymentMode(isHighAmount ? "deposit" : "full");
+    }
+  }, [isOpen, selectedPackage, isHighAmount]);
 
   if (!isOpen || !selectedPackage) return null;
 
   const basePrice = selectedPackage.priceInINR;
-  const gstAmount = includeGst ? Math.round(basePrice * 0.18) : 0;
-  const totalAmount = basePrice + gstAmount;
+  const isDeposit = isHighAmount && paymentMode === "deposit";
+  const effectiveBasePrice = isDeposit ? TOKEN_DEPOSIT_BASE : basePrice;
+  const gstAmount = includeGst ? Math.round(effectiveBasePrice * 0.18) : 0;
+  const totalAmount = effectiveBasePrice + gstAmount;
+
+  const fullPlanGst = includeGst ? Math.round(basePrice * 0.18) : 0;
+  const fullPlanTotal = basePrice + fullPlanGst;
+  const balanceDue = fullPlanTotal - totalAmount;
 
   const handleInputChange = (field: keyof RazorpayCustomerDetails, value: string) => {
     setCustomer(prev => ({ ...prev, [field]: value }));
@@ -84,10 +101,16 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
 
     setIsProcessing(true);
 
+    const depositNote = isDeposit 
+      ? `Token Deposit of ₹${totalAmount.toLocaleString("en-IN")} paid online today. Remaining balance of ₹${balanceDue.toLocaleString("en-IN")} due via GST Tax Invoice / NEFT.` 
+      : "";
+
     const success = await initiateRazorpayPayment({
       amountInINR: totalAmount,
       packageName: selectedPackage.name,
       customer,
+      isDeposit,
+      depositNote,
       onSuccess: (payload) => {
         setIsProcessing(false);
         setPaymentSuccessData({
@@ -98,7 +121,9 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
             dateStyle: "full",
             timeStyle: "short"
           }),
-          totalAmount
+          totalAmount,
+          isDeposit,
+          balanceDue
         });
       },
       onFailure: (err) => {
@@ -178,13 +203,13 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
 
               <div className="space-y-3">
                 <Badge variant="outline" className="border-emerald-500/30 text-emerald-400 bg-emerald-500/10 uppercase tracking-widest font-mono text-xs px-3 py-1">
-                  Payment Confirmed
+                  {paymentSuccessData.isDeposit ? "Token Deposit Confirmed" : "Payment Confirmed"}
                 </Badge>
                 <h3 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-tight text-white">
-                  Subscription Active!
+                  {paymentSuccessData.isDeposit ? "Rate Locked & Seat Reserved!" : "Subscription Active!"}
                 </h3>
                 <p className="text-zinc-400 text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
-                  Thank you for subscribing to <strong className="text-white font-bold">{paymentSuccessData.package.name}</strong>. Our business growth engineering team has received your order and will contact you within 6 hours.
+                  Thank you for subscribing to <strong className="text-white font-bold">{paymentSuccessData.package.name}</strong>. Our growth team has received your order and will issue your official GST Tax Invoice within 6 hours.
                 </p>
               </div>
 
@@ -201,9 +226,15 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
                   </div>
                 )}
                 <div className="flex justify-between pb-3 border-b border-white/10">
-                  <span className="text-zinc-400 uppercase">Total Amount Paid:</span>
+                  <span className="text-zinc-400 uppercase">{paymentSuccessData.isDeposit ? "Deposit Paid Online:" : "Total Amount Paid:"}</span>
                   <span className="font-extrabold text-emerald-400 text-base">₹{paymentSuccessData.totalAmount.toLocaleString("en-IN")} INR</span>
                 </div>
+                {paymentSuccessData.isDeposit && (
+                  <div className="flex justify-between pb-3 border-b border-white/10">
+                    <span className="text-amber-400 uppercase font-bold">Balance Invoiced via NEFT:</span>
+                    <span className="font-bold text-amber-300">₹{paymentSuccessData.balanceDue.toLocaleString("en-IN")} INR</span>
+                  </div>
+                )}
                 <div className="flex justify-between pb-3 border-b border-white/10">
                   <span className="text-zinc-400 uppercase">Client Name:</span>
                   <span className="font-bold text-white">{paymentSuccessData.customer.name}</span>
@@ -224,7 +255,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
                   variant="outline"
                   className="rounded-full border-white/20 hover:bg-white/10 text-white font-bold uppercase tracking-wider text-xs h-12 px-8"
                 >
-                  <Download size={14} className="mr-2" /> Download Tax Invoice
+                  <Download size={14} className="mr-2" /> Download Digital Receipt
                 </Button>
                 <Button 
                   onClick={handleCloseModal}
@@ -252,32 +283,131 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
                     </p>
                   </div>
 
+                  {/* Payment Mode Selection Card for High Amounts */}
+                  {isHighAmount && (
+                    <div className="space-y-2.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase font-mono">
+                        <Info size={14} />
+                        <span>High Value Order Options</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-300 leading-snug">
+                        For transactions above ₹1 Lakh, choose how you wish to complete your subscription:
+                      </p>
+
+                      <div className="space-y-2 pt-1">
+                        <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
+                          paymentMode === "deposit" 
+                            ? "bg-emerald-500/15 border-emerald-500 text-white" 
+                            : "bg-black/40 border-white/10 text-zinc-400 hover:border-white/30"
+                        }`}>
+                          <input
+                            type="radio"
+                            name="paymentMode"
+                            checked={paymentMode === "deposit"}
+                            onChange={() => setPaymentMode("deposit")}
+                            className="mt-0.5 text-emerald-500 focus:ring-0"
+                          />
+                          <div>
+                            <div className="font-bold text-xs flex items-center gap-1.5 text-white">
+                              <span>Pay Lock-in Deposit (₹50,000 + GST)</span>
+                              <Badge className="bg-emerald-500 text-white text-[9px] px-1.5 py-0">Recommended</Badge>
+                            </div>
+                            <div className="text-[10px] text-zinc-400 leading-tight mt-0.5">
+                              Pay ₹59,000 today online via UPI/Card to lock annual discount. Remaining balance (₹{(fullPlanTotal - 59000).toLocaleString("en-IN")}) invoiced via Bank Transfer (NEFT/RTGS).
+                            </div>
+                          </div>
+                        </label>
+
+                        <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
+                          paymentMode === "full" 
+                            ? "bg-emerald-500/15 border-emerald-500 text-white" 
+                            : "bg-black/40 border-white/10 text-zinc-400 hover:border-white/30"
+                        }`}>
+                          <input
+                            type="radio"
+                            name="paymentMode"
+                            checked={paymentMode === "full"}
+                            onChange={() => setPaymentMode("full")}
+                            className="mt-0.5 text-emerald-500 focus:ring-0"
+                          />
+                          <div>
+                            <div className="font-bold text-xs text-white">
+                              Pay Full Lump Sum (₹{fullPlanTotal.toLocaleString("en-IN")})
+                            </div>
+                            <div className="text-[10px] text-zinc-400 leading-tight mt-0.5">
+                              Pay full 12-month amount online in 1 single transaction (Corporate Card recommended).
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Price Calculation Card */}
                   <div className="bg-black/60 border border-white/10 rounded-2xl p-5 space-y-3 font-mono text-xs">
-                    <div className="flex justify-between items-center text-zinc-400">
-                      <span>Base Package Fee:</span>
-                      <span className="text-white font-bold">₹{basePrice.toLocaleString("en-IN")}</span>
-                    </div>
+                    {isDeposit ? (
+                      <>
+                        <div className="flex justify-between items-center text-zinc-400">
+                          <span>Total Annual Value:</span>
+                          <span className="text-zinc-300">₹{basePrice.toLocaleString("en-IN")}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-zinc-400 pt-1">
+                          <span>Upfront Booking Deposit:</span>
+                          <span className="text-white font-bold">₹{TOKEN_DEPOSIT_BASE.toLocaleString("en-IN")}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-zinc-400 pt-1">
+                          <label className="flex items-center gap-2 cursor-pointer select-none text-[11px]">
+                            <input
+                              type="checkbox"
+                              checked={includeGst}
+                              onChange={(e) => setIncludeGst(e.target.checked)}
+                              className="rounded bg-zinc-800 border-zinc-700 text-accent focus:ring-0 w-3.5 h-3.5"
+                            />
+                            <span>Est. GST (18% on Deposit):</span>
+                          </label>
+                          <span className="text-zinc-300">₹{gstAmount.toLocaleString("en-IN")}</span>
+                        </div>
 
-                    <div className="flex justify-between items-center text-zinc-400 pt-2 border-t border-white/10">
-                      <label className="flex items-center gap-2 cursor-pointer select-none text-[11px]">
-                        <input
-                          type="checkbox"
-                          checked={includeGst}
-                          onChange={(e) => setIncludeGst(e.target.checked)}
-                          className="rounded bg-zinc-800 border-zinc-700 text-accent focus:ring-0 w-3.5 h-3.5"
-                        />
-                        <span>Est. GST (18%):</span>
-                      </label>
-                      <span className="text-zinc-300">₹{gstAmount.toLocaleString("en-IN")}</span>
-                    </div>
+                        <div className="flex justify-between items-center pt-3 border-t border-white/15 text-sm font-bold">
+                          <span className="text-white uppercase font-sans">Payable Online Today:</span>
+                          <span className="text-xl font-extrabold text-emerald-400">
+                            ₹{totalAmount.toLocaleString("en-IN")}
+                          </span>
+                        </div>
 
-                    <div className="flex justify-between items-center pt-3 border-t border-white/15 text-sm font-bold">
-                      <span className="text-white uppercase font-sans">Total Payable:</span>
-                      <span className="text-xl font-extrabold text-emerald-400">
-                        ₹{totalAmount.toLocaleString("en-IN")}
-                      </span>
-                    </div>
+                        <div className="flex justify-between items-center pt-2 text-[11px] text-amber-400">
+                          <span>Balance Billed via NEFT Invoice:</span>
+                          <span className="font-bold">₹{balanceDue.toLocaleString("en-IN")}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between items-center text-zinc-400">
+                          <span>Base Package Fee:</span>
+                          <span className="text-white font-bold">₹{basePrice.toLocaleString("en-IN")}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center text-zinc-400 pt-2 border-t border-white/10">
+                          <label className="flex items-center gap-2 cursor-pointer select-none text-[11px]">
+                            <input
+                              type="checkbox"
+                              checked={includeGst}
+                              onChange={(e) => setIncludeGst(e.target.checked)}
+                              className="rounded bg-zinc-800 border-zinc-700 text-accent focus:ring-0 w-3.5 h-3.5"
+                            />
+                            <span>Est. GST (18%):</span>
+                          </label>
+                          <span className="text-zinc-300">₹{gstAmount.toLocaleString("en-IN")}</span>
+                        </div>
+
+                        <div className="flex justify-between items-center pt-3 border-t border-white/15 text-sm font-bold">
+                          <span className="text-white uppercase font-sans">Total Payable:</span>
+                          <span className="text-xl font-extrabold text-emerald-400">
+                            ₹{totalAmount.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Highlights Bullet List */}
@@ -428,7 +558,7 @@ export const RazorpayPaymentModal: React.FC<RazorpayPaymentModalProps> = ({
                     ) : (
                       <>
                         <CreditCard size={18} />
-                        <span>Pay ₹{totalAmount.toLocaleString("en-IN")}</span>
+                        <span>Pay ₹{totalAmount.toLocaleString("en-IN")} {isDeposit ? "(Token Deposit)" : ""}</span>
                         <ArrowRight size={18} />
                       </>
                     )}

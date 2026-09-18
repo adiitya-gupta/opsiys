@@ -245,7 +245,8 @@ export const PackagesPage: React.FC = () => {
       description: `${pkg.positioning} (${isAnnual ? `Annual Lump Sum: ${pkg.annualTotal} upfront with 15% discount` : `Billed monthly at ${pkg.price}/mo`})`,
       level: pkg.level,
       stage: pkg.stage,
-      keyDeliverables: pkg.keyDeliverables
+      keyDeliverables: pkg.keyDeliverables,
+      isAnnual: isAnnual
     });
     setPaymentModalOpen(true);
   };
