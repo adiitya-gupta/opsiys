@@ -73,7 +73,6 @@ export const AdminPage: React.FC = () => {
   const [customMsg, setCustomMsg] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
 
-
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -114,7 +113,7 @@ export const AdminPage: React.FC = () => {
     } catch (err: any) {
       console.error("Google Sign-In Error:", err);
       if (err?.code === "auth/unauthorized-domain" || err?.message?.includes("unauthorized-domain")) {
-        setAuthError("Domain Unauthorized in Firebase: Add your current domain (e.g. localhost or your domain) to Firebase Console -> Authentication -> Settings -> Authorized domains.");
+        setAuthError("Domain Unauthorized in Firebase: Add your current domain to Firebase Console -> Authentication -> Settings -> Authorized domains.");
       } else {
         setAuthError(err?.message || "Google Authentication failed. Please try again.");
       }
@@ -131,7 +130,8 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  const isAdmin = (user && user.email && ADMIN_EMAILS.includes(user.email)) || isPasscodeUnlocked;
+  const userEmailLower = user?.email?.toLowerCase().trim();
+  const isAdmin = (userEmailLower && ADMIN_EMAILS.includes(userEmailLower)) || isPasscodeUnlocked;
 
   // Attach Real-time Listeners when authenticated as Admin
   useEffect(() => {
@@ -161,112 +161,14 @@ export const AdminPage: React.FC = () => {
     setSavingSettings(true);
     try {
       const newState = targetState !== undefined ? targetState : !systemSettings?.maintenanceMode;
-      await updateSystemMaintenanceMode(newState, customMsg || systemSettings?.message);
+      const updated = await updateSystemMaintenanceMode(newState, customMsg || systemSettings?.message);
+      setSystemSettings(updated);
     } catch (err) {
       console.error("Failed to update maintenance mode:", err);
     } finally {
       setSavingSettings(false);
     }
   };
-
-
-  // Auth Guard Screen
-  if (loadingAuth) {
-    return (
-      <div className="min-h-screen bg-[#0B0B0B] text-white flex items-center justify-center">
-        <div className="flex items-center gap-3 text-zinc-400 font-mono text-sm">
-          <RefreshCw className="w-5 h-5 animate-spin text-accent" />
-          <span>Verifying Admin Credentials...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <>
-        <SEO title="Admin Portal Security | Opsiys" description="Opsiys Master Control Admin Portal" />
-        <div className="min-h-screen bg-[#0B0B0B] text-white flex items-center justify-center p-4">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 sm:p-10 text-center space-y-6 shadow-2xl relative overflow-hidden"
-          >
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
-            <div className="w-20 h-20 bg-zinc-800 border border-zinc-700 text-red-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
-              <Lock size={36} />
-            </div>
-
-            <div className="space-y-2">
-              <Badge variant="outline" className="border-red-500/30 text-red-400 bg-red-500/10 font-mono text-xs uppercase tracking-widest">
-                RESTRICTED ACCESS
-              </Badge>
-              <h1 className="text-3xl font-extrabold uppercase tracking-tight text-white">
-                Opsiys Master Control
-              </h1>
-              <p className="text-zinc-400 text-xs leading-relaxed font-medium">
-                This administration console is restricted to authorized personnel ({ADMIN_EMAILS.join(", ")}).
-              </p>
-            </div>
-
-            {authError && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono text-left space-y-2">
-                <div className="flex items-center gap-2 font-bold text-red-400">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>Authentication Warning</span>
-                </div>
-                <p className="text-[11px] leading-relaxed">{authError}</p>
-              </div>
-            )}
-
-            {user && user.email && !ADMIN_EMAILS.includes(user.email) && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono">
-                Signed in as {user.email} (Not Authorized)
-              </div>
-            )}
-
-            <div className="space-y-4 pt-2">
-              {!user ? (
-                <Button 
-                  onClick={handleGoogleSignIn}
-                  className="w-full h-14 bg-white text-black hover:bg-zinc-200 font-extrabold text-xs uppercase tracking-widest rounded-xl shadow-xl"
-                >
-                  Sign In With Admin Google Account
-                </Button>
-              ) : (
-                <Button 
-                  onClick={logout}
-                  variant="outline"
-                  className="w-full h-12 border-zinc-700 text-white hover:bg-zinc-800 font-bold text-xs uppercase tracking-widest rounded-xl"
-                >
-                  Sign Out ({user.email})
-                </Button>
-              )}
-
-              {/* Admin Key Emergency Fallback */}
-              <div className="pt-4 border-t border-zinc-800 space-y-3">
-                <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-                  Admin Passcode Login (Bypass Domain Restriction)
-                </p>
-                <form onSubmit={handlePasscodeSubmit} className="flex gap-2">
-                  <Input 
-                    type="password"
-                    placeholder="Enter Admin Passcode"
-                    value={adminPasscode}
-                    onChange={e => setAdminPasscode(e.target.value)}
-                    className="bg-zinc-950 border-zinc-800 text-xs h-11 text-white placeholder:text-zinc-600 rounded-xl"
-                  />
-                  <Button type="submit" className="bg-zinc-800 hover:bg-zinc-700 text-white font-extrabold text-xs uppercase px-4 h-11 rounded-xl shrink-0">
-                    Unlock
-                  </Button>
-                </form>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </>
-    );
-  }
 
   // --- Calculations ---
   const totalRevenue = payments
@@ -275,6 +177,88 @@ export const AdminPage: React.FC = () => {
 
   const newLeadsCount = leads.filter(l => l.status === "new").length;
   const pendingAppsCount = applications.filter(a => a.status === "under_review").length;
+
+  // Synthesize comprehensive user directory from Profiles + Leads + Candidates + Payments
+  const aggregatedUsersMap = new Map<string, any>();
+
+  // 1. Registered Profiles
+  profiles.forEach(p => {
+    const emailKey = (p.email || p.id || "").toLowerCase().trim();
+    if (emailKey) {
+      aggregatedUsersMap.set(emailKey, {
+        id: p.id,
+        displayName: p.displayName || p.name || p.id,
+        email: p.email || p.id,
+        company: p.company || "N/A",
+        industry: p.industry || "N/A",
+        role: p.role || "Registered Account",
+        source: "User Profile",
+        updatedAt: p.updatedAt
+      });
+    }
+  });
+
+  // 2. Client Leads
+  leads.forEach(l => {
+    const emailKey = (l.email || "").toLowerCase().trim();
+    if (emailKey && !aggregatedUsersMap.has(emailKey)) {
+      aggregatedUsersMap.set(emailKey, {
+        id: l.id,
+        displayName: l.name || "Client Lead",
+        email: l.email,
+        company: l.company || "N/A",
+        industry: l.projectType || "Business Growth",
+        role: "Client Lead",
+        source: "Lead Inquiry",
+        updatedAt: l.createdAt
+      });
+    }
+  });
+
+  // 3. Career Applicants
+  applications.forEach(a => {
+    const emailKey = (a.email || "").toLowerCase().trim();
+    if (emailKey && !aggregatedUsersMap.has(emailKey)) {
+      aggregatedUsersMap.set(emailKey, {
+        id: a.id,
+        displayName: a.fullName || "Candidate",
+        email: a.email,
+        company: a.city ? `City: ${a.city}` : "N/A",
+        industry: "Human Resources",
+        role: a.position || "Applicant",
+        source: "Career Candidate",
+        updatedAt: a.createdAt
+      });
+    }
+  });
+
+  // 4. Payment Customers
+  payments.forEach(p => {
+    const emailKey = (p.customerEmail || "").toLowerCase().trim();
+    if (emailKey && !aggregatedUsersMap.has(emailKey)) {
+      aggregatedUsersMap.set(emailKey, {
+        id: p.id,
+        displayName: p.customerName || "Customer",
+        email: p.customerEmail,
+        company: p.packageName || "Paid Service",
+        industry: "Client Partner",
+        role: "Customer",
+        source: "Razorpay Checkout",
+        updatedAt: p.createdAt
+      });
+    }
+  });
+
+  const allUsers = Array.from(aggregatedUsersMap.values());
+
+  const filteredUsers = allUsers.filter(u => {
+    const matchesSearch = (u.displayName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (u.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (u.company || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (u.role || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (u.source || "").toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
+  });
 
   // Filtered Lists
   const filteredLeads = leads.filter(l => {
@@ -317,7 +301,7 @@ export const AdminPage: React.FC = () => {
       `"${l.budget || ''}"`,
       `"${l.status || ''}"`,
       `"${(l.message || '').replace(/"/g, '""')}"`,
-      `"${l.createdAt?.toDate ? l.createdAt.toDate().toLocaleString() : ''}"`
+      `"${l.createdAt?.toDate ? l.createdAt.toDate().toLocaleString() : l.createdAt || ''}"`
     ]);
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
@@ -373,6 +357,104 @@ export const AdminPage: React.FC = () => {
     }
   };
 
+  // Auth Guard Screen
+  if (loadingAuth) {
+    return (
+      <div className="min-h-screen bg-[#0B0B0B] text-white flex items-center justify-center">
+        <div className="flex items-center gap-3 text-zinc-400 font-mono text-sm">
+          <RefreshCw className="w-5 h-5 animate-spin text-accent" />
+          <span>Verifying Admin Credentials...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <>
+        <SEO title="Admin Portal Security | Opsiys" description="Opsiys Master Control Admin Portal" />
+        <div className="min-h-screen bg-[#0B0B0B] text-white flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-8 sm:p-10 text-center space-y-6 shadow-2xl relative overflow-hidden"
+          >
+            <div className="absolute -top-20 -right-20 w-40 h-40 bg-red-500/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="w-20 h-20 bg-zinc-800 border border-zinc-700 text-red-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
+              <Lock size={36} />
+            </div>
+
+            <div className="space-y-2">
+              <Badge variant="outline" className="border-red-500/30 text-red-400 bg-red-500/10 font-mono text-xs uppercase tracking-widest">
+                RESTRICTED ACCESS
+              </Badge>
+              <h1 className="text-3xl font-extrabold uppercase tracking-tight text-white">
+                Opsiys Master Control
+              </h1>
+              <p className="text-zinc-400 text-xs leading-relaxed font-medium">
+                This administration console is restricted to authorized personnel ({ADMIN_EMAILS.join(", ")}).
+              </p>
+            </div>
+
+            {authError && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono text-left space-y-2">
+                <div className="flex items-center gap-2 font-bold text-red-400">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>Authentication Notice</span>
+                </div>
+                <p className="text-[11px] leading-relaxed">{authError}</p>
+              </div>
+            )}
+
+            {user && user.email && !ADMIN_EMAILS.includes(user.email.toLowerCase().trim()) && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono">
+                Signed in as {user.email} (Not Authorized)
+              </div>
+            )}
+
+            <div className="space-y-4 pt-2">
+              {!user ? (
+                <Button 
+                  onClick={handleGoogleSignIn}
+                  className="w-full h-14 bg-white text-black hover:bg-zinc-200 font-extrabold text-xs uppercase tracking-widest rounded-xl shadow-xl"
+                >
+                  Sign In With Admin Google Account
+                </Button>
+              ) : (
+                <Button 
+                  onClick={logout}
+                  variant="outline"
+                  className="w-full h-12 border-zinc-700 text-white hover:bg-zinc-800 font-bold text-xs uppercase tracking-widest rounded-xl"
+                >
+                  Sign Out ({user.email})
+                </Button>
+              )}
+
+              {/* Admin Key Passcode Fallback */}
+              <div className="pt-4 border-t border-zinc-800 space-y-3">
+                <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
+                  Admin Passcode Login (Bypass Domain Restriction)
+                </p>
+                <form onSubmit={handlePasscodeSubmit} className="flex gap-2">
+                  <Input 
+                    type="password"
+                    placeholder="Enter Admin Passcode"
+                    value={adminPasscode}
+                    onChange={e => setAdminPasscode(e.target.value)}
+                    className="bg-zinc-950 border-zinc-800 text-xs h-11 text-white placeholder:text-zinc-600 rounded-xl"
+                  />
+                  <Button type="submit" className="bg-zinc-800 hover:bg-zinc-700 text-white font-extrabold text-xs uppercase px-4 h-11 rounded-xl shrink-0">
+                    Unlock
+                  </Button>
+                </form>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <SEO title="Opsiys Master Control Admin Dashboard" description="Management portal for Opsiys leads, career candidates, transactions and operations." />
@@ -395,7 +477,7 @@ export const AdminPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 px-3.5 py-2 rounded-full text-xs font-mono text-zinc-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>{user.email}</span>
+                <span>{user?.email || "Admin Session"}</span>
               </div>
               <Button 
                 onClick={logout}
@@ -415,7 +497,7 @@ export const AdminPage: React.FC = () => {
               { id: "leads", label: "Leads & Inquiries", icon: Users, count: newLeadsCount > 0 ? newLeadsCount : null },
               { id: "careers", label: "Career Applicants", icon: Briefcase, count: pendingAppsCount > 0 ? pendingAppsCount : null },
               { id: "payments", label: "Payments Audit", icon: CreditCard, count: null },
-              { id: "profiles", label: "Registered Users", icon: UserCheck, count: profiles.length },
+              { id: "profiles", label: "Registered Users", icon: UserCheck, count: allUsers.length },
               { id: "jobs", label: "Job Postings", icon: Building2, count: jobOpenings.length },
               { id: "settings", label: "Maintenance & Settings", icon: ShieldAlert, count: systemSettings?.maintenanceMode ? "ACTIVE" : null }
             ].map(tab => {
@@ -512,10 +594,10 @@ export const AdminPage: React.FC = () => {
                     color: "border-purple-500/30 text-purple-400 bg-purple-500/5"
                   },
                   {
-                    title: "Active Job Openings",
-                    value: jobOpenings.filter(j => j.active !== false).length,
-                    sub: `${jobOpenings.length} total postings defined`,
-                    icon: Building2,
+                    title: "Total Registered Users",
+                    value: allUsers.length,
+                    sub: `Across profiles, leads, applications & payments`,
+                    icon: UserCheck,
                     color: "border-amber-500/30 text-amber-400 bg-amber-500/5"
                   }
                 ].map((stat, idx) => {
@@ -908,7 +990,7 @@ export const AdminPage: React.FC = () => {
                             </Badge>
                           </td>
                           <td className="p-4 text-zinc-400">
-                            {p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString() : 'Recent'}
+                            {p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString() : p.createdAt || 'Recent'}
                           </td>
                         </tr>
                       ))}
@@ -926,39 +1008,61 @@ export const AdminPage: React.FC = () => {
             </div>
           )}
 
-          {/* 5. REGISTERED PROFILES TAB */}
+          {/* 5. REGISTERED PROFILES & ALL USERS TAB */}
           {activeTab === "profiles" && (
             <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800 p-4 rounded-2xl">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <Input 
+                    placeholder="Search all platform users by name, email, company or role..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-zinc-950 border-zinc-800 text-xs rounded-xl h-11 text-white placeholder:text-zinc-600 focus-visible:ring-1 focus-visible:ring-accent"
+                  />
+                </div>
+                <div className="flex items-center gap-3 font-mono text-xs bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-800">
+                  <span className="text-zinc-400">Total Users Directory:</span>
+                  <span className="font-bold text-amber-400 text-sm">{allUsers.length}</span>
+                </div>
+              </div>
+
               <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-mono">
                     <thead className="bg-zinc-950 border-b border-zinc-800 uppercase tracking-wider text-zinc-400 text-[10px]">
                       <tr>
-                        <th className="p-4">User ID / Profile</th>
-                        <th className="p-4">Company</th>
-                        <th className="p-4">Industry</th>
-                        <th className="p-4">Role</th>
-                        <th className="p-4">Last Updated</th>
+                        <th className="p-4">User / Name</th>
+                        <th className="p-4">Email Address</th>
+                        <th className="p-4">Company / Context</th>
+                        <th className="p-4">Role / Category</th>
+                        <th className="p-4">User Source</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800/60">
-                      {profiles.map(prof => (
-                        <tr key={prof.id} className="hover:bg-zinc-800/40 transition-colors">
+                      {filteredUsers.map((usr, idx) => (
+                        <tr key={usr.id || idx} className="hover:bg-zinc-800/40 transition-colors">
                           <td className="p-4 font-sans font-bold text-white">
-                            {prof.displayName || prof.id}
+                            {usr.displayName}
                           </td>
-                          <td className="p-4 text-zinc-300 font-sans">{prof.company || "N/A"}</td>
-                          <td className="p-4 text-zinc-300 font-sans">{prof.industry || "N/A"}</td>
-                          <td className="p-4 text-zinc-300 font-sans">{prof.role || "N/A"}</td>
+                          <td className="p-4 text-zinc-300 font-mono">{usr.email}</td>
+                          <td className="p-4 text-zinc-300 font-sans">{usr.company}</td>
+                          <td className="p-4 text-zinc-300 font-sans">
+                            <Badge variant="outline" className="border-zinc-700 text-zinc-300 bg-zinc-800/40 text-[10px]">
+                              {usr.role}
+                            </Badge>
+                          </td>
                           <td className="p-4 text-zinc-400">
-                            {prof.updatedAt?.toDate ? prof.updatedAt.toDate().toLocaleDateString() : 'N/A'}
+                            <Badge variant="outline" className="border-amber-500/30 text-amber-400 bg-amber-500/10 text-[10px]">
+                              {usr.source}
+                            </Badge>
                           </td>
                         </tr>
                       ))}
-                      {profiles.length === 0 && (
+                      {filteredUsers.length === 0 && (
                         <tr>
                           <td colSpan={5} className="p-8 text-center text-zinc-500">
-                            No registered user profiles found.
+                            No matching user profiles found.
                           </td>
                         </tr>
                       )}
