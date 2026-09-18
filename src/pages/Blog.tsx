@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { SEO } from "../components/SEO";
 import { Breadcrumbs } from "../components/Breadcrumbs";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "motion/react";
 import { ArrowRight, Clock, User, Sparkles } from "lucide-react";
+import { subscribeToBlogPosts, BlogPostItem } from "../lib/firebase";
 
 export const BLOG_POSTS = [
   {
@@ -19,7 +20,8 @@ export const BLOG_POSTS = [
     author: "Aditya Gupta",
     authorRole: "Founder & CEO, Opsiys",
     image: "/images/blog_online_presence.png",
-    excerpt: "Building an effective online presence doesn't require a million-dollar budget. Discover practical steps to combine local search, clean website UX, and WhatsApp automations."
+    excerpt: "Building an effective online presence doesn't require a million-dollar budget. Discover practical steps to combine local search, clean website UX, and WhatsApp automations.",
+    published: true
   }
 ];
 
@@ -41,6 +43,19 @@ const itemVariants = {
 };
 
 export const BlogPage: React.FC = () => {
+  const [posts, setPosts] = useState<any[]>(BLOG_POSTS);
+
+  useEffect(() => {
+    const unSub = subscribeToBlogPosts((customBlogs) => {
+      const activeCustom = customBlogs.filter(b => b.published !== false);
+      // Merge custom blogs with static BLOG_POSTS (preventing duplicate slugs)
+      const customSlugs = new Set(activeCustom.map(b => b.slug));
+      const filteredStatic = BLOG_POSTS.filter(s => !customSlugs.has(s.slug));
+      setPosts([...activeCustom, ...filteredStatic]);
+    });
+    return () => unSub();
+  }, []);
+
   return (
     <>
       <SEO
@@ -67,7 +82,7 @@ export const BlogPage: React.FC = () => {
               Business Growth Guides
             </h1>
             <p className="text-zinc-600 text-base sm:text-lg leading-relaxed font-medium">
-              Actionable frameworks written by our founders to help small and growing businesses build search authority, capture leads, and automate client follow-ups.
+              Actionable frameworks written by our team to help small and growing businesses build search authority, capture leads, and automate client follow-ups.
             </p>
           </motion.div>
 
@@ -77,9 +92,9 @@ export const BlogPage: React.FC = () => {
             animate="visible"
             className="grid grid-cols-1 md:grid-cols-2 gap-8"
           >
-            {BLOG_POSTS.map((post) => (
+            {posts.map((post) => (
               <motion.article 
-                key={post.slug}
+                key={post.slug || post.id}
                 variants={itemVariants}
                 whileHover={{ y: -4 }}
                 className="bg-white border border-zinc-200 rounded-2xl overflow-hidden shadow-sm hover:border-black transition-all hover:shadow-xl group flex flex-col justify-between"
@@ -88,21 +103,21 @@ export const BlogPage: React.FC = () => {
                   {/* Article Banner Image */}
                   <div className="h-48 sm:h-56 bg-zinc-900 overflow-hidden relative">
                     <img 
-                      src={post.image} 
+                      src={post.image || "/images/blog_online_presence.png"} 
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90"
                     />
                     <Badge variant="outline" className="absolute top-4 left-4 bg-black/80 text-white border-white/20 uppercase tracking-wider text-[10px] backdrop-blur-sm">
-                      {post.category}
+                      {post.category || "Business Growth"}
                     </Badge>
                   </div>
 
                   <div className="p-6 sm:p-8 space-y-3">
                     <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
                       <Clock className="w-3.5 h-3.5" />
-                      <span>{post.readTime}</span>
+                      <span>{post.readTime || "5 min read"}</span>
                       <span>•</span>
-                      <span>Published Sept 15, 2026</span>
+                      <span>Published {post.publishDate || "Recently"}</span>
                     </div>
 
                     <h2 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-black group-hover:text-accent transition-colors leading-snug">
@@ -120,7 +135,7 @@ export const BlogPage: React.FC = () => {
                 <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-0 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
                     <User className="w-3.5 h-3.5 text-black" />
-                    <span>{post.author}</span>
+                    <span>{post.author || "Aditya Gupta"}</span>
                   </div>
 
                   <Link to={`/blog/${post.slug}`}>

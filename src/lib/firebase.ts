@@ -565,3 +565,90 @@ export const updateSystemMaintenanceMode = async (maintenanceMode: boolean, mess
 
   return updatedSettings;
 };
+
+// --- Blog Posts & Articles Service ---
+
+export interface BlogPostItem {
+  id?: string;
+  slug: string;
+  title: string;
+  seoTitle: string;
+  seoDesc: string;
+  category: string;
+  publishDate: string;
+  readTime: string;
+  author: string;
+  authorRole: string;
+  image: string;
+  excerpt: string;
+  content: string;
+  published: boolean;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
+export const subscribeToBlogPosts = (callback: (blogs: BlogPostItem[]) => void) => {
+  const cached = getStorageItem("opsiys_blogs_cache", []);
+  callback(cached);
+
+  try {
+    const blogsRef = collection(db, "blog_posts");
+    return onSnapshot(
+      blogsRef,
+      (snapshot) => {
+        const blogs = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as BlogPostItem));
+        setStorageItem("opsiys_blogs_cache", blogs);
+        callback(blogs);
+      },
+      (err) => {
+        console.warn("Blog posts subscription notice:", err?.message || err);
+        callback(getStorageItem("opsiys_blogs_cache", []));
+      }
+    );
+  } catch (err) {
+    console.warn("Failed to subscribe to blog posts:", err);
+    return () => {};
+  }
+};
+
+export const saveBlogPost = async (blogData: BlogPostItem) => {
+  const currentBlogs = getStorageItem("opsiys_blogs_cache", []);
+  let blogId = blogData.id;
+  if (!blogId) {
+    blogId = "blog_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+  }
+  const blogRecord = { ...blogData, id: blogId, published: blogData.published ?? true };
+
+  const existingIdx = currentBlogs.findIndex((b: any) => b.id === blogId || b.slug === blogData.slug);
+  if (existingIdx >= 0) {
+    currentBlogs[existingIdx] = blogRecord;
+  } else {
+    currentBlogs.unshift(blogRecord);
+  }
+  setStorageItem("opsiys_blogs_cache", currentBlogs);
+
+  try {
+    const blogsRef = collection(db, "blog_posts");
+    if (blogData.id) {
+      const blogDoc = doc(db, "blog_posts", blogData.id);
+      await setDoc(blogDoc, { ...blogData, updatedAt: serverTimestamp() }, { merge: true });
+    } else {
+      await addDoc(blogsRef, { ...blogData, createdAt: serverTimestamp() });
+    }
+  } catch (err) {
+    console.warn("Blog post save fallback notice:", err);
+  }
+};
+
+export const deleteBlogPost = async (blogId: string) => {
+  const currentBlogs = getStorageItem("opsiys_blogs_cache", []);
+  setStorageItem("opsiys_blogs_cache", currentBlogs.filter((b: any) => b.id !== blogId));
+
+  try {
+    const blogDoc = doc(db, "blog_posts", blogId);
+    await deleteDoc(blogDoc);
+  } catch (err) {
+    console.warn("Blog post deletion notice:", err);
+  }
+};
+

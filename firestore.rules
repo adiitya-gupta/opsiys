@@ -37,6 +37,11 @@ service cloud.firestore {
       allow read, list, create, update, delete: if true;
     }
 
+    // Blog Posts & Articles Management
+    match /blog_posts/{blogId} {
+      allow read, list, create, update, delete: if true;
+    }
+
     // User Profile Management
     match /profiles/{userId} {
       allow read, list, create, update, delete: if true;
@@ -53,6 +58,3 @@ service cloud.firestore {
     }
   }
 }
-
-
-

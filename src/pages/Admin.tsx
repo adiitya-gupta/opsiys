@@ -20,7 +20,11 @@ import {
   saveJobOpening,
   deleteJobOpening,
   subscribeToSystemSettings,
-  updateSystemMaintenanceMode
+  updateSystemMaintenanceMode,
+  subscribeToBlogPosts,
+  saveBlogPost,
+  deleteBlogPost,
+  BlogPostItem
 } from "../lib/firebase";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { 
@@ -43,6 +47,7 @@ import {
   TrendingUp, 
   ArrowUpRight, 
   FileText, 
+  BookOpen,
   ExternalLink,
   Lock,
   LogOut,
@@ -61,7 +66,7 @@ const ADMIN_EMAILS = ["adityaofficial9918@gmail.com", "kushwahakunal644@gmail.co
 export const AdminPage: React.FC = () => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview" | "leads" | "careers" | "payments" | "profiles" | "jobs" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "leads" | "careers" | "payments" | "profiles" | "jobs" | "blogs" | "settings">("overview");
 
   // Real-time State
   const [leads, setLeads] = useState<any[]>([]);
@@ -69,6 +74,7 @@ export const AdminPage: React.FC = () => {
   const [payments, setPayments] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [jobOpenings, setJobOpenings] = useState<any[]>([]);
+  const [blogs, setBlogs] = useState<BlogPostItem[]>([]);
   const [systemSettings, setSystemSettings] = useState<any>({ maintenanceMode: true, message: "" });
   const [customMsg, setCustomMsg] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
@@ -81,6 +87,7 @@ export const AdminPage: React.FC = () => {
   const [selectedLead, setSelectedLead] = useState<any | null>(null);
   const [selectedCandidate, setSelectedCandidate] = useState<any | null>(null);
   const [showJobModal, setShowJobModal] = useState(false);
+  const [showBlogModal, setShowBlogModal] = useState(false);
 
   // New Job Opening Form State
   const [jobFormData, setJobFormData] = useState({
@@ -92,6 +99,24 @@ export const AdminPage: React.FC = () => {
     experience: "1-3 Yrs",
     description: "",
     active: true
+  });
+
+  // Blog Article Form State
+  const [blogFormData, setBlogFormData] = useState<BlogPostItem>({
+    id: "",
+    slug: "",
+    title: "",
+    seoTitle: "",
+    seoDesc: "",
+    category: "Business Growth & SEO",
+    publishDate: new Date().toISOString().split("T")[0],
+    readTime: "5 min read",
+    author: "Aditya Gupta",
+    authorRole: "Founder & CEO, Opsiys",
+    image: "/images/blog_online_presence.png",
+    excerpt: "",
+    content: "",
+    published: true
   });
 
   const [authError, setAuthError] = useState("");
@@ -142,6 +167,7 @@ export const AdminPage: React.FC = () => {
     const unSubPayments = subscribeToPayments(setPayments);
     const unSubProfiles = subscribeToProfiles(setProfiles);
     const unSubJobs = subscribeToJobOpenings(setJobOpenings);
+    const unSubBlogs = subscribeToBlogPosts(setBlogs);
     const unSubSettings = subscribeToSystemSettings((settings) => {
       setSystemSettings(settings);
       if (settings?.message && !customMsg) setCustomMsg(settings.message);
@@ -153,6 +179,7 @@ export const AdminPage: React.FC = () => {
       unSubPayments();
       unSubProfiles();
       unSubJobs();
+      unSubBlogs();
       unSubSettings();
     };
   }, [isAdmin]);
@@ -181,7 +208,6 @@ export const AdminPage: React.FC = () => {
   // Synthesize comprehensive user directory from Profiles + Leads + Candidates + Payments
   const aggregatedUsersMap = new Map<string, any>();
 
-  // 1. Registered Profiles
   profiles.forEach(p => {
     const emailKey = (p.email || p.id || "").toLowerCase().trim();
     if (emailKey) {
@@ -198,7 +224,6 @@ export const AdminPage: React.FC = () => {
     }
   });
 
-  // 2. Client Leads
   leads.forEach(l => {
     const emailKey = (l.email || "").toLowerCase().trim();
     if (emailKey && !aggregatedUsersMap.has(emailKey)) {
@@ -215,7 +240,6 @@ export const AdminPage: React.FC = () => {
     }
   });
 
-  // 3. Career Applicants
   applications.forEach(a => {
     const emailKey = (a.email || "").toLowerCase().trim();
     if (emailKey && !aggregatedUsersMap.has(emailKey)) {
@@ -232,7 +256,6 @@ export const AdminPage: React.FC = () => {
     }
   });
 
-  // 4. Payment Customers
   payments.forEach(p => {
     const emailKey = (p.customerEmail || "").toLowerCase().trim();
     if (emailKey && !aggregatedUsersMap.has(emailKey)) {
@@ -354,6 +377,21 @@ export const AdminPage: React.FC = () => {
       });
     } catch (err) {
       console.error("Error saving job opening:", err);
+    }
+  };
+
+  const handleSaveBlog = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const generatedSlug = blogFormData.slug || blogFormData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      await saveBlogPost({
+        ...blogFormData,
+        slug: generatedSlug,
+        published: blogFormData.published ?? true
+      });
+      setShowBlogModal(false);
+    } catch (err) {
+      console.error("Error saving blog article:", err);
     }
   };
 
@@ -499,6 +537,7 @@ export const AdminPage: React.FC = () => {
               { id: "payments", label: "Payments Audit", icon: CreditCard, count: null },
               { id: "profiles", label: "Registered Users", icon: UserCheck, count: allUsers.length },
               { id: "jobs", label: "Job Postings", icon: Building2, count: jobOpenings.length },
+              { id: "blogs", label: "Blog Articles", icon: BookOpen, count: blogs.length },
               { id: "settings", label: "Maintenance & Settings", icon: ShieldAlert, count: systemSettings?.maintenanceMode ? "ACTIVE" : null }
             ].map(tab => {
               const IconComp = tab.icon;
@@ -587,10 +626,10 @@ export const AdminPage: React.FC = () => {
                     color: "border-blue-500/30 text-blue-400 bg-blue-500/5"
                   },
                   {
-                    title: "Candidate Profiles",
-                    value: applications.length,
-                    sub: `${pendingAppsCount} applications under review`,
-                    icon: Briefcase,
+                    title: "Published Blogs",
+                    value: blogs.filter(b => b.published !== false).length,
+                    sub: `${blogs.length} articles created in studio`,
+                    icon: BookOpen,
                     color: "border-purple-500/30 text-purple-400 bg-purple-500/5"
                   },
                   {
@@ -1171,7 +1210,122 @@ export const AdminPage: React.FC = () => {
             </div>
           )}
 
-          {/* 7. SYSTEM MAINTENANCE & SETTINGS TAB */}
+          {/* 7. BLOG POSTS & ARTICLES MANAGER TAB */}
+          {activeTab === "blogs" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 p-4 rounded-2xl">
+                <div>
+                  <h2 className="text-lg font-bold uppercase tracking-tight text-white">Blog Articles & Content Studio</h2>
+                  <p className="text-xs text-zinc-400 font-mono">Articles published here immediately adapt to the website format and publish to /blog.</p>
+                </div>
+                <Button 
+                  onClick={() => {
+                    setBlogFormData({
+                      id: "",
+                      slug: "",
+                      title: "",
+                      seoTitle: "",
+                      seoDesc: "",
+                      category: "Business Growth & SEO",
+                      publishDate: new Date().toISOString().split("T")[0],
+                      readTime: "5 min read",
+                      author: "Aditya Gupta",
+                      authorRole: "Founder & CEO, Opsiys",
+                      image: "/images/blog_online_presence.png",
+                      excerpt: "",
+                      content: "",
+                      published: true
+                    });
+                    setShowBlogModal(true);
+                  }}
+                  className="bg-white text-black hover:bg-zinc-200 font-extrabold text-xs uppercase tracking-widest rounded-xl px-5 h-11 shadow-lg"
+                >
+                  <Plus className="w-4 h-4 mr-2" /> Write & Publish New Article
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {blogs.map(blog => (
+                  <div key={blog.id || blog.slug} className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4 hover:border-zinc-700 transition-all flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="outline" className="text-[10px] font-mono uppercase border-accent/30 text-accent">
+                          {blog.category}
+                        </Badge>
+                        <Badge variant="outline" className={`font-mono text-[10px] uppercase ${blog.published ? 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10' : 'border-amber-500/40 text-amber-400 bg-amber-500/10'}`}>
+                          {blog.published ? "Published" : "Draft"}
+                        </Badge>
+                      </div>
+
+                      <h3 className="text-lg font-bold uppercase tracking-tight text-white line-clamp-2">{blog.title}</h3>
+                      <p className="text-zinc-400 text-xs leading-relaxed line-clamp-3">{blog.excerpt || blog.seoDesc}</p>
+
+                      <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-zinc-500 pt-2">
+                        <span>👤 {blog.author || "Aditya Gupta"}</span>
+                        <span>•</span>
+                        <span>⏱️ {blog.readTime || "5 min read"}</span>
+                        <span>•</span>
+                        <span>📅 {blog.publishDate}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-zinc-800/80 mt-4">
+                      <a href={`/blog/${blog.slug}`} target="_blank" rel="noopener noreferrer" className="text-xs font-mono text-accent hover:underline flex items-center gap-1">
+                        <span>Preview Post</span> <ExternalLink className="w-3 h-3" />
+                      </a>
+
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          onClick={async () => {
+                            await saveBlogPost({ ...blog, published: !blog.published });
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-zinc-800 text-zinc-300 hover:text-white font-bold text-xs uppercase"
+                        >
+                          {blog.published ? "Unpublish" : "Publish"}
+                        </Button>
+
+                        <Button 
+                          onClick={() => {
+                            setBlogFormData(blog);
+                            setShowBlogModal(true);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="border-zinc-800 text-zinc-300 hover:text-white font-bold text-xs uppercase"
+                        >
+                          Edit
+                        </Button>
+
+                        <Button 
+                          onClick={async () => {
+                            if (confirm(`Delete article "${blog.title}"?`)) {
+                              await deleteBlogPost(blog.id!);
+                            }
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-400 hover:bg-red-500/10 font-bold text-xs uppercase"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {blogs.length === 0 && (
+                  <div className="col-span-full bg-zinc-900/40 border border-zinc-800 rounded-3xl p-12 text-center text-zinc-500 font-mono space-y-4">
+                    <p className="text-sm">No custom blog articles published yet.</p>
+                    <p className="text-xs">Click "Write & Publish New Article" above to create guide content for your visitors.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 8. SYSTEM MAINTENANCE & SETTINGS TAB */}
           {activeTab === "settings" && (
             <div className="space-y-6">
               <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
@@ -1494,6 +1648,157 @@ export const AdminPage: React.FC = () => {
                 <div className="pt-4 border-t border-zinc-800 flex justify-end gap-3">
                   <Button type="button" variant="ghost" onClick={() => setShowJobModal(false)} className="text-xs uppercase font-bold text-zinc-400">Cancel</Button>
                   <Button type="submit" className="bg-white text-black hover:bg-zinc-200 font-extrabold text-xs uppercase px-6 h-11 rounded-xl">Save Opening</Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* --- MODAL 4: CREATE/EDIT BLOG ARTICLE --- */}
+      <AnimatePresence>
+        {showBlogModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowBlogModal(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative z-10 bg-zinc-900 border border-zinc-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl p-6 sm:p-8 text-white space-y-6 shadow-2xl">
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <h3 className="text-xl font-bold uppercase tracking-tight">{blogFormData.id ? "Edit Blog Article" : "Write & Publish New Article"}</h3>
+                <button onClick={() => setShowBlogModal(false)} className="text-zinc-400 hover:text-white"><X size={20} /></button>
+              </div>
+
+              <form onSubmit={handleSaveBlog} className="space-y-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-mono text-zinc-400 uppercase">Article Title</label>
+                  <Input 
+                    required 
+                    value={blogFormData.title}
+                    onChange={e => {
+                      const title = e.target.value;
+                      const autoSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+                      setBlogFormData({ 
+                        ...blogFormData, 
+                        title, 
+                        slug: blogFormData.id ? blogFormData.slug : autoSlug 
+                      });
+                    }}
+                    placeholder="e.g. 10 Proven SEO Strategies for Local Businesses in 2026" 
+                    className="bg-zinc-950 border-zinc-800 text-xs h-11"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-zinc-400 uppercase">URL Slug</label>
+                    <Input 
+                      required 
+                      value={blogFormData.slug}
+                      onChange={e => setBlogFormData({ ...blogFormData, slug: e.target.value })}
+                      placeholder="e.g. 10-seo-strategies" 
+                      className="bg-zinc-950 border-zinc-800 text-xs h-11 font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-zinc-400 uppercase">Category</label>
+                    <select 
+                      value={blogFormData.category}
+                      onChange={e => setBlogFormData({ ...blogFormData, category: e.target.value })}
+                      className="w-full bg-zinc-950 border border-zinc-800 text-xs rounded-xl h-11 px-3 text-white"
+                    >
+                      <option value="Business Growth & SEO">Business Growth & SEO</option>
+                      <option value="Local SEO">Local SEO</option>
+                      <option value="Meta & Digital Ads">Meta & Digital Ads</option>
+                      <option value="Modern Web Development">Modern Web Development</option>
+                      <option value="WhatsApp Automation">WhatsApp Automation</option>
+                      <option value="AI Business Automation">AI Business Automation</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-zinc-400 uppercase">Author Name</label>
+                    <Input 
+                      required 
+                      value={blogFormData.author}
+                      onChange={e => setBlogFormData({ ...blogFormData, author: e.target.value })}
+                      placeholder="e.g. Aditya Gupta" 
+                      className="bg-zinc-950 border-zinc-800 text-xs h-11"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-zinc-400 uppercase">Author Role</label>
+                    <Input 
+                      required 
+                      value={blogFormData.authorRole}
+                      onChange={e => setBlogFormData({ ...blogFormData, authorRole: e.target.value })}
+                      placeholder="e.g. Founder & CEO, Opsiys" 
+                      className="bg-zinc-950 border-zinc-800 text-xs h-11"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-zinc-400 uppercase">Read Time</label>
+                    <Input 
+                      required 
+                      value={blogFormData.readTime}
+                      onChange={e => setBlogFormData({ ...blogFormData, readTime: e.target.value })}
+                      placeholder="e.g. 5 min read" 
+                      className="bg-zinc-950 border-zinc-800 text-xs h-11"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-zinc-400 uppercase">Featured Banner Image URL</label>
+                    <Input 
+                      required 
+                      value={blogFormData.image}
+                      onChange={e => setBlogFormData({ ...blogFormData, image: e.target.value })}
+                      placeholder="e.g. /images/blog_online_presence.png" 
+                      className="bg-zinc-950 border-zinc-800 text-xs h-11"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-mono text-zinc-400 uppercase">Short Excerpt (Card Summary)</label>
+                  <textarea 
+                    required 
+                    rows={2}
+                    value={blogFormData.excerpt}
+                    onChange={e => setBlogFormData({ ...blogFormData, excerpt: e.target.value })}
+                    placeholder="Brief 2-sentence summary displayed on blog list cards..." 
+                    className="w-full bg-zinc-950 border border-zinc-800 text-xs rounded-xl p-3 text-white focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-mono text-zinc-400 uppercase font-bold text-accent">Full Article Body Content (Markdown Supported)</label>
+                  <p className="text-[10px] text-zinc-500 font-mono">Use &apos;## Section Title&apos; for headings, &apos;&gt; Callout&apos; for quotes, and &apos;- Item&apos; for bullet points.</p>
+                  <textarea 
+                    required 
+                    rows={8}
+                    value={blogFormData.content}
+                    onChange={e => setBlogFormData({ ...blogFormData, content: e.target.value })}
+                    placeholder={`Write your complete article here...\n\n## 1. First Core Strategy\nExplain your first main strategy in detailed paragraphs...\n\n> Pro Tip: Key takeaway box for readers\n\n## 2. Second Core Strategy\nExplain next strategy...`}
+                    className="w-full bg-zinc-950 border border-zinc-800 text-xs rounded-xl p-4 text-white focus:outline-none font-mono leading-relaxed"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <input 
+                    type="checkbox" 
+                    id="blogPublishToggle"
+                    checked={blogFormData.published}
+                    onChange={e => setBlogFormData({ ...blogFormData, published: e.target.checked })}
+                    className="w-4 h-4 accent-accent"
+                  />
+                  <label htmlFor="blogPublishToggle" className="text-xs font-mono text-zinc-300">Publish Article Immediately on Public Blog (/blog)</label>
+                </div>
+
+                <div className="pt-4 border-t border-zinc-800 flex justify-end gap-3">
+                  <Button type="button" variant="ghost" onClick={() => setShowBlogModal(false)} className="text-xs uppercase font-bold text-zinc-400">Cancel</Button>
+                  <Button type="submit" className="bg-white text-black hover:bg-zinc-200 font-extrabold text-xs uppercase px-6 h-11 rounded-xl">Save & Publish Article</Button>
                 </div>
               </form>
             </motion.div>
