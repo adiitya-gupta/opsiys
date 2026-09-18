@@ -22,6 +22,7 @@ const ContactPage = React.lazy(() => import("./pages/ContactPage"));
 const CareersPage = React.lazy(() => import("./pages/Careers"));
 const PackagesPage = React.lazy(() => import("./pages/Packages"));
 const NotFoundPage = React.lazy(() => import("./pages/NotFound"));
+const AdminPage = React.lazy(() => import("./pages/Admin"));
 import { PortfolioPlaceholder } from "./components/PortfolioPlaceholder";
 import { LogoPlaceholder } from "./components/LogoPlaceholder";
 import { GreetingMascot } from "./components/GreetingMascot";
@@ -69,7 +70,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { signInWithGoogle, logout, auth, submitLead, updateProfile, getUserProfile, subscribeToUserLeads } from "./lib/firebase";
+import { signInWithGoogle, logout, auth, submitLead, updateProfile, getUserProfile, subscribeToUserLeads, subscribeToSystemSettings } from "./lib/firebase";
+import { MaintenanceOverlay } from "./components/MaintenanceOverlay";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 
 /**
@@ -268,6 +270,16 @@ const Navbar = ({
                         >
                           <User size={12} className="mr-2 group-hover:text-blue-600" /> Account Settings
                         </Button>
+                        {user?.email === "adityaofficial9918@gmail.com" && (
+                          <Link to="/admin" onClick={() => setPortalOpen(false)}>
+                            <Button 
+                              variant="ghost" 
+                              className="w-full justify-start text-[9px] font-extrabold uppercase tracking-widest h-9 hover:bg-purple-50 text-purple-600 rounded-xl group"
+                            >
+                              <ShieldCheck size={12} className="mr-2 group-hover:text-purple-700" /> Admin Control
+                            </Button>
+                          </Link>
+                        )}
                         <div className="pt-1 mt-1 border-t border-zinc-50">
                           <Button 
                             variant="ghost" 
@@ -2396,38 +2408,61 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 // --- Main App ---
 
+const AppContent = () => {
+  const location = useLocation();
+  const [systemSettings, setSystemSettings] = React.useState<any>({ maintenanceMode: true });
+
+  React.useEffect(() => {
+    const unsubscribe = subscribeToSystemSettings((settings) => {
+      setSystemSettings(settings);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  if (systemSettings?.maintenanceMode && !isAdminRoute) {
+    return <MaintenanceOverlay message={systemSettings?.message} />;
+  }
+
+  return (
+    <div className="min-h-screen min-w-0 w-full overflow-x-hidden bg-white font-sans selection:bg-accent selection:text-white relative">
+      <ScrollToRoute />
+      <AuthPortal />
+      <React.Suspense fallback={<div className="min-h-screen bg-white" />}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/services/:slug" element={<ServiceDetailPage />} />
+          <Route path="/packages" element={<PackagesPage />} />
+          <Route path="/pricing" element={<PackagesPage />} />
+          <Route path="/industries" element={<IndustriesPage />} />
+          <Route path="/industries/:slug" element={<IndustryDetailPage />} />
+          <Route path="/locations" element={<LocationsPage />} />
+          <Route path="/locations/:slug" element={<LocationDetailPage />} />
+          <Route path="/case-studies" element={<CaseStudiesPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/process" element={<ProcessPage />} />
+          <Route path="/discovery" element={<DiscoveryPage />} />
+          <Route path="/404" element={<NotFoundPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </React.Suspense>
+      <Footer />
+    </div>
+  );
+};
+
 export default function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <div className="min-h-screen min-w-0 w-full overflow-x-hidden bg-white font-sans selection:bg-accent selection:text-white relative">
-          <ScrollToRoute />
-          <AuthPortal />
-          <React.Suspense fallback={<div className="min-h-screen bg-white" />}>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/services/:slug" element={<ServiceDetailPage />} />
-              <Route path="/packages" element={<PackagesPage />} />
-              <Route path="/pricing" element={<PackagesPage />} />
-              <Route path="/industries" element={<IndustriesPage />} />
-              <Route path="/industries/:slug" element={<IndustryDetailPage />} />
-              <Route path="/locations" element={<LocationsPage />} />
-              <Route path="/locations/:slug" element={<LocationDetailPage />} />
-              <Route path="/case-studies" element={<CaseStudiesPage />} />
-              <Route path="/blog" element={<BlogPage />} />
-              <Route path="/blog/:slug" element={<BlogPostPage />} />
-              <Route path="/careers" element={<CareersPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/process" element={<ProcessPage />} />
-              <Route path="/discovery" element={<DiscoveryPage />} />
-              <Route path="/404" element={<NotFoundPage />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </React.Suspense>
-          <Footer />
-        </div>
+        <AppContent />
       </Router>
     </ErrorBoundary>
   );

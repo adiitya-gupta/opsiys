@@ -9,6 +9,8 @@ import {
   doc, 
   getDoc, 
   setDoc, 
+  updateDoc,
+  deleteDoc,
   query, 
   where, 
   orderBy, 
@@ -170,3 +172,198 @@ export const subscribeToUserLeads = (userId: string, callback: (leads: any[]) =>
     return () => {};
   }
 };
+
+// --- ADMIN API SERVICES ---
+
+export const subscribeToAllLeads = (callback: (leads: any[]) => void) => {
+  try {
+    const leadsRef = collection(db, "leads");
+    const q = query(leadsRef, orderBy("createdAt", "desc"));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const leads = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        callback(leads);
+      },
+      (err) => {
+        console.warn("Admin leads subscription error:", err);
+        // Fallback without ordering if index is building
+        onSnapshot(leadsRef, (snap) => {
+          callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to all leads:", err);
+    return () => {};
+  }
+};
+
+export const updateLeadStatus = async (leadId: string, status: string) => {
+  const leadRef = doc(db, "leads", leadId);
+  await updateDoc(leadRef, { status });
+};
+
+export const deleteLead = async (leadId: string) => {
+  const leadRef = doc(db, "leads", leadId);
+  await deleteDoc(leadRef);
+};
+
+export const subscribeToCareerApplications = (callback: (apps: any[]) => void) => {
+  try {
+    const appsRef = collection(db, "career_applications");
+    const q = query(appsRef, orderBy("createdAt", "desc"));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const apps = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        callback(apps);
+      },
+      (err) => {
+        console.warn("Admin career apps subscription error:", err);
+        onSnapshot(appsRef, (snap) => {
+          callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to career applications:", err);
+    return () => {};
+  }
+};
+
+export const updateCareerApplicationStatus = async (appId: string, status: string) => {
+  const appRef = doc(db, "career_applications", appId);
+  await updateDoc(appRef, { status });
+};
+
+export const deleteCareerApplication = async (appId: string) => {
+  const appRef = doc(db, "career_applications", appId);
+  await deleteDoc(appRef);
+};
+
+export const subscribeToPayments = (callback: (payments: any[]) => void) => {
+  try {
+    const paymentsRef = collection(db, "payments");
+    const q = query(paymentsRef, orderBy("createdAt", "desc"));
+    return onSnapshot(
+      q,
+      (snapshot) => {
+        const payments = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        callback(payments);
+      },
+      (err) => {
+        console.warn("Admin payments subscription error:", err);
+        onSnapshot(paymentsRef, (snap) => {
+          callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+        });
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to payments:", err);
+    return () => {};
+  }
+};
+
+export const subscribeToProfiles = (callback: (profiles: any[]) => void) => {
+  try {
+    const profilesRef = collection(db, "profiles");
+    return onSnapshot(
+      profilesRef,
+      (snapshot) => {
+        const profiles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        callback(profiles);
+      },
+      (err) => {
+        console.warn("Admin profiles subscription error:", err);
+        callback([]);
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to profiles:", err);
+    return () => {};
+  }
+};
+
+// --- Job Openings Service ---
+
+export const subscribeToJobOpenings = (callback: (jobs: any[]) => void) => {
+  try {
+    const jobsRef = collection(db, "job_openings");
+    return onSnapshot(
+      jobsRef,
+      (snapshot) => {
+        const jobs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        callback(jobs);
+      },
+      (err) => {
+        console.warn("Job openings subscription notice:", err);
+        callback([]);
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to job openings:", err);
+    return () => {};
+  }
+};
+
+export const saveJobOpening = async (jobData: {
+  id?: string;
+  title: string;
+  department: string;
+  location: string;
+  type: string;
+  experience: string;
+  description: string;
+  active: boolean;
+}) => {
+  const jobsRef = collection(db, "job_openings");
+  if (jobData.id) {
+    const jobDoc = doc(db, "job_openings", jobData.id);
+    await setDoc(jobDoc, { ...jobData, updatedAt: serverTimestamp() }, { merge: true });
+  } else {
+    await addDoc(jobsRef, { ...jobData, createdAt: serverTimestamp(), active: jobData.active ?? true });
+  }
+};
+
+export const deleteJobOpening = async (jobId: string) => {
+  const jobDoc = doc(db, "job_openings", jobId);
+  await deleteDoc(jobDoc);
+};
+
+// --- System Maintenance Service ---
+
+export const subscribeToSystemSettings = (callback: (settings: any) => void) => {
+  try {
+    const settingsDoc = doc(db, "settings", "system");
+    return onSnapshot(
+      settingsDoc,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          callback(snapshot.data());
+        } else {
+          // Default maintenance mode setting
+          callback({ maintenanceMode: true, message: "OPSIYS Systems undergoing scheduled infrastructure upgrade. Core services temporarily paused for public access." });
+        }
+      },
+      (err) => {
+        console.warn("System settings listener fallback notice:", err);
+        callback({ maintenanceMode: true });
+      }
+    );
+  } catch (err) {
+    console.error("Failed to subscribe to system settings:", err);
+    return () => {};
+  }
+};
+
+export const updateSystemMaintenanceMode = async (maintenanceMode: boolean, message?: string) => {
+  const settingsDoc = doc(db, "settings", "system");
+  await setDoc(settingsDoc, {
+    maintenanceMode,
+    message: message || "OPSIYS Systems undergoing scheduled infrastructure upgrade. Core services temporarily paused for public access.",
+    updatedAt: serverTimestamp()
+  }, { merge: true });
+};
+
+

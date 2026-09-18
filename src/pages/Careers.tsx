@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { SEO } from "../components/SEO";
@@ -25,7 +25,7 @@ import {
   Send,
   AlertCircle
 } from "lucide-react";
-import { submitCareerApplication } from "../lib/firebase";
+import { submitCareerApplication, subscribeToJobOpenings } from "../lib/firebase";
 
 // --- Types ---
 interface JobOpening {
@@ -46,7 +46,16 @@ export const CareersPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [fileError, setFileError] = useState("");
+  const [submitError, setSubmitError] = useState("");
   const [selectedFileName, setSelectedFileName] = useState("");
+  const [liveJobs, setLiveJobs] = useState<JobOpening[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToJobOpenings((jobs) => {
+      setLiveJobs(jobs as JobOpening[]);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -66,9 +75,14 @@ export const CareersPage: React.FC = () => {
     additionalInfo: ""
   });
 
+  const activeJobOpenings = liveJobs.filter(j => j.active !== false).length > 0
+    ? liveJobs.filter(j => j.active !== false)
+    : JOB_OPENINGS_LIST;
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setFileError("");
+    setSubmitError("");
     
     if (!file) return;
 
@@ -102,6 +116,7 @@ export const CareersPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
     if (!formData.resumeFileName && !formData.portfolioUrl) {
       setFileError("Please attach a Resume/CV document or provide a Portfolio link.");
       return;
@@ -127,9 +142,9 @@ export const CareersPage: React.FC = () => {
         additionalInfo: formData.additionalInfo
       });
       setSubmitted(true);
-    } catch (err) {
-      console.error(err);
-      alert("An error occurred submitting your profile. Please try again.");
+    } catch (err: any) {
+      console.error("Career application submit error:", err);
+      setSubmitError(err?.message || "An error occurred submitting your profile. Please check your internet connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -397,9 +412,9 @@ export const CareersPage: React.FC = () => {
               </Badge>
             </div>
 
-            {JOB_OPENINGS_LIST.length > 0 ? (
+            {activeJobOpenings.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {JOB_OPENINGS_LIST.map((job) => (
+                {activeJobOpenings.map((job) => (
                   <div key={job.id} className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 space-y-4 hover:border-black transition-all shadow-sm">
                     <div className="flex items-start justify-between gap-4">
                       <div>
@@ -705,6 +720,13 @@ export const CareersPage: React.FC = () => {
                     </div>
                   </div>
 
+                  {submitError && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-mono flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
+                      <span>{submitError}</span>
+                    </div>
+                  )}
+
                   <Button 
                     type="submit" 
                     disabled={loading}
@@ -716,6 +738,7 @@ export const CareersPage: React.FC = () => {
               )}
             </div>
           </section>
+
 
         </div>
       </div>

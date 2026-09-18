@@ -10,8 +10,7 @@ service cloud.firestore {
 
     // --- Helpers ---
     function isSignedIn() { return request.auth != null; }
-    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
-    function isAdmin() { return isVerified() && request.auth.token.email == "adityaofficial9918@gmail.com"; }
+    function isAdmin() { return isSignedIn() && request.auth.token.email == "adityaofficial9918@gmail.com"; }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
     function incoming() { return request.resource.data; }
     
@@ -52,21 +51,54 @@ service cloud.firestore {
 
       // 3. Updating: Only YOU can update lead status
       allow update: if isAdmin() && 
-                      incoming().createdAt == resource.data.createdAt; // Prevent creation date tampering
+                      incoming().createdAt == resource.data.createdAt;
 
       // 4. Deleting: Only YOU can delete junk leads
       allow delete: if isAdmin();
     }
 
+    // Career Applications
+    match /career_applications/{appId} {
+      // Anyone can submit career applications
+      allow create: if isValidId(appId) &&
+                      incoming().fullName is string && incoming().fullName.size() > 0 && incoming().fullName.size() <= 200 &&
+                      incoming().email is string && incoming().email.size() > 5 && incoming().email.size() <= 255 &&
+                      incoming().phone is string && incoming().phone.size() > 0 && incoming().phone.size() <= 50;
+      
+      // Admin can view, update status, delete applications
+      allow get, list, update, delete: if isAdmin();
+    }
+
+    // Razorpay Payments Audit Trail
+    match /payments/{paymentId} {
+      allow create: if isValidId(paymentId);
+      allow get, list, update, delete: if isAdmin();
+    }
+
+    // Active Job Openings Management
+    match /job_openings/{jobId} {
+      allow read, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // User Profile Management
     match /profiles/{userId} {
-      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow list: if isAdmin();
       allow create, update: if isValidId(userId) && isSignedIn() && request.auth.uid == userId && isValidProfile(incoming());
+    }
+
+    // System Settings & Maintenance Configuration
+    match /settings/{settingId} {
+      allow read, list: if true;
+      allow create, update, delete: if isAdmin();
     }
 
     // Identity Isolation for Users
     match /users/{userId} {
-      allow read, write: if isVerified() && request.auth.uid == userId;
+      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
     }
   }
 }
+
+
