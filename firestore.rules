@@ -10,7 +10,7 @@ service cloud.firestore {
 
     // --- Helpers ---
     function isSignedIn() { return request.auth != null; }
-    function isAdminEmail() { return isSignedIn() && (request.auth.token.email == "adityaofficial9918@gmail.com" || request.auth.token.email == "kushwahakunal644@gmail.com"); }
+    function isAdminEmail() { return isSignedIn() && (request.auth.token.email == "adityaofficial9918@gmail.com" || request.auth.token.email == "kushwahakunal644@gmail.com" || request.auth.token.email == "krishnatktr1@gmail.com"); }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
     function incoming() { return request.resource.data; }
 
@@ -39,6 +39,11 @@ service cloud.firestore {
 
     // Blog Posts & Articles Management
     match /blog_posts/{blogId} {
+      allow read, list, create, update, delete: if true;
+    }
+
+    // Dynamic Admin Accounts Management
+    match /admin_users/{adminId} {
       allow read, list, create, update, delete: if true;
     }
 

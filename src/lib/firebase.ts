@@ -652,3 +652,115 @@ export const deleteBlogPost = async (blogId: string) => {
   }
 };
 
+// --- Dynamic Admin Users Service ---
+
+export const DEFAULT_ADMIN_EMAILS = [
+  "adityaofficial9918@gmail.com",
+  "kushwahakunal644@gmail.com",
+  "krishnatktr1@gmail.com"
+];
+
+export interface AdminUserAccount {
+  id?: string;
+  email: string;
+  role: string;
+  addedBy?: string;
+  addedAt?: string;
+}
+
+export const subscribeToAdminEmails = (callback: (admins: AdminUserAccount[]) => void) => {
+  const defaultAccounts: AdminUserAccount[] = DEFAULT_ADMIN_EMAILS.map(email => ({
+    id: "default_" + email.replace(/[^a-z0-9]/gi, "_"),
+    email,
+    role: email === "adityaofficial9918@gmail.com" ? "Super Admin" : "Master Admin",
+    addedBy: "System Core",
+    addedAt: "Default System Admin"
+  }));
+
+  const storedAdmins = getStorageItem("opsiys_admin_accounts", defaultAccounts);
+  // Ensure default emails are always present
+  const mergedMap = new Map<string, AdminUserAccount>();
+  defaultAccounts.forEach(a => mergedMap.set(a.email.toLowerCase().trim(), a));
+  storedAdmins.forEach((a: AdminUserAccount) => {
+    if (a.email) mergedMap.set(a.email.toLowerCase().trim(), a);
+  });
+  const mergedList = Array.from(mergedMap.values());
+  callback(mergedList);
+
+  try {
+    const adminsRef = collection(db, "admin_users");
+    return onSnapshot(
+      adminsRef,
+      (snapshot) => {
+        const firestoreAdmins = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as AdminUserAccount));
+        const finalMap = new Map<string, AdminUserAccount>();
+        defaultAccounts.forEach(a => finalMap.set(a.email.toLowerCase().trim(), a));
+        firestoreAdmins.forEach(a => {
+          if (a.email) finalMap.set(a.email.toLowerCase().trim(), a);
+        });
+        const finalList = Array.from(finalMap.values());
+        setStorageItem("opsiys_admin_accounts", finalList);
+        callback(finalList);
+      },
+      (err) => {
+        console.warn("Admin accounts subscription notice:", err?.message || err);
+        callback(getStorageItem("opsiys_admin_accounts", mergedList));
+      }
+    );
+  } catch (err) {
+    console.warn("Failed to subscribe to admin accounts:", err);
+    return () => {};
+  }
+};
+
+export const addAdminEmail = async (email: string, role: string = "Master Admin", addedBy: string = "Super Admin") => {
+  const cleanEmail = email.toLowerCase().trim();
+  if (!cleanEmail) return;
+
+  const currentAdmins = getStorageItem("opsiys_admin_accounts", []);
+  const newAccount: AdminUserAccount = {
+    id: "admin_" + Date.now() + "_" + Math.random().toString(36).substring(2, 6),
+    email: cleanEmail,
+    role,
+    addedBy,
+    addedAt: new Date().toISOString().split("T")[0]
+  };
+
+  const existingIdx = currentAdmins.findIndex((a: any) => a.email.toLowerCase().trim() === cleanEmail);
+  if (existingIdx >= 0) {
+    currentAdmins[existingIdx] = newAccount;
+  } else {
+    currentAdmins.push(newAccount);
+  }
+  setStorageItem("opsiys_admin_accounts", currentAdmins);
+
+  try {
+    const adminDoc = doc(db, "admin_users", cleanEmail.replace(/[^a-z0-9]/gi, "_"));
+    await setDoc(adminDoc, {
+      ...newAccount,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (err) {
+    console.warn("Admin addition fallback notice:", err);
+  }
+};
+
+export const removeAdminEmail = async (email: string) => {
+  const cleanEmail = email.toLowerCase().trim();
+  if (cleanEmail === "adityaofficial9918@gmail.com") {
+    throw new Error("Primary Super Admin account cannot be removed.");
+  }
+
+  const currentAdmins = getStorageItem("opsiys_admin_accounts", []);
+  const filtered = currentAdmins.filter((a: any) => a.email.toLowerCase().trim() !== cleanEmail);
+  setStorageItem("opsiys_admin_accounts", filtered);
+
+  try {
+    const adminDoc = doc(db, "admin_users", cleanEmail.replace(/[^a-z0-9]/gi, "_"));
+    await deleteDoc(adminDoc);
+  } catch (err) {
+    console.warn("Admin deletion fallback notice:", err);
+  }
+};
+
+

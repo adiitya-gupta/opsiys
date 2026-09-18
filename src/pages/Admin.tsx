@@ -24,7 +24,12 @@ import {
   subscribeToBlogPosts,
   saveBlogPost,
   deleteBlogPost,
-  BlogPostItem
+  BlogPostItem,
+  subscribeToAdminEmails,
+  addAdminEmail,
+  removeAdminEmail,
+  AdminUserAccount,
+  DEFAULT_ADMIN_EMAILS
 } from "../lib/firebase";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { 
@@ -58,10 +63,12 @@ import {
   Phone,
   MapPin,
   ShieldAlert,
-  Power
+  Power,
+  UserPlus,
+  Shield
 } from "lucide-react";
 
-const ADMIN_EMAILS = ["adityaofficial9918@gmail.com", "kushwahakunal644@gmail.com"];
+const HARDCODED_ADMINS = ["adityaofficial9918@gmail.com", "kushwahakunal644@gmail.com", "krishnatktr1@gmail.com"];
 
 export const AdminPage: React.FC = () => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -75,9 +82,16 @@ export const AdminPage: React.FC = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [jobOpenings, setJobOpenings] = useState<any[]>([]);
   const [blogs, setBlogs] = useState<BlogPostItem[]>([]);
+  const [adminAccounts, setAdminAccounts] = useState<AdminUserAccount[]>([]);
   const [systemSettings, setSystemSettings] = useState<any>({ maintenanceMode: true, message: "" });
   const [customMsg, setCustomMsg] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
+
+  // New Admin Form State
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [newAdminRole, setNewAdminRole] = useState("Master Admin");
+  const [addingAdmin, setAddingAdmin] = useState(false);
+  const [adminMsg, setAdminMsg] = useState("");
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState("");
@@ -155,8 +169,10 @@ export const AdminPage: React.FC = () => {
     }
   };
 
+  const dynamicEmails = adminAccounts.map(a => a.email.toLowerCase().trim());
+  const allAdminEmails = Array.from(new Set([...HARDCODED_ADMINS.map(e => e.toLowerCase().trim()), ...dynamicEmails]));
   const userEmailLower = user?.email?.toLowerCase().trim();
-  const isAdmin = (userEmailLower && ADMIN_EMAILS.includes(userEmailLower)) || isPasscodeUnlocked;
+  const isAdmin = (userEmailLower && allAdminEmails.includes(userEmailLower)) || isPasscodeUnlocked;
 
   // Attach Real-time Listeners when authenticated as Admin
   useEffect(() => {
@@ -168,6 +184,7 @@ export const AdminPage: React.FC = () => {
     const unSubProfiles = subscribeToProfiles(setProfiles);
     const unSubJobs = subscribeToJobOpenings(setJobOpenings);
     const unSubBlogs = subscribeToBlogPosts(setBlogs);
+    const unSubAdmins = subscribeToAdminEmails(setAdminAccounts);
     const unSubSettings = subscribeToSystemSettings((settings) => {
       setSystemSettings(settings);
       if (settings?.message && !customMsg) setCustomMsg(settings.message);
@@ -180,6 +197,7 @@ export const AdminPage: React.FC = () => {
       unSubProfiles();
       unSubJobs();
       unSubBlogs();
+      unSubAdmins();
       unSubSettings();
     };
   }, [isAdmin]);
@@ -194,6 +212,22 @@ export const AdminPage: React.FC = () => {
       console.error("Failed to update maintenance mode:", err);
     } finally {
       setSavingSettings(false);
+    }
+  };
+
+  const handleAddAdminSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAdminEmail) return;
+    setAddingAdmin(true);
+    setAdminMsg("");
+    try {
+      await addAdminEmail(newAdminEmail, newAdminRole, user?.email || "Super Admin");
+      setAdminMsg(`Admin access successfully granted to ${newAdminEmail}`);
+      setNewAdminEmail("");
+    } catch (err: any) {
+      setAdminMsg("Failed to grant admin access: " + (err?.message || err));
+    } finally {
+      setAddingAdmin(false);
     }
   };
 
@@ -430,7 +464,7 @@ export const AdminPage: React.FC = () => {
                 Opsiys Master Control
               </h1>
               <p className="text-zinc-400 text-xs leading-relaxed font-medium">
-                This administration console is restricted to authorized personnel ({ADMIN_EMAILS.join(", ")}).
+                This administration console is restricted to authorized personnel ({allAdminEmails.slice(0, 3).join(", ")}).
               </p>
             </div>
 
@@ -444,7 +478,7 @@ export const AdminPage: React.FC = () => {
               </div>
             )}
 
-            {user && user.email && !ADMIN_EMAILS.includes(user.email.toLowerCase().trim()) && (
+            {user && user.email && !allAdminEmails.includes(user.email.toLowerCase().trim()) && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-mono">
                 Signed in as {user.email} (Not Authorized)
               </div>
@@ -626,10 +660,10 @@ export const AdminPage: React.FC = () => {
                     color: "border-blue-500/30 text-blue-400 bg-blue-500/5"
                   },
                   {
-                    title: "Published Blogs",
-                    value: blogs.filter(b => b.published !== false).length,
-                    sub: `${blogs.length} articles created in studio`,
-                    icon: BookOpen,
+                    title: "Authorized Admins",
+                    value: adminAccounts.length,
+                    sub: `Super Admin & Master Admins`,
+                    icon: Shield,
                     color: "border-purple-500/30 text-purple-400 bg-purple-500/5"
                   },
                   {
@@ -1327,7 +1361,115 @@ export const AdminPage: React.FC = () => {
 
           {/* 8. SYSTEM MAINTENANCE & SETTINGS TAB */}
           {activeTab === "settings" && (
-            <div className="space-y-6">
+            <div className="space-y-8">
+
+              {/* SECTION A: DYNAMIC ADMIN ACCOUNTS STUDIO */}
+              <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                  <div className="space-y-1">
+                    <h2 className="text-xl font-bold uppercase tracking-tight text-white flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-purple-400" /> Admin Access & User Authorization Studio
+                    </h2>
+                    <p className="text-xs text-zinc-400 font-mono">
+                      Super Admins can grant or revoke full administrative access to team members dynamically.
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="border-purple-500/40 text-purple-400 bg-purple-500/10 font-mono text-xs uppercase px-3 py-1">
+                    {adminAccounts.length} AUTHORIZED ADMINS
+                  </Badge>
+                </div>
+
+                {/* Add New Admin Form */}
+                <form onSubmit={handleAddAdminSubmit} className="space-y-4 bg-zinc-950 p-6 border border-zinc-800 rounded-xl">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-zinc-300 uppercase">
+                    <UserPlus className="w-4 h-4 text-emerald-400" />
+                    <span>Grant New Admin Credentials</span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <Input 
+                      type="email"
+                      required
+                      placeholder="Enter Admin Google Email (e.g. krishnatktr1@gmail.com)"
+                      value={newAdminEmail}
+                      onChange={e => setNewAdminEmail(e.target.value)}
+                      className="bg-zinc-900 border-zinc-800 text-xs h-11 text-white placeholder:text-zinc-600 flex-1"
+                    />
+                    <select
+                      value={newAdminRole}
+                      onChange={e => setNewAdminRole(e.target.value)}
+                      className="bg-zinc-900 border border-zinc-800 text-xs rounded-xl h-11 px-3 text-white shrink-0 focus:outline-none"
+                    >
+                      <option value="Master Admin">Master Admin</option>
+                      <option value="Super Admin">Super Admin</option>
+                      <option value="Operations Manager">Operations Manager</option>
+                    </select>
+                    <Button 
+                      type="submit"
+                      disabled={addingAdmin}
+                      className="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs uppercase tracking-widest h-11 px-6 rounded-xl shrink-0"
+                    >
+                      {addingAdmin ? "Granting..." : "Grant Admin Access"}
+                    </Button>
+                  </div>
+
+                  {adminMsg && (
+                    <p className="text-xs font-mono text-emerald-400 pt-1">{adminMsg}</p>
+                  )}
+                </form>
+
+                {/* Admin Accounts Table */}
+                <div className="overflow-x-auto border border-zinc-800/80 rounded-xl">
+                  <table className="w-full text-left text-xs font-mono">
+                    <thead className="bg-zinc-950 border-b border-zinc-800 uppercase tracking-wider text-zinc-400 text-[10px]">
+                      <tr>
+                        <th className="p-4">Admin Email Address</th>
+                        <th className="p-4">Access Level / Role</th>
+                        <th className="p-4">Authorized By</th>
+                        <th className="p-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-800/60">
+                      {adminAccounts.map((acc, idx) => (
+                        <tr key={acc.id || idx} className="hover:bg-zinc-800/40 transition-colors">
+                          <td className="p-4 font-bold text-white font-sans">
+                            {acc.email}
+                          </td>
+                          <td className="p-4">
+                            <Badge variant="outline" className={`font-mono text-[10px] uppercase ${
+                              acc.email.toLowerCase().trim() === 'adityaofficial9918@gmail.com' ? 'border-amber-500/40 text-amber-400 bg-amber-500/10' :
+                              'border-purple-500/40 text-purple-400 bg-purple-500/10'
+                            }`}>
+                              {acc.role || 'Master Admin'}
+                            </Badge>
+                          </td>
+                          <td className="p-4 text-zinc-400">{acc.addedBy || 'System Core'}</td>
+                          <td className="p-4 text-right">
+                            {acc.email.toLowerCase().trim() !== 'adityaofficial9918@gmail.com' ? (
+                              <Button 
+                                onClick={async () => {
+                                  if (confirm(`Revoke admin access from ${acc.email}?`)) {
+                                    await removeAdminEmail(acc.email);
+                                  }
+                                }}
+                                variant="ghost" 
+                                size="sm" 
+                                className="text-red-400 hover:bg-red-500/10 font-bold text-xs uppercase"
+                              >
+                                Revoke Access
+                              </Button>
+                            ) : (
+                              <span className="text-[10px] text-amber-400 font-mono">Primary Super Admin</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* SECTION B: SYSTEM MAINTENANCE RELEASE CONTROL */}
               <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
                 <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
                   <div className="space-y-1">
