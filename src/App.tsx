@@ -102,10 +102,16 @@ const Logo = ({ variant = "navbar" }: { variant?: "navbar" | "footer" }) => (
 );
 
 const ScrollToRoute = () => {
-  const { pathname, hash } = useLocation();
+  const { pathname, hash, key } = useLocation();
+
+  React.useLayoutEffect(() => {
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
 
   React.useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
+    const scrollToTop = () => {
       if (hash) {
         const target = document.getElementById(hash.slice(1));
         if (target) {
@@ -114,11 +120,26 @@ const ScrollToRoute = () => {
         }
       }
 
-      window.scrollTo({ top: 0, behavior: "auto" });
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    scrollToTop();
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollToTop();
     });
 
-    return () => window.cancelAnimationFrame(frame);
-  }, [pathname, hash]);
+    const timer = setTimeout(() => {
+      scrollToTop();
+    }, 50);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
+  }, [pathname, hash, key]);
 
   return null;
 };
