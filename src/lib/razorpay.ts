@@ -175,7 +175,7 @@ export const initiateRazorpayPayment = async ({
     currency: "INR",
     name: "OPSIYS Systems Inc.",
     description: isDeposit ? `Booking Deposit: ${packageName}` : `Package Subscription: ${packageName}`,
-    image: "https://opsiys.in/logos/opsiyslogo.png",
+    image: "https://www.opsiys.in/logos/opsiyslogo.png",
     order_id: serverOrderId || undefined,
     prefill: {
       name: customer.name,

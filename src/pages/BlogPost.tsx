@@ -31,15 +31,15 @@ export const BlogPostPage: React.FC = () => {
     "publisher": {
       "@type": "Organization",
       "name": "OPSIYS Systems Inc.",
-      "url": "https://opsiys.in/",
+      "url": "https://www.opsiys.in/",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://opsiys.in/logos/opsiyslogo.png"
+        "url": "https://www.opsiys.in/logos/opsiyslogo.png"
       }
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://opsiys.in/blog/${post.slug}`
+      "@id": `https://www.opsiys.in/blog/${post.slug}`
     }
   };
 
@@ -48,7 +48,7 @@ export const BlogPostPage: React.FC = () => {
       <SEO
         title={post.seoTitle}
         description={post.seoDesc}
-        canonical={`https://opsiys.in/blog/${post.slug}`}
+        canonical={`https://www.opsiys.in/blog/${post.slug}`}
         schema={blogSchema}
       />
 

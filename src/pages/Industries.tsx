@@ -78,7 +78,7 @@ export const IndustriesPage: React.FC = () => {
       <SEO
         title="Industries We Serve | Specialized Growth Partner | Opsiys"
         description="Opsiys provides specialized digital growth, SEO, lead generation, and automation solutions for clinics, real estate, restaurants, coaching, and finance."
-        canonical="https://opsiys.in/industries"
+        canonical="https://www.opsiys.in/industries"
       />
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">
         <Breadcrumbs items={[{ label: "Industries" }]} />

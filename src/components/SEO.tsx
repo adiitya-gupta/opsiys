@@ -16,8 +16,8 @@ interface SEOProps {
 
 const DEFAULT_TITLE = "Opsiys | Business Growth Partner for Digital Growth";
 const DEFAULT_DESCRIPTION = "Opsiys is a business growth partner helping businesses build their online presence, increase visibility, generate opportunities and automate growth through marketing, SEO, Meta Ads, websites and automation.";
-const DEFAULT_IMAGE = "https://opsiys.in/logos/opsiyslogo.png";
-const SITE_URL = "https://opsiys.in";
+const DEFAULT_IMAGE = "https://www.opsiys.in/logos/opsiyslogo.png";
+const SITE_URL = "https://www.opsiys.in";
 
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? React.useLayoutEffect : React.useEffect;
 
@@ -32,7 +32,11 @@ export const SEO: React.FC<SEOProps> = ({
 }) => {
   const computeCanonicalUrl = (): string => {
     if (canonical) {
-      return canonical.replace("https://www.opsiys.in", SITE_URL);
+      if (canonical.startsWith("http://") || canonical.startsWith("https://")) {
+        return canonical.replace(/^https?:\/\/(www\.)?opsiys\.in/, SITE_URL);
+      }
+      const cleanCanonical = canonical.startsWith("/") ? canonical : `/${canonical}`;
+      return `${SITE_URL}${cleanCanonical}`;
     }
     if (typeof window !== "undefined") {
       const pathname = window.location.pathname;

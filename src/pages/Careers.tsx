@@ -147,7 +147,7 @@ export const CareersPage: React.FC = () => {
       <SEO
         title="Careers at Opsiys | Build What’s Next"
         description="Explore career and collaboration opportunities at Opsiys across technology, marketing, creative, growth and digital solutions."
-        canonical="https://opsiys.in/careers"
+        canonical="https://www.opsiys.in/careers"
       />
 
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">

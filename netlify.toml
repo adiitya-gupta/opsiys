@@ -5,6 +5,19 @@
 [functions]
   directory = "netlify/functions"
 
+# 301 Permanent Redirect from non-www (opsiys.in) to www.opsiys.in preserving path
+[[redirects]]
+  from = "https://opsiys.in/*"
+  to = "https://www.opsiys.in/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://opsiys.in/*"
+  to = "https://www.opsiys.in/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/api/chat"
   to = "/.netlify/functions/chat"

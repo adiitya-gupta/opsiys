@@ -185,7 +185,7 @@ export const IndustryDetailPage: React.FC = () => {
       <SEO
         title={industry.seoTitle}
         description={industry.seoDesc}
-        canonical={`https://opsiys.in/industries/${slug}`}
+        canonical={`https://www.opsiys.in/industries/${slug}`}
       />
 
       <div className="bg-[#FAFAFA] min-h-screen pt-28 pb-20 overflow-hidden">

@@ -2,61 +2,61 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Core Pages -->
   <url>
-    <loc>https://opsiys.in/</loc>
+    <loc>https://www.opsiys.in/</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/packages</loc>
+    <loc>https://www.opsiys.in/packages</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/careers</loc>
+    <loc>https://www.opsiys.in/careers</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/about</loc>
+    <loc>https://www.opsiys.in/about</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/process</loc>
+    <loc>https://www.opsiys.in/process</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/discovery</loc>
+    <loc>https://www.opsiys.in/discovery</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/contact</loc>
+    <loc>https://www.opsiys.in/contact</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/case-studies</loc>
+    <loc>https://www.opsiys.in/case-studies</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/blog</loc>
+    <loc>https://www.opsiys.in/blog</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/blog/how-to-improve-online-presence</loc>
+    <loc>https://www.opsiys.in/blog/how-to-improve-online-presence</loc>
     <lastmod>2026-09-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -64,79 +64,79 @@
 
   <!-- Services Hub & Details -->
   <url>
-    <loc>https://opsiys.in/services</loc>
+    <loc>https://www.opsiys.in/services</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/business-growth</loc>
+    <loc>https://www.opsiys.in/services/business-growth</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/digital-marketing</loc>
+    <loc>https://www.opsiys.in/services/digital-marketing</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/seo</loc>
+    <loc>https://www.opsiys.in/services/seo</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/meta-ads</loc>
+    <loc>https://www.opsiys.in/services/meta-ads</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/lead-generation</loc>
+    <loc>https://www.opsiys.in/services/lead-generation</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/website-development</loc>
+    <loc>https://www.opsiys.in/services/website-development</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/email-automation</loc>
+    <loc>https://www.opsiys.in/services/email-automation</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/whatsapp-automation</loc>
+    <loc>https://www.opsiys.in/services/whatsapp-automation</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/crm-automation</loc>
+    <loc>https://www.opsiys.in/services/crm-automation</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/ai-business-automation</loc>
+    <loc>https://www.opsiys.in/services/ai-business-automation</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/branding</loc>
+    <loc>https://www.opsiys.in/services/branding</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/services/creative</loc>
+    <loc>https://www.opsiys.in/services/creative</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
@@ -144,37 +144,37 @@
 
   <!-- Industries Hub & Details -->
   <url>
-    <loc>https://opsiys.in/industries</loc>
+    <loc>https://www.opsiys.in/industries</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/industries/clinics</loc>
+    <loc>https://www.opsiys.in/industries/clinics</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/industries/real-estate</loc>
+    <loc>https://www.opsiys.in/industries/real-estate</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/industries/restaurants</loc>
+    <loc>https://www.opsiys.in/industries/restaurants</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/industries/coaching</loc>
+    <loc>https://www.opsiys.in/industries/coaching</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/industries/finance</loc>
+    <loc>https://www.opsiys.in/industries/finance</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
@@ -182,37 +182,37 @@
 
   <!-- Locations Hub & Details -->
   <url>
-    <loc>https://opsiys.in/locations</loc>
+    <loc>https://www.opsiys.in/locations</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/locations/noida</loc>
+    <loc>https://www.opsiys.in/locations/noida</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/locations/delhi-ncr</loc>
+    <loc>https://www.opsiys.in/locations/delhi-ncr</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/locations/gorakhpur</loc>
+    <loc>https://www.opsiys.in/locations/gorakhpur</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/locations/chandigarh</loc>
+    <loc>https://www.opsiys.in/locations/chandigarh</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://opsiys.in/locations/ludhiana</loc>
+    <loc>https://www.opsiys.in/locations/ludhiana</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
