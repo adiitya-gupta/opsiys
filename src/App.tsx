@@ -2447,6 +2447,7 @@ const AppContent = () => {
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin/*" element={<AdminPage />} />
           <Route path="/process" element={<ProcessPage />} />
           <Route path="/discovery" element={<DiscoveryPage />} />
           <Route path="/404" element={<NotFoundPage />} />
