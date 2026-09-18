@@ -16,10 +16,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link rel="modulepreload" href="/src/main.tsx" />
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/logos/opsiyslogo.png" />
-    <link rel="shortcut icon" type="image/png" href="/logos/opsiyslogo.png" />
-    <link rel="apple-touch-icon" href="/logos/opsiyslogo.png" />
+    <!-- Favicon & Site Icons (Google Search Compliant) -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/logos/opsiyslogo.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/logos/opsiyslogo.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/logos/opsiyslogo.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logos/opsiyslogo.png" />
 
     <!-- Canonical URL -->
     <link rel="canonical" href="https://opsiys.in/" />
@@ -39,14 +42,19 @@
     <meta name="twitter:description" content="Opsiys is a business growth partner helping businesses build their online presence, increase visibility, generate opportunities and automate growth through marketing, SEO, Meta Ads, websites and automation." />
     <meta name="twitter:image" content="https://opsiys.in/logos/opsiyslogo.png" />
 
-    <!-- JSON-LD Structured Data for Google Search -->
+    <!-- JSON-LD Structured Data for Google Search Favicon & Logo -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "ProfessionalService",
-      "name": "OPSIYS Systems Inc.",
+      "@type": "Organization",
+      "name": "OPSIYS",
       "url": "https://opsiys.in/",
-      "logo": "https://opsiys.in/logos/opsiyslogo.png",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://opsiys.in/logos/opsiyslogo.png",
+        "width": 512,
+        "height": 512
+      },
       "description": "Opsiys is a connected business growth partner & digital solutions company specializing in online presence, SEO, Meta Ads, web development, and business automation.",
       "founder": {
         "@type": "Person",
