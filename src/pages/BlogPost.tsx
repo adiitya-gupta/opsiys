@@ -9,6 +9,127 @@ import { motion } from "motion/react";
 import { Calendar, User, Clock, CheckCircle2, ArrowRight } from "lucide-react";
 import { subscribeToBlogPosts, BlogPostItem } from "../lib/firebase";
 
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { cleanMarkdownContent } from "../lib/markdownUtils";
+
+const markdownComponents: Record<string, React.FC<any>> = {
+  h1: ({ children }: any) => (
+    <h1 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-tight text-black pt-6 pb-2 border-b border-zinc-200">
+      {children}
+    </h1>
+  ),
+  h2: ({ children }: any) => (
+    <h2 className="text-2xl sm:text-3xl font-bold uppercase tracking-tight text-black pt-6 pb-1">
+      {children}
+    </h2>
+  ),
+  h3: ({ children }: any) => (
+    <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-tight text-black pt-4 pb-1">
+      {children}
+    </h3>
+  ),
+  h4: ({ children }: any) => (
+    <h4 className="text-lg font-bold uppercase text-black pt-3 pb-1">
+      {children}
+    </h4>
+  ),
+  p: ({ children }: any) => (
+    <p className="text-zinc-800 text-sm sm:text-base leading-relaxed my-3 font-sans">
+      {children}
+    </p>
+  ),
+  strong: ({ children }: any) => (
+    <strong className="font-bold text-black">{children}</strong>
+  ),
+  em: ({ children }: any) => (
+    <em className="italic text-zinc-900">{children}</em>
+  ),
+  ul: ({ children }: any) => (
+    <ul className="list-disc list-outside pl-5 space-y-2 my-4 text-zinc-800 text-sm sm:text-base">
+      {children}
+    </ul>
+  ),
+  ol: ({ children }: any) => (
+    <ol className="list-decimal list-outside pl-5 space-y-2 my-4 text-zinc-800 text-sm sm:text-base">
+      {children}
+    </ol>
+  ),
+  li: ({ children }: any) => (
+    <li className="leading-relaxed pl-1">{children}</li>
+  ),
+  blockquote: ({ children }: any) => (
+    <blockquote className="bg-zinc-100 p-5 rounded-xl border-l-4 border-black text-zinc-700 font-medium leading-relaxed my-6 shadow-sm">
+      {children}
+    </blockquote>
+  ),
+  code: ({ inline, className, children, ...props }: any) => {
+    if (inline) {
+      return (
+        <code className="bg-zinc-100 text-black font-mono text-xs sm:text-sm px-1.5 py-0.5 rounded border border-zinc-200" {...props}>
+          {children}
+        </code>
+      );
+    }
+    return (
+      <code className="block font-mono text-xs sm:text-sm text-zinc-200" {...props}>
+        {children}
+      </code>
+    );
+  },
+  pre: ({ children }: any) => (
+    <pre className="bg-zinc-950 text-zinc-100 p-4 sm:p-5 rounded-xl border border-zinc-800 overflow-x-auto my-6 font-mono text-xs sm:text-sm leading-relaxed shadow-lg">
+      {children}
+    </pre>
+  ),
+  table: ({ children }: any) => (
+    <div className="overflow-x-auto my-6 rounded-xl border border-zinc-200 shadow-sm">
+      <table className="w-full text-left border-collapse text-xs sm:text-sm">
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children }: any) => (
+    <thead className="bg-zinc-100 border-b border-zinc-200 font-bold uppercase text-black font-mono">
+      {children}
+    </thead>
+  ),
+  tbody: ({ children }: any) => (
+    <tbody className="divide-y divide-zinc-200 bg-white">
+      {children}
+    </tbody>
+  ),
+  tr: ({ children }: any) => (
+    <tr className="hover:bg-zinc-50/50 transition-colors">{children}</tr>
+  ),
+  th: ({ children }: any) => (
+    <th className="p-3 sm:p-4 font-semibold text-xs tracking-wider uppercase text-black">{children}</th>
+  ),
+  td: ({ children }: any) => (
+    <td className="p-3 sm:p-4 text-zinc-700">{children}</td>
+  ),
+  a: ({ href, children }: any) => (
+    <a 
+      href={href} 
+      target={href?.startsWith("http") ? "_blank" : undefined}
+      rel={href?.startsWith("http") ? "noopener noreferrer" : undefined}
+      className="text-black font-bold underline hover:text-accent transition-colors"
+    >
+      {children}
+    </a>
+  ),
+  hr: () => (
+    <hr className="border-t border-zinc-200 my-8" />
+  ),
+  img: ({ src, alt }: any) => (
+    <img 
+      src={src} 
+      alt={alt || "Blog article image"} 
+      className="rounded-xl shadow-md my-6 max-h-[450px] w-full object-cover" 
+    />
+  )
+};
+
 export const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<any | null>(null);
@@ -71,55 +192,14 @@ export const BlogPostPage: React.FC = () => {
   // Helper to render rich structured blog text (Markdown / Plain Text paragraphs)
   const renderFormattedContent = (contentString: string) => {
     if (!contentString) return null;
-
-    const blocks = contentString.split(/\n\s*\n/);
-    return blocks.map((block, idx) => {
-      const trimmed = block.trim();
-
-      if (trimmed.startsWith("## ")) {
-        return (
-          <h2 key={idx} className="text-2xl sm:text-3xl font-bold uppercase tracking-tight text-black pt-6">
-            {trimmed.replace(/^##\s+/, "")}
-          </h2>
-        );
-      }
-
-      if (trimmed.startsWith("### ")) {
-        return (
-          <h3 key={idx} className="text-xl font-bold uppercase tracking-tight text-black pt-4">
-            {trimmed.replace(/^###\s+/, "")}
-          </h3>
-        );
-      }
-
-      if (trimmed.startsWith("> ")) {
-        return (
-          <div key={idx} className="bg-zinc-100 p-6 rounded-xl border border-zinc-200 text-zinc-700 font-medium leading-relaxed my-4">
-            {trimmed.replace(/^>\s+/, "")}
-          </div>
-        );
-      }
-
-      if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
-        const items = trimmed.split("\n").map(line => line.replace(/^[-*]\s+/, ""));
-        return (
-          <ul key={idx} className="space-y-2 my-4">
-            {items.map((item, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-zinc-700">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-1" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        );
-      }
-
-      return (
-        <p key={idx} className="text-zinc-800 text-sm sm:text-base leading-relaxed font-sans">
-          {trimmed}
-        </p>
-      );
-    });
+    const cleaned = cleanMarkdownContent(contentString);
+    return (
+      <div className="markdown-content">
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          {cleaned}
+        </ReactMarkdown>
+      </div>
+    );
   };
 
   return (

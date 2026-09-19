@@ -1902,6 +1902,27 @@ export const AdminPage: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-zinc-400 uppercase">SEO Title (Browser & Search)</label>
+                    <Input 
+                      value={blogFormData.seoTitle}
+                      onChange={e => setBlogFormData({ ...blogFormData, seoTitle: e.target.value })}
+                      placeholder="e.g. AI and Automation for Businesses: Smarter Workflows | Opsiys" 
+                      className="bg-zinc-950 border-zinc-800 text-xs h-11"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-mono text-zinc-400 uppercase">SEO Meta Description</label>
+                    <Input 
+                      value={blogFormData.seoDesc}
+                      onChange={e => setBlogFormData({ ...blogFormData, seoDesc: e.target.value })}
+                      placeholder="e.g. Discover how AI and automation help businesses scale..." 
+                      className="bg-zinc-950 border-zinc-800 text-xs h-11"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1">
                   <label className="text-xs font-mono text-zinc-400 uppercase">Short Excerpt (Card Summary)</label>
                   <textarea 
