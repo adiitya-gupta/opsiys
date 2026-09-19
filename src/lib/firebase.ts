@@ -8,6 +8,7 @@ import {
   serverTimestamp, 
   doc, 
   getDoc, 
+  getDocs,
   setDoc, 
   updateDoc,
   deleteDoc,
@@ -591,9 +592,14 @@ export const subscribeToBlogPosts = (callback: (blogs: BlogPostItem[]) => void) 
   const cached = getStorageItem("opsiys_blogs_cache", []);
   callback(cached);
 
+  const handleLocalUpdate = (e: any) => {
+    if (e.detail) callback(e.detail);
+  };
+  window.addEventListener("opsiys-blogs-updated", handleLocalUpdate);
+
   try {
     const blogsRef = collection(db, "blog_posts");
-    return onSnapshot(
+    const unSub = onSnapshot(
       blogsRef,
       (snapshot) => {
         const blogs = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as BlogPostItem));
@@ -605,48 +611,89 @@ export const subscribeToBlogPosts = (callback: (blogs: BlogPostItem[]) => void) 
         callback(getStorageItem("opsiys_blogs_cache", []));
       }
     );
+    return () => {
+      unSub();
+      window.removeEventListener("opsiys-blogs-updated", handleLocalUpdate);
+    };
   } catch (err) {
     console.warn("Failed to subscribe to blog posts:", err);
-    return () => {};
+    return () => {
+      window.removeEventListener("opsiys-blogs-updated", handleLocalUpdate);
+    };
   }
 };
 
 export const saveBlogPost = async (blogData: BlogPostItem) => {
   const currentBlogs = getStorageItem("opsiys_blogs_cache", []);
+  
+  // 1. Resolve deterministic blog ID (matching existing blog by ID or Slug)
   let blogId = blogData.id;
   if (!blogId) {
-    blogId = "blog_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+    const existingBySlug = currentBlogs.find((b: any) => b.slug === blogData.slug);
+    if (existingBySlug && existingBySlug.id) {
+      blogId = existingBySlug.id;
+    } else {
+      blogId = "blog_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+    }
   }
-  const blogRecord = { ...blogData, id: blogId, published: blogData.published ?? true };
 
-  const existingIdx = currentBlogs.findIndex((b: any) => b.id === blogId || b.slug === blogData.slug);
+  const blogRecord: BlogPostItem = {
+    ...blogData,
+    id: blogId,
+    published: blogData.published ?? true
+  };
+
+  // 2. Update local storage cache in place
+  const existingIdx = currentBlogs.findIndex(
+    (b: any) => (blogId && b.id === blogId) || (blogData.slug && b.slug === blogData.slug)
+  );
   if (existingIdx >= 0) {
     currentBlogs[existingIdx] = blogRecord;
   } else {
     currentBlogs.unshift(blogRecord);
   }
   setStorageItem("opsiys_blogs_cache", currentBlogs);
+  window.dispatchEvent(new CustomEvent("opsiys-blogs-updated", { detail: currentBlogs }));
 
+  // 3. Save to Firestore using setDoc with explicit doc ID = blogId (prevents duplicate documents)
   try {
-    const blogsRef = collection(db, "blog_posts");
-    if (blogData.id) {
-      const blogDoc = doc(db, "blog_posts", blogData.id);
-      await setDoc(blogDoc, { ...blogData, updatedAt: serverTimestamp() }, { merge: true });
-    } else {
-      await addDoc(blogsRef, { ...blogData, createdAt: serverTimestamp() });
-    }
+    const blogDoc = doc(db, "blog_posts", blogId);
+    await setDoc(blogDoc, { ...blogRecord, updatedAt: serverTimestamp() }, { merge: true });
   } catch (err) {
     console.warn("Blog post save fallback notice:", err);
   }
 };
 
-export const deleteBlogPost = async (blogId: string) => {
-  const currentBlogs = getStorageItem("opsiys_blogs_cache", []);
-  setStorageItem("opsiys_blogs_cache", currentBlogs.filter((b: any) => b.id !== blogId));
+export const deleteBlogPost = async (blogId: string, slug?: string) => {
+  if (!blogId && !slug) return;
 
+  const targetId = blogId || "";
+  const targetSlug = slug || "";
+
+  // 1. Remove from local storage cache immediately
+  const currentBlogs = getStorageItem("opsiys_blogs_cache", []);
+  const updatedBlogs = currentBlogs.filter((b: any) => {
+    const matchId = targetId && b.id === targetId;
+    const matchSlug = targetSlug && b.slug === targetSlug;
+    return !matchId && !matchSlug;
+  });
+  setStorageItem("opsiys_blogs_cache", updatedBlogs);
+  window.dispatchEvent(new CustomEvent("opsiys-blogs-updated", { detail: updatedBlogs }));
+
+  // 2. Delete document from Firestore by ID & Slug query
   try {
-    const blogDoc = doc(db, "blog_posts", blogId);
-    await deleteDoc(blogDoc);
+    if (targetId) {
+      const blogDoc = doc(db, "blog_posts", targetId);
+      await deleteDoc(blogDoc);
+    }
+    if (targetSlug) {
+      const blogsRef = collection(db, "blog_posts");
+      const q = query(blogsRef, where("slug", "==", targetSlug));
+      const snapshot = await getDocs(q);
+      snapshot.forEach(async (d) => {
+        await deleteDoc(d.ref);
+      });
+    }
   } catch (err) {
     console.warn("Blog post deletion notice:", err);
   }

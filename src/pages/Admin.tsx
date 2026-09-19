@@ -418,12 +418,30 @@ export const AdminPage: React.FC = () => {
     e.preventDefault();
     try {
       const generatedSlug = blogFormData.slug || blogFormData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-      await saveBlogPost({
+      const blogToSave: BlogPostItem = {
         ...blogFormData,
+        id: blogFormData.id || "blog_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
         slug: generatedSlug,
         published: blogFormData.published ?? true
-      });
+      };
+      await saveBlogPost(blogToSave);
       setShowBlogModal(false);
+      setBlogFormData({
+        id: "",
+        slug: "",
+        title: "",
+        seoTitle: "",
+        seoDesc: "",
+        category: "Business Growth & SEO",
+        publishDate: new Date().toISOString().split("T")[0],
+        readTime: "5 min read",
+        author: "Aditya Gupta",
+        authorRole: "Founder & CEO, Opsiys",
+        image: "/images/blog_online_presence.png",
+        excerpt: "",
+        content: "",
+        published: true
+      });
     } catch (err) {
       console.error("Error saving blog article:", err);
     }
@@ -1334,8 +1352,10 @@ export const AdminPage: React.FC = () => {
 
                         <Button 
                           onClick={async () => {
+                            const targetId = blog.id || blog.slug;
+                            if (!targetId) return;
                             if (confirm(`Delete article "${blog.title}"?`)) {
-                              await deleteBlogPost(blog.id!);
+                              await deleteBlogPost(targetId, blog.slug);
                             }
                           }}
                           variant="ghost"
