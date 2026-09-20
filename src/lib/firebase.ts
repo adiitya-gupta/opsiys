@@ -492,7 +492,7 @@ export const deleteJobOpening = async (jobId: string) => {
 // --- System Maintenance Service ---
 
 const DEFAULT_MAINTENANCE_SETTINGS = {
-  maintenanceMode: true,
+  maintenanceMode: false,
   message: "OPSIYS Systems undergoing scheduled infrastructure upgrade. Core services temporarily paused for public access."
 };
 

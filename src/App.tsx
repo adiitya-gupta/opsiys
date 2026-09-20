@@ -2410,7 +2410,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
 const AppContent = () => {
   const location = useLocation();
-  const [systemSettings, setSystemSettings] = React.useState<any>({ maintenanceMode: true });
+  const [systemSettings, setSystemSettings] = React.useState<any>({ maintenanceMode: false });
 
   React.useEffect(() => {
     const unsubscribe = subscribeToSystemSettings((settings) => {
