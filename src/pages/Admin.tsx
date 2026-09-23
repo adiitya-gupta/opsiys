@@ -174,6 +174,12 @@ export const AdminPage: React.FC = () => {
   const userEmailLower = user?.email?.toLowerCase().trim();
   const isAdmin = (userEmailLower && allAdminEmails.includes(userEmailLower)) || isPasscodeUnlocked;
 
+  // Always subscribe to admin accounts list so dynamic admins are fetched immediately
+  useEffect(() => {
+    const unSubAdmins = subscribeToAdminEmails(setAdminAccounts);
+    return () => unSubAdmins();
+  }, []);
+
   // Attach Real-time Listeners when authenticated as Admin
   useEffect(() => {
     if (!isAdmin) return;
@@ -184,7 +190,6 @@ export const AdminPage: React.FC = () => {
     const unSubProfiles = subscribeToProfiles(setProfiles);
     const unSubJobs = subscribeToJobOpenings(setJobOpenings);
     const unSubBlogs = subscribeToBlogPosts(setBlogs);
-    const unSubAdmins = subscribeToAdminEmails(setAdminAccounts);
     const unSubSettings = subscribeToSystemSettings((settings) => {
       setSystemSettings(settings);
       if (settings?.message && !customMsg) setCustomMsg(settings.message);
@@ -197,7 +202,6 @@ export const AdminPage: React.FC = () => {
       unSubProfiles();
       unSubJobs();
       unSubBlogs();
-      unSubAdmins();
       unSubSettings();
     };
   }, [isAdmin]);

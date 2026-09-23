@@ -70,7 +70,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { signInWithGoogle, logout, auth, submitLead, updateProfile, getUserProfile, subscribeToUserLeads, subscribeToSystemSettings } from "./lib/firebase";
+import { signInWithGoogle, logout, auth, submitLead, updateProfile, getUserProfile, subscribeToUserLeads, subscribeToSystemSettings, subscribeToAdminEmails, AdminUserAccount } from "./lib/firebase";
 import { MaintenanceOverlay } from "./components/MaintenanceOverlay";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 
@@ -152,14 +152,16 @@ const Navbar = ({
   logout, 
   profile, 
   onOpenSettings, 
-  onOpenHistory 
+  onOpenHistory,
+  isUserAdmin
 }: { 
   user: any, 
   handleSignIn: any, 
   logout: any, 
   profile: any,
   onOpenSettings: () => void,
-  onOpenHistory: () => void
+  onOpenHistory: () => void,
+  isUserAdmin?: boolean
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
@@ -270,7 +272,7 @@ const Navbar = ({
                         >
                           <User size={12} className="mr-2 group-hover:text-blue-600" /> Account Settings
                         </Button>
-                        {(user?.email === "adityaofficial9918@gmail.com" || user?.email === "kushwahakunal644@gmail.com") && (
+                        {isUserAdmin && (
                           <Link to="/admin" onClick={() => setPortalOpen(false)}>
                             <Button 
                               variant="ghost" 
@@ -420,12 +422,25 @@ const Navbar = ({
 
 const AuthPortal = () => {
   const [user, setUser] = React.useState<FirebaseUser | null>(null);
+  const [adminAccounts, setAdminAccounts] = React.useState<AdminUserAccount[]>([]);
   const [showSettings, setShowSettings] = React.useState(false);
   const [showHistory, setShowHistory] = React.useState(false);
   const [profile, setProfile] = React.useState<any>(null);
   const [leads, setLeads] = React.useState<any[]>([]);
   const [isSaving, setIsSaving] = React.useState(false);
   const [showWelcome, setShowWelcome] = React.useState(true);
+
+  React.useEffect(() => {
+    const unSubAdmins = subscribeToAdminEmails(setAdminAccounts);
+    return () => unSubAdmins();
+  }, []);
+
+  const isUserAdmin = React.useMemo(() => {
+    if (!user?.email) return false;
+    const cleanUserEmail = user.email.toLowerCase().trim();
+    const adminEmails = adminAccounts.map(a => a.email.toLowerCase().trim());
+    return adminEmails.includes(cleanUserEmail);
+  }, [user, adminAccounts]);
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -483,6 +498,7 @@ const AuthPortal = () => {
         profile={profile} 
         onOpenSettings={() => setShowSettings(true)}
         onOpenHistory={() => setShowHistory(true)}
+        isUserAdmin={isUserAdmin}
       />
       
       {/* Settings Modal */}

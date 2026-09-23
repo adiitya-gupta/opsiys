@@ -203,7 +203,7 @@ const TeamSection = () => {
     {
       id: "member-1",
       name: "Aditya Gupta",
-      role: "Founder & Chief Executive Officer",
+      role: "Founder & Managing Director",
       desc: "Leads the company vision, product direction, and long-term growth strategy.",
       image: "/images/team/team-1.png",
       imageClassName: "translate-y-[4%] scale-[1.28] group-hover:scale-[1.32]",
@@ -212,7 +212,7 @@ const TeamSection = () => {
     {
       id: "member-2",
       name: "Krishna Maddheshiya",
-      role: "Co-Founder & Strategy Director",
+      role: "Co-Founder & CEO",
       desc: "Shapes business strategy, client partnerships, and scalable delivery systems.",
       image: "/images/team/team-2.jpeg",
       placeholderLabel: "team-2.jpeg"
@@ -220,16 +220,16 @@ const TeamSection = () => {
     {
       id: "member-3",
       name: "Nitesh Singh",
-      role: "Head of Media & Operations",
-      desc: "Oversees media production, operational coordination, and seamless execution.",
+      role: "Creative & Community Manager",
+      desc: "Builds our visual identity, creative campaigns, and audience relationships.",
       image: "/images/team/team-3.jpeg",
       placeholderLabel: "team-3.jpeg"
     },
     {
       id: "member-4",
       name: "Kunal Kushwaha",
-      role: "Creative & Community Manager",
-      desc: "Builds our visual identity, creative campaigns, and audience relationships.",
+      role: "Head of Media & Operations",
+      desc: "Oversees media production, operational coordination, and seamless execution.",
       image: "/images/team/team-4.png",
       placeholderLabel: "team-4.png"
     }
