@@ -8,21 +8,50 @@ import {
   useNavigate
 } from "react-router-dom";
 import { SEO } from "./components/SEO";
-const AboutPage = React.lazy(() => import("./pages/About"));
-const ServicesPage = React.lazy(() => import("./pages/Services"));
-const ServiceDetailPage = React.lazy(() => import("./pages/ServiceDetail"));
-const IndustriesPage = React.lazy(() => import("./pages/Industries"));
-const IndustryDetailPage = React.lazy(() => import("./pages/IndustryDetail"));
-const LocationsPage = React.lazy(() => import("./pages/Locations"));
-const LocationDetailPage = React.lazy(() => import("./pages/LocationDetail"));
-const CaseStudiesPage = React.lazy(() => import("./pages/CaseStudies"));
-const BlogPage = React.lazy(() => import("./pages/Blog"));
-const BlogPostPage = React.lazy(() => import("./pages/BlogPost"));
-const ContactPage = React.lazy(() => import("./pages/ContactPage"));
-const CareersPage = React.lazy(() => import("./pages/Careers"));
-const PackagesPage = React.lazy(() => import("./pages/Packages"));
-const NotFoundPage = React.lazy(() => import("./pages/NotFound"));
-const AdminPage = React.lazy(() => import("./pages/Admin"));
+const loadAbout = () => import("./pages/About");
+const loadServices = () => import("./pages/Services");
+const loadServiceDetail = () => import("./pages/ServiceDetail");
+const loadIndustries = () => import("./pages/Industries");
+const loadIndustryDetail = () => import("./pages/IndustryDetail");
+const loadLocations = () => import("./pages/Locations");
+const loadLocationDetail = () => import("./pages/LocationDetail");
+const loadCaseStudies = () => import("./pages/CaseStudies");
+const loadBlog = () => import("./pages/Blog");
+const loadBlogPost = () => import("./pages/BlogPost");
+const loadContact = () => import("./pages/ContactPage");
+const loadCareers = () => import("./pages/Careers");
+const loadPackages = () => import("./pages/Packages");
+const loadNotFound = () => import("./pages/NotFound");
+const loadAdmin = () => import("./pages/Admin");
+
+const AboutPage = React.lazy(loadAbout);
+const ServicesPage = React.lazy(loadServices);
+const ServiceDetailPage = React.lazy(loadServiceDetail);
+const IndustriesPage = React.lazy(loadIndustries);
+const IndustryDetailPage = React.lazy(loadIndustryDetail);
+const LocationsPage = React.lazy(loadLocations);
+const LocationDetailPage = React.lazy(loadLocationDetail);
+const CaseStudiesPage = React.lazy(loadCaseStudies);
+const BlogPage = React.lazy(loadBlog);
+const BlogPostPage = React.lazy(loadBlogPost);
+const ContactPage = React.lazy(loadContact);
+const CareersPage = React.lazy(loadCareers);
+const PackagesPage = React.lazy(loadPackages);
+const NotFoundPage = React.lazy(loadNotFound);
+const AdminPage = React.lazy(loadAdmin);
+
+// Preload route chunks in background on idle so clicks respond instantly
+if (typeof window !== "undefined") {
+  const preloadRoutes = () => {
+    [loadServices, loadPackages, loadAdmin, loadAbout, loadContact, loadCareers, loadIndustries, loadLocations, loadCaseStudies, loadBlog].forEach(fn => fn());
+  };
+  if ("requestIdleCallback" in window) {
+    (window as any).requestIdleCallback(preloadRoutes);
+  } else {
+    setTimeout(preloadRoutes, 500);
+  }
+}
+
 import { PortfolioPlaceholder } from "./components/PortfolioPlaceholder";
 import { LogoPlaceholder } from "./components/LogoPlaceholder";
 import { GreetingMascot } from "./components/GreetingMascot";
@@ -104,44 +133,18 @@ const Logo = ({ variant = "navbar" }: { variant?: "navbar" | "footer" }) => (
 );
 
 const ScrollToRoute = () => {
-  const { pathname, hash, key } = useLocation();
-
-  React.useLayoutEffect(() => {
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'manual';
-    }
-  }, []);
+  const { pathname, hash } = useLocation();
 
   React.useEffect(() => {
-    const scrollToTop = () => {
-      if (hash) {
-        const target = document.getElementById(hash.slice(1));
-        if (target) {
-          window.scrollTo({ top: Math.max(0, target.offsetTop - 104), behavior: "auto" });
-          return;
-        }
+    if (hash) {
+      const target = document.getElementById(hash.slice(1));
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+        return;
       }
-
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-    };
-
-    scrollToTop();
-
-    const frame = window.requestAnimationFrame(() => {
-      scrollToTop();
-    });
-
-    const timer = setTimeout(() => {
-      scrollToTop();
-    }, 50);
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      clearTimeout(timer);
-    };
-  }, [pathname, hash, key]);
+    }
+    window.scrollTo(0, 0);
+  }, [pathname, hash]);
 
   return null;
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEO } from "../components/SEO";
 import { Button } from "@/components/ui/button";
@@ -235,119 +235,138 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  // --- Calculations ---
-  const totalRevenue = payments
-    .filter(p => p.status === "success")
-    .reduce((acc, curr) => acc + (Number(curr.amountInINR) || 0), 0);
+  // --- Memoized Calculations ---
+  const totalRevenue = useMemo(() => {
+    return payments
+      .filter(p => p.status === "success")
+      .reduce((acc, curr) => acc + (Number(curr.amountInINR) || 0), 0);
+  }, [payments]);
 
-  const newLeadsCount = leads.filter(l => l.status === "new").length;
-  const pendingAppsCount = applications.filter(a => a.status === "under_review").length;
+  const newLeadsCount = useMemo(() => leads.filter(l => l.status === "new").length, [leads]);
+  const pendingAppsCount = useMemo(() => applications.filter(a => a.status === "under_review").length, [applications]);
 
   // Synthesize comprehensive user directory from Profiles + Leads + Candidates + Payments
-  const aggregatedUsersMap = new Map<string, any>();
+  const allUsers = useMemo(() => {
+    const aggregatedUsersMap = new Map<string, any>();
 
-  profiles.forEach(p => {
-    const emailKey = (p.email || p.id || "").toLowerCase().trim();
-    if (emailKey) {
-      aggregatedUsersMap.set(emailKey, {
-        id: p.id,
-        displayName: p.displayName || p.name || p.id,
-        email: p.email || p.id,
-        company: p.company || "N/A",
-        industry: p.industry || "N/A",
-        role: p.role || "Registered Account",
-        source: "User Profile",
-        updatedAt: p.updatedAt
-      });
-    }
-  });
+    profiles.forEach(p => {
+      const emailKey = (p.email || p.id || "").toLowerCase().trim();
+      if (emailKey) {
+        aggregatedUsersMap.set(emailKey, {
+          id: p.id,
+          displayName: p.displayName || p.name || p.id,
+          email: p.email || p.id,
+          company: p.company || "N/A",
+          industry: p.industry || "N/A",
+          role: p.role || "Registered Account",
+          source: "User Profile",
+          updatedAt: p.updatedAt
+        });
+      }
+    });
 
-  leads.forEach(l => {
-    const emailKey = (l.email || "").toLowerCase().trim();
-    if (emailKey && !aggregatedUsersMap.has(emailKey)) {
-      aggregatedUsersMap.set(emailKey, {
-        id: l.id,
-        displayName: l.name || "Client Lead",
-        email: l.email,
-        company: l.company || "N/A",
-        industry: l.projectType || "Business Growth",
-        role: "Client Lead",
-        source: "Lead Inquiry",
-        updatedAt: l.createdAt
-      });
-    }
-  });
+    leads.forEach(l => {
+      const emailKey = (l.email || "").toLowerCase().trim();
+      if (emailKey && !aggregatedUsersMap.has(emailKey)) {
+        aggregatedUsersMap.set(emailKey, {
+          id: l.id,
+          displayName: l.name || "Client Lead",
+          email: l.email,
+          company: l.company || "N/A",
+          industry: l.projectType || "Business Growth",
+          role: "Client Lead",
+          source: "Lead Inquiry",
+          updatedAt: l.createdAt
+        });
+      }
+    });
 
-  applications.forEach(a => {
-    const emailKey = (a.email || "").toLowerCase().trim();
-    if (emailKey && !aggregatedUsersMap.has(emailKey)) {
-      aggregatedUsersMap.set(emailKey, {
-        id: a.id,
-        displayName: a.fullName || "Candidate",
-        email: a.email,
-        company: a.city ? `City: ${a.city}` : "N/A",
-        industry: "Human Resources",
-        role: a.position || "Applicant",
-        source: "Career Candidate",
-        updatedAt: a.createdAt
-      });
-    }
-  });
+    applications.forEach(a => {
+      const emailKey = (a.email || "").toLowerCase().trim();
+      if (emailKey && !aggregatedUsersMap.has(emailKey)) {
+        aggregatedUsersMap.set(emailKey, {
+          id: a.id,
+          displayName: a.fullName || "Candidate",
+          email: a.email,
+          company: a.city ? `City: ${a.city}` : "N/A",
+          industry: "Human Resources",
+          role: a.position || "Applicant",
+          source: "Career Candidate",
+          updatedAt: a.createdAt
+        });
+      }
+    });
 
-  payments.forEach(p => {
-    const emailKey = (p.customerEmail || "").toLowerCase().trim();
-    if (emailKey && !aggregatedUsersMap.has(emailKey)) {
-      aggregatedUsersMap.set(emailKey, {
-        id: p.id,
-        displayName: p.customerName || "Customer",
-        email: p.customerEmail,
-        company: p.packageName || "Paid Service",
-        industry: "Client Partner",
-        role: "Customer",
-        source: "Razorpay Checkout",
-        updatedAt: p.createdAt
-      });
-    }
-  });
+    payments.forEach(p => {
+      const emailKey = (p.customerEmail || "").toLowerCase().trim();
+      if (emailKey && !aggregatedUsersMap.has(emailKey)) {
+        aggregatedUsersMap.set(emailKey, {
+          id: p.id,
+          displayName: p.customerName || "Customer",
+          email: p.customerEmail,
+          company: p.packageName || "Paid Service",
+          industry: "Client Partner",
+          role: "Customer",
+          source: "Razorpay Checkout",
+          updatedAt: p.createdAt
+        });
+      }
+    });
 
-  const allUsers = Array.from(aggregatedUsersMap.values());
+    return Array.from(aggregatedUsersMap.values());
+  }, [profiles, leads, applications, payments]);
 
-  const filteredUsers = allUsers.filter(u => {
-    const matchesSearch = (u.displayName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (u.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (u.company || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (u.role || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (u.source || "").toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
+  const filteredUsers = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    if (!term) return allUsers;
+    return allUsers.filter(u => {
+      return (u.displayName || "").toLowerCase().includes(term) ||
+             (u.email || "").toLowerCase().includes(term) ||
+             (u.company || "").toLowerCase().includes(term) ||
+             (u.role || "").toLowerCase().includes(term) ||
+             (u.source || "").toLowerCase().includes(term);
+    });
+  }, [allUsers, searchTerm]);
 
   // Filtered Lists
-  const filteredLeads = leads.filter(l => {
-    const matchesSearch = (l.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (l.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (l.company || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (l.projectType || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || l.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredLeads = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return leads.filter(l => {
+      const matchesSearch = !term ||
+                            (l.name || "").toLowerCase().includes(term) ||
+                            (l.email || "").toLowerCase().includes(term) ||
+                            (l.company || "").toLowerCase().includes(term) ||
+                            (l.projectType || "").toLowerCase().includes(term);
+      const matchesStatus = statusFilter === "all" || l.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [leads, searchTerm, statusFilter]);
 
-  const filteredApps = applications.filter(a => {
-    const matchesSearch = (a.fullName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (a.email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (a.position || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (a.city || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || a.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredApps = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return applications.filter(a => {
+      const matchesSearch = !term ||
+                            (a.fullName || "").toLowerCase().includes(term) ||
+                            (a.email || "").toLowerCase().includes(term) ||
+                            (a.position || "").toLowerCase().includes(term) ||
+                            (a.city || "").toLowerCase().includes(term);
+      const matchesStatus = statusFilter === "all" || a.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [applications, searchTerm, statusFilter]);
 
-  const filteredPayments = payments.filter(p => {
-    const matchesSearch = (p.customerName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (p.customerEmail || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (p.paymentId || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (p.packageName || "").toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || p.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredPayments = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return payments.filter(p => {
+      const matchesSearch = !term ||
+                            (p.customerName || "").toLowerCase().includes(term) ||
+                            (p.customerEmail || "").toLowerCase().includes(term) ||
+                            (p.paymentId || "").toLowerCase().includes(term) ||
+                            (p.packageName || "").toLowerCase().includes(term);
+      const matchesStatus = statusFilter === "all" || p.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [payments, searchTerm, statusFilter]);
 
   // CSV Exporters
   const exportLeadsCSV = () => {

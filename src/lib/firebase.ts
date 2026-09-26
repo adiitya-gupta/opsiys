@@ -22,9 +22,8 @@ import firebaseConfig from "../../firebase-applet-config.json";
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 
-// Use auto-detect long polling to prevent WebChannel 10-second backend connection timeouts in iframe/proxy environments
+// Initialize Firestore with standard settings for high-speed WebSockets / direct fetch
 export const db = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true,
   ignoreUndefinedProperties: true,
 }, firebaseConfig.firestoreDatabaseId);
 
