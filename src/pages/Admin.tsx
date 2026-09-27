@@ -95,6 +95,7 @@ export const AdminPage: React.FC = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [jobOpenings, setJobOpenings] = useState<any[]>([]);
   const [blogs, setBlogs] = useState<BlogPostItem[]>([]);
+  const [adminAccounts, setAdminAccounts] = useState<AdminUserAccount[]>([]);
   const [allTasks, setAllTasks] = useState<TaskItem[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
