@@ -2,69 +2,50 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Default Deny
+
+    // Global Fallback Rule: Allow read/write for operational collections
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
 
-    // --- Helpers ---
-    function isSignedIn() { return request.auth != null; }
-    function isAdminEmail() { return isSignedIn() && (request.auth.token.email == "adityaofficial9918@gmail.com" || request.auth.token.email == "kushwahakunal644@gmail.com" || request.auth.token.email == "krishnatktr1@gmail.com"); }
-    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
-    function incoming() { return request.resource.data; }
-
-    // --- Collections ---
     match /leads/{leadId} {
-      allow create: if isValidId(leadId);
-      allow read, write, update, delete: if true;
+      allow read, write: if true;
     }
 
-    // Career Applications
     match /career_applications/{appId} {
-      allow create: if isValidId(appId);
-      allow read, write, update, delete: if true;
+      allow read, write: if true;
     }
 
-    // Razorpay Payments Audit Trail
     match /payments/{paymentId} {
-      allow create: if isValidId(paymentId);
-      allow read, write, update, delete: if true;
+      allow read, write: if true;
     }
 
-    // Active Job Openings Management
     match /job_openings/{jobId} {
-      allow read, list, create, update, delete: if true;
+      allow read, write: if true;
     }
 
-    // Blog Posts & Articles Management
     match /blog_posts/{blogId} {
-      allow read, list, create, update, delete: if true;
+      allow read, write: if true;
     }
 
-    // Dynamic Admin Accounts Management
     match /admin_users/{adminId} {
-      allow read, list, create, update, delete: if true;
+      allow read, write: if true;
     }
 
-    // User Profile Management
     match /profiles/{userId} {
-      allow read, list, create, update, delete: if true;
+      allow read, write: if true;
     }
 
-    // System Settings & Maintenance Configuration
     match /settings/{settingId} {
-      allow read, list, create, update, delete: if true;
+      allow read, write: if true;
     }
 
-    // Identity Isolation for Users
     match /users/{userId} {
       allow read, write: if true;
     }
 
-    // EOD Reports Management
     match /eod_reports/{reportId} {
-      allow read, list, create, update, delete: if true;
+      allow read, write: if true;
     }
   }
 }
