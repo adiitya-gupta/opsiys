@@ -61,5 +61,10 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if true;
     }
+
+    // EOD Reports Management
+    match /eod_reports/{reportId} {
+      allow read, list, create, update, delete: if true;
+    }
   }
 }

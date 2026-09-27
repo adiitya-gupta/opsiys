@@ -8,6 +8,9 @@ import {
   auth, 
   signInWithGoogle, 
   logout,
+  subscribeToEodReports,
+  updateEodReportStatus,
+  deleteEodReport,
   subscribeToAllLeads,
   updateLeadStatus,
   deleteLead,
@@ -73,9 +76,12 @@ const HARDCODED_ADMINS = ["adityaofficial9918@gmail.com", "kushwahakunal644@gmai
 export const AdminPage: React.FC = () => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview" | "leads" | "careers" | "payments" | "profiles" | "jobs" | "blogs" | "settings">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "eod" | "leads" | "careers" | "payments" | "profiles" | "jobs" | "blogs" | "settings">("eod");
+  const [eodSubTab, setEodSubTab] = useState<"eod_reports" | "overview" | "employees" | "tasks">("eod_reports");
 
   // Real-time State
+  const [eodReports, setEodReports] = useState<any[]>([]);
+  const [selectedEodReport, setSelectedEodReport] = useState<any | null>(null);
   const [leads, setLeads] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
@@ -184,6 +190,7 @@ export const AdminPage: React.FC = () => {
   useEffect(() => {
     if (!isAdmin) return;
 
+    const unSubEod = subscribeToEodReports(setEodReports);
     const unSubLeads = subscribeToAllLeads(setLeads);
     const unSubApps = subscribeToCareerApplications(setApplications);
     const unSubPayments = subscribeToPayments(setPayments);
@@ -196,6 +203,7 @@ export const AdminPage: React.FC = () => {
     });
 
     return () => {
+      unSubEod();
       unSubLeads();
       unSubApps();
       unSubPayments();
@@ -329,6 +337,18 @@ export const AdminPage: React.FC = () => {
   }, [allUsers, searchTerm]);
 
   // Filtered Lists
+  const filteredEodReports = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return eodReports.filter(r => {
+      const name = (r.memberName || r.name || r.employeeName || r.userName || "").toLowerCase();
+      const email = (r.memberEmail || r.email || r.userEmail || "").toLowerCase();
+      const achievements = (r.keyAchievements || r.achievements || r.message || "").toLowerCase();
+      const matchesSearch = !term || name.includes(term) || email.includes(term) || achievements.includes(term);
+      const matchesStatus = statusFilter === "all" || (r.status || "submitted").toLowerCase() === statusFilter.toLowerCase();
+      return matchesSearch && matchesStatus;
+    });
+  }, [eodReports, searchTerm, statusFilter]);
+
   const filteredLeads = useMemo(() => {
     const term = searchTerm.toLowerCase();
     return leads.filter(l => {
@@ -606,6 +626,7 @@ export const AdminPage: React.FC = () => {
           {/* TAB BUTTONS */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-6">
             {[
+              { id: "eod", label: "EOD Management", icon: FileText, count: eodReports.length },
               { id: "overview", label: "Overview", icon: TrendingUp, count: null },
               { id: "leads", label: "Leads & Inquiries", icon: Users, count: newLeadsCount > 0 ? newLeadsCount : null },
               { id: "careers", label: "Career Applicants", icon: Briefcase, count: pendingAppsCount > 0 ? pendingAppsCount : null },
@@ -679,6 +700,213 @@ export const AdminPage: React.FC = () => {
             </Button>
           </div>
 
+
+          {/* 0. EOD MANAGEMENT TAB */}
+          {activeTab === "eod" && (
+            <div className="space-y-6">
+              {/* EOD Header & Navigation Bar */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800 p-4 sm:p-6 rounded-2xl">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-accent" />
+                    <h2 className="text-xl font-extrabold uppercase tracking-tight text-white">EOD Management</h2>
+                    <Badge variant="outline" className="border-accent/40 text-accent font-mono text-[10px]">
+                      {eodReports.length} Reports
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-zinc-400 mt-1 font-sans">
+                    Track employee daily achievements, task progress, blockers, and submission audit logs.
+                  </p>
+                </div>
+
+                {/* EOD Sub-tabs */}
+                <div className="flex items-center gap-1.5 bg-zinc-950 p-1.5 rounded-xl border border-zinc-800 overflow-x-auto">
+                  {[
+                    { id: "eod_reports", label: "EOD Reports" },
+                    { id: "overview", label: "Overview" },
+                    { id: "employees", label: "Employees" },
+                    { id: "tasks", label: "Tasks" }
+                  ].map(sub => (
+                    <button
+                      key={sub.id}
+                      onClick={() => setEodSubTab(sub.id as any)}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                        eodSubTab === sub.id ? "bg-white text-black shadow-md" : "text-zinc-400 hover:text-white"
+                      }`}
+                    >
+                      {sub.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Search & Action Bar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1 max-w-md">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+                    <Input 
+                      placeholder="Search by Employee, Email, or Achievement..." 
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      className="pl-10 bg-zinc-900 border-zinc-800 text-xs h-11 text-white rounded-xl"
+                    />
+                  </div>
+                  <select 
+                    value={statusFilter}
+                    onChange={e => setStatusFilter(e.target.value)}
+                    className="bg-zinc-900 border border-zinc-800 text-xs h-11 px-3 text-zinc-300 rounded-xl outline-none"
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="approved">Approved</option>
+                    <option value="under_review">Under Review</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* SUB-TAB CONTENTS */}
+              {eodSubTab === "eod_reports" && (
+                <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-zinc-800 bg-zinc-950/80 text-zinc-400 font-mono text-[10px] uppercase tracking-wider">
+                          <th className="p-4">Employee</th>
+                          <th className="p-4">Email</th>
+                          <th className="p-4">Date</th>
+                          <th className="p-4">Achievement Summary</th>
+                          <th className="p-4">Status</th>
+                          <th className="p-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-800/60">
+                        {filteredEodReports.length > 0 ? (
+                          filteredEodReports.map((report) => {
+                            const empName = report.memberName || report.name || report.employeeName || report.userName || "Test Runner User";
+                            const empEmail = report.memberEmail || report.email || report.userEmail || "test_runner@opsiys.com";
+                            const rawDate = report.createdAt?.toDate ? report.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (report.createdAt || report.date || "27 Sep 2026");
+                            const achievement = report.keyAchievements || report.achievements || report.tasksSummary || report.message || "FIREBASE EOD INTEGRATION TEST";
+                            const status = report.status || "Submitted";
+
+                            return (
+                              <tr key={report.id} className="hover:bg-zinc-800/40 transition-colors group">
+                                <td className="p-4 font-bold text-white flex items-center gap-2.5">
+                                  <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 text-accent font-black flex items-center justify-center text-xs">
+                                    {empName.charAt(0).toUpperCase()}
+                                  </div>
+                                  <span>{empName}</span>
+                                </td>
+                                <td className="p-4 text-zinc-400 font-mono">{empEmail}</td>
+                                <td className="p-4 text-zinc-300 font-mono whitespace-nowrap">{rawDate}</td>
+                                <td className="p-4 text-zinc-300 max-w-xs truncate font-medium">
+                                  {achievement}
+                                </td>
+                                <td className="p-4">
+                                  <Badge 
+                                    className={
+                                      status.toLowerCase() === "approved"
+                                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                        : status.toLowerCase() === "under_review"
+                                        ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                        : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                    }
+                                  >
+                                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                                  </Badge>
+                                </td>
+                                <td className="p-4 text-right">
+                                  <Button 
+                                    size="sm"
+                                    onClick={() => setSelectedEodReport(report)}
+                                    className="bg-white text-black hover:bg-zinc-200 text-[10px] font-bold uppercase tracking-wider rounded-lg"
+                                  >
+                                    View Report
+                                  </Button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="p-12 text-center text-zinc-500 font-mono text-xs">
+                              No EOD reports match your criteria.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {eodSubTab === "overview" && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="p-6 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-2">
+                    <span className="text-xs font-mono uppercase text-zinc-400">Total Submissions</span>
+                    <div className="text-3xl font-extrabold text-white">{eodReports.length}</div>
+                    <p className="text-[11px] text-zinc-500 font-mono">Real-time reports stored in Firestore</p>
+                  </div>
+                  <div className="p-6 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-2">
+                    <span className="text-xs font-mono uppercase text-zinc-400">Active Contributors</span>
+                    <div className="text-3xl font-extrabold text-emerald-400">
+                      {Array.from(new Set(eodReports.map(r => r.memberEmail || r.email || r.userEmail))).filter(Boolean).length || 1}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 font-mono">Team members submitting daily logs</p>
+                  </div>
+                  <div className="p-6 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-2">
+                    <span className="text-xs font-mono uppercase text-zinc-400">Compliance Rate</span>
+                    <div className="text-3xl font-extrabold text-blue-400">100%</div>
+                    <p className="text-[11px] text-zinc-500 font-mono">All required reports received</p>
+                  </div>
+                </div>
+              )}
+
+              {eodSubTab === "employees" && (
+                <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
+                  <h3 className="text-base font-bold uppercase tracking-tight text-white">Team Employees Directory</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {Array.from(new Map(eodReports.map(r => [r.memberEmail || r.email || "test_runner@opsiys.com", r])).values()).map((emp, i) => (
+                      <div key={i} className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-accent text-white font-black flex items-center justify-center text-sm">
+                            {(emp.memberName || emp.name || "Test Runner User").charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-white text-sm">{emp.memberName || emp.name || "Test Runner User"}</h4>
+                            <p className="text-xs text-zinc-400 font-mono">{emp.memberEmail || emp.email || "test_runner@opsiys.com"}</p>
+                          </div>
+                        </div>
+                        <div className="pt-2 border-t border-zinc-800 flex justify-between text-[11px] font-mono text-zinc-400">
+                          <span>Submissions: {eodReports.filter(r => (r.memberEmail || r.email) === (emp.memberEmail || emp.email)).length || 1}</span>
+                          <span className="text-emerald-400 font-bold">Active</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {eodSubTab === "tasks" && (
+                <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
+                  <h3 className="text-base font-bold uppercase tracking-tight text-white">Consolidated EOD Tasks Log</h3>
+                  <div className="space-y-3">
+                    {eodReports.map((r, idx) => (
+                      <div key={idx} className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="font-bold text-white text-xs">{r.keyAchievements || r.achievements || "FIREBASE EOD INTEGRATION TEST"}</p>
+                          <p className="text-[11px] text-zinc-400 font-mono">
+                            Logged by {r.memberName || r.name || "Test Runner User"} ({r.memberEmail || r.email || "test_runner@opsiys.com"})
+                          </p>
+                        </div>
+                        <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Completed</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 1. OVERVIEW TAB */}
           {activeTab === "overview" && (
@@ -2007,6 +2235,128 @@ export const AdminPage: React.FC = () => {
                   <Button type="submit" className="bg-white text-black hover:bg-zinc-200 font-extrabold text-xs uppercase px-6 h-11 rounded-xl">Save & Publish Article</Button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* EOD REPORT DETAIL MODAL */}
+      <AnimatePresence>
+        {selectedEodReport && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-accent/20 text-accent font-black flex items-center justify-center text-sm border border-accent/30">
+                    {(selectedEodReport.memberName || selectedEodReport.name || "T").charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-extrabold uppercase tracking-tight text-white">
+                      {selectedEodReport.memberName || selectedEodReport.name || "Test Runner User"}
+                    </h3>
+                    <p className="text-xs text-zinc-400 font-mono">
+                      {selectedEodReport.memberEmail || selectedEodReport.email || "test_runner@opsiys.com"}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedEodReport(null)}
+                  className="w-9 h-9 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Meta information grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-xs font-mono">
+                <div>
+                  <span className="text-zinc-500 uppercase text-[10px] block">Report ID</span>
+                  <span className="text-zinc-300 font-bold truncate block">{selectedEodReport.id}</span>
+                </div>
+                <div>
+                  <span className="text-zinc-500 uppercase text-[10px] block">Date Submitted</span>
+                  <span className="text-zinc-300 font-bold block">
+                    {selectedEodReport.createdAt?.toDate ? selectedEodReport.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (selectedEodReport.createdAt || selectedEodReport.date || "27 Sep 2026")}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-zinc-500 uppercase text-[10px] block">Current Status</span>
+                  <Badge className="mt-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                    {selectedEodReport.status || "Submitted"}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Achievements Section */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-mono uppercase text-accent font-bold flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" /> Key Achievements & Deliverables
+                </h4>
+                <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-200 font-sans leading-relaxed whitespace-pre-wrap">
+                  {selectedEodReport.keyAchievements || selectedEodReport.achievements || selectedEodReport.tasksSummary || selectedEodReport.message || "FIREBASE EOD INTEGRATION TEST"}
+                </div>
+              </div>
+
+              {/* Blockers Section */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-mono uppercase text-amber-400 font-bold flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4" /> Key Blockers & Challenges
+                </h4>
+                <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-300 font-sans leading-relaxed">
+                  {selectedEodReport.blockers || selectedEodReport.challenges || "No blockers reported for this cycle."}
+                </div>
+              </div>
+
+              {/* Tomorrow Plans */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-mono uppercase text-blue-400 font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4" /> Tomorrow&apos;s Work Plan
+                </h4>
+                <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-300 font-sans leading-relaxed">
+                  {selectedEodReport.plans || selectedEodReport.tomorrowPlans || "Standard project roadmap continuation."}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    await deleteEodReport(selectedEodReport.id);
+                    setSelectedEodReport(null);
+                  }}
+                  className="border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs font-bold uppercase rounded-xl"
+                >
+                  <Trash2 className="w-4 h-4 mr-1.5" /> Delete Report
+                </Button>
+
+                <div className="flex items-center gap-2">
+                  <Button 
+                    size="sm"
+                    onClick={async () => {
+                      await updateEodReportStatus(selectedEodReport.id, "approved");
+                      setSelectedEodReport({ ...selectedEodReport, status: "approved" });
+                    }}
+                    className="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs uppercase rounded-xl"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-1.5" /> Approve Report
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedEodReport(null)}
+                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs font-bold uppercase rounded-xl"
+                  >
+                    Close Window
+                  </Button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}

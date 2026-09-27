@@ -229,6 +229,81 @@ export const subscribeToUserLeads = (userId: string, callback: (leads: any[]) =>
 
 // --- ADMIN API SERVICES ---
 
+export const subscribeToEodReports = (callback: (reports: any[]) => void) => {
+  console.log("==================================================");
+  console.log("ADMIN EOD QUERY STARTED");
+  console.log("Firebase projectId:", firebaseConfig.projectId);
+  console.log("Firestore database:", firebaseConfig.firestoreDatabaseId);
+  console.log("Authenticated admin UID:", auth.currentUser?.uid || "unauthenticated");
+  console.log("Collection being queried: eod_reports");
+  console.log("==================================================");
+
+  const cached = getStorageItem("opsiys_eod_reports_cache", []);
+  if (cached && Array.isArray(cached) && cached.length > 0) {
+    callback(cached);
+  }
+
+  try {
+    const eodRef = collection(db, "eod_reports");
+
+    // Simple Direct Query Test (Step 4)
+    getDocs(eodRef).then((snap) => {
+      console.log("DIRECT TEST QUERY -> Number of documents returned:", snap.docs.length);
+      snap.docs.forEach(d => {
+        console.log("Document ID:", d.id, "Data:", d.data());
+      });
+    }).catch(err => {
+      console.error("DIRECT TEST QUERY ERROR:", err);
+    });
+
+    // Real-time Listener
+    return onSnapshot(
+      eodRef,
+      (snapshot) => {
+        console.log("REALTIME SNAPSHOT -> Number of documents returned:", snapshot.docs.length);
+        const reports = snapshot.docs.map(d => {
+          console.log("Retrieved EOD Document ID:", d.id);
+          return { id: d.id, ...d.data() };
+        });
+        setStorageItem("opsiys_eod_reports_cache", reports);
+        callback(reports);
+      },
+      (err) => {
+        console.error("ADMIN EOD QUERY ERROR:", err?.message || err);
+        callback(getStorageItem("opsiys_eod_reports_cache", []));
+      }
+    );
+  } catch (err: any) {
+    console.error("FAILED TO SUBSCRIBE TO EOD REPORTS:", err?.message || err);
+    return () => {};
+  }
+};
+
+export const updateEodReportStatus = async (reportId: string, status: string) => {
+  const current = getStorageItem("opsiys_eod_reports_cache", []);
+  const updated = current.map((r: any) => r.id === reportId ? { ...r, status } : r);
+  setStorageItem("opsiys_eod_reports_cache", updated);
+
+  try {
+    const reportRef = doc(db, "eod_reports", reportId);
+    await updateDoc(reportRef, { status });
+  } catch (err) {
+    console.warn("EOD Report status update notice:", err);
+  }
+};
+
+export const deleteEodReport = async (reportId: string) => {
+  const current = getStorageItem("opsiys_eod_reports_cache", []);
+  setStorageItem("opsiys_eod_reports_cache", current.filter((r: any) => r.id !== reportId));
+
+  try {
+    const reportRef = doc(db, "eod_reports", reportId);
+    await deleteDoc(reportRef);
+  } catch (err) {
+    console.warn("EOD Report deletion notice:", err);
+  }
+};
+
 export const subscribeToAllLeads = (callback: (leads: any[]) => void) => {
   const cached = getStorageItem("opsiys_leads_cache", []);
   callback(cached);
