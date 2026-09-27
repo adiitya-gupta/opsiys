@@ -227,312 +227,6 @@ export const subscribeToUserLeads = (userId: string, callback: (leads: any[]) =>
   }
 };
 
-// --- DEFAULT DATASETS (Guarantees Admin & Web pages are NEVER blank) ---
-
-export const DEFAULT_EOD_REPORTS = [
-  {
-    id: "2GJRtEcaiqdqG9SNiSgMsuitk152_2026-09-27",
-    userId: "2GJRtEcaiqdqG9SNiSgMsuitk152",
-    memberName: "Test Runner User",
-    memberEmail: "test_runner@opsiys.com",
-    reportDate: "2026-09-27",
-    keyAchievements: "FIREBASE EOD INTEGRATION TEST — Verified live EOD document saving and Firestore collection read/write functionality.",
-    inProgressWork: "Admin Panel EOD management tab integration and Firestore realtime listener verification.",
-    blockers: "None",
-    tomorrowPlan: "Finalize deployment and system check.",
-    status: "approved",
-    createdAt: "27 September 2026"
-  }
-];
-
-export const DEFAULT_LEADS = [
-  {
-    id: "lead_101",
-    name: "Vikram Malhotra",
-    email: "vikram@techventures.in",
-    company: "TechVentures India",
-    phone: "+91 98765 43210",
-    budget: "₹1,50,000 - ₹3,00,000",
-    projectType: "Full Web Platform + AI CRM",
-    urgency: "Immediate (Within 2 Weeks)",
-    message: "We need a complete web platform rebuilt with custom lead automation and WhatsApp CRM integration.",
-    status: "new",
-    createdAt: "2026-09-26T14:30:00.000Z",
-    source: "Website Contact Form"
-  },
-  {
-    id: "lead_102",
-    name: "Ananya Sharma",
-    email: "ananya@sharmagroup.com",
-    company: "Sharma Retail & Group",
-    phone: "+91 98123 45678",
-    budget: "₹75,000 - ₹1,50,000",
-    projectType: "SEO & Growth Automation",
-    urgency: "1 Month",
-    message: "Looking for SEO optimization and automated lead management for our pan-India retail franchise.",
-    status: "contacted",
-    createdAt: "2026-09-25T11:15:00.000Z",
-    source: "Consultation Request"
-  },
-  {
-    id: "lead_103",
-    name: "Rohan Varma",
-    email: "rohan@apexlogistics.io",
-    company: "Apex Logistics Solutions",
-    phone: "+91 97788 99000",
-    budget: "₹3,00,000+",
-    projectType: "Enterprise Workflow Systems",
-    urgency: "Immediate",
-    message: "Seeking an enterprise web portal with real-time employee EOD report tracking and automated lead dispatching.",
-    status: "qualified",
-    createdAt: "2026-09-24T09:45:00.000Z",
-    source: "Direct Inquiry"
-  }
-];
-
-export const DEFAULT_CAREER_APPLICATIONS = [
-  {
-    id: "app_101",
-    fullName: "Kunal Kushwaha",
-    email: "kushwahakunal644@gmail.com",
-    phone: "+91 99887 76655",
-    city: "Noida, UP",
-    position: "Full Stack Web Developer (React + Node.js)",
-    employmentType: "Full-Time",
-    experience: "2 Yrs",
-    portfolioUrl: "https://github.com/kunal-kushwaha",
-    resumeFileName: "Kunal_Kushwaha_Resume.pdf",
-    introduction: "Experienced full-stack developer passionate about building high-performance web applications with React, TypeScript, and cloud backends.",
-    noticePeriod: "Immediate",
-    expectedSalary: "₹6,00,000 / Year",
-    preferredWorkMode: "Hybrid",
-    status: "interview_scheduled",
-    createdAt: "2026-09-26T16:20:00.000Z"
-  },
-  {
-    id: "app_102",
-    fullName: "Krishna Kumar",
-    email: "krishnatktr1@gmail.com",
-    phone: "+91 98712 34567",
-    city: "Delhi NCR",
-    position: "AI & Automation Engineer (Python + Zapier)",
-    employmentType: "Full-Time",
-    experience: "3 Yrs",
-    portfolioUrl: "https://krishnakumar.dev",
-    resumeFileName: "Krishna_Kumar_CV.pdf",
-    introduction: "Specialized in Python automation, LLM API integration, and workflow orchestration for enterprise clients.",
-    noticePeriod: "15 Days",
-    expectedSalary: "₹8,00,000 / Year",
-    preferredWorkMode: "Noida Office",
-    status: "under_review",
-    createdAt: "2026-09-25T13:10:00.000Z"
-  },
-  {
-    id: "app_103",
-    fullName: "Priya Singh",
-    email: "priya.singh@designhub.com",
-    phone: "+91 91234 56789",
-    city: "Gurugram, Haryana",
-    position: "UI/UX & Product Designer",
-    employmentType: "Full-Time",
-    experience: "2.5 Yrs",
-    portfolioUrl: "https://behance.net/priyasingh",
-    resumeFileName: "Priya_Singh_Portfolio.pdf",
-    introduction: "Passionate visual designer creating modern UI systems and smooth web experiences.",
-    noticePeriod: "Immediate",
-    expectedSalary: "₹7,50,000 / Year",
-    preferredWorkMode: "Hybrid",
-    status: "accepted",
-    createdAt: "2026-09-24T18:05:00.000Z"
-  }
-];
-
-export const DEFAULT_PAYMENTS = [
-  {
-    id: "pay_101",
-    clientName: "TechVentures India",
-    email: "billing@techventures.in",
-    serviceName: "Web Platform Development Deposit",
-    amount: 50000,
-    currency: "INR",
-    status: "paid",
-    razorpayPaymentId: "pay_Px789012345",
-    createdAt: "2026-09-26T15:00:00.000Z"
-  },
-  {
-    id: "pay_102",
-    clientName: "Sharma Retail & Group",
-    email: "accounts@sharmagroup.com",
-    serviceName: "Monthly SEO & Growth Package",
-    amount: 25000,
-    currency: "INR",
-    status: "paid",
-    razorpayPaymentId: "pay_Px654321098",
-    createdAt: "2026-09-25T12:30:00.000Z"
-  },
-  {
-    id: "pay_103",
-    clientName: "Apex Logistics Solutions",
-    email: "finance@apexlogistics.io",
-    serviceName: "AI Automation System - Milestone 1",
-    amount: 100000,
-    currency: "INR",
-    status: "paid",
-    razorpayPaymentId: "pay_Px112233445",
-    createdAt: "2026-09-24T10:15:00.000Z"
-  }
-];
-
-export const DEFAULT_USERS = [
-  {
-    id: "Y5vSyPoAcPTaZROD9hQO4upgIQX2",
-    displayName: "Aditya Gupta",
-    email: "adityaofficial9918@gmail.com",
-    role: "Super Admin",
-    company: "Opsiys Tech Solutions",
-    createdAt: "2026-09-01T00:00:00.000Z"
-  },
-  {
-    id: "user_kunal_02",
-    displayName: "Kunal Kushwaha",
-    email: "kushwahakunal644@gmail.com",
-    role: "Master Admin",
-    company: "Opsiys Engineering",
-    createdAt: "2026-09-10T00:00:00.000Z"
-  },
-  {
-    id: "user_krishna_03",
-    displayName: "Krishna Kumar",
-    email: "krishnatktr1@gmail.com",
-    role: "Master Admin",
-    company: "Opsiys Operations",
-    createdAt: "2026-09-15T00:00:00.000Z"
-  },
-  {
-    id: "user_runner_04",
-    displayName: "Test Runner User",
-    email: "test_runner@opsiys.com",
-    role: "Employee / Team Member",
-    company: "Opsiys Systems",
-    createdAt: "2026-09-27T00:00:00.000Z"
-  }
-];
-
-export const DEFAULT_PROFILES = DEFAULT_USERS.map(u => ({
-  id: u.id,
-  displayName: u.displayName,
-  email: u.email,
-  company: u.company,
-  role: u.role,
-  industry: "Technology & Software",
-  updatedAt: u.createdAt
-}));
-
-export const DEFAULT_JOB_OPENINGS = [
-  {
-    id: "job_01",
-    title: "Full Stack Web Developer (React + Node.js)",
-    department: "Engineering",
-    location: "Noida / Hybrid",
-    type: "Full-Time",
-    experience: "1-3 Yrs",
-    description: "Build high-performance web applications, AI integrations, and responsive client platforms using React, TypeScript, and Tailwind CSS.",
-    active: true
-  },
-  {
-    id: "job_02",
-    title: "AI & Automation Engineer (Python + Zapier)",
-    department: "AI Operations",
-    location: "Noida / Remote",
-    type: "Full-Time",
-    experience: "2-4 Yrs",
-    description: "Design automated workflows, LLM agents, and custom CRM integrations to streamline business leads and client communication.",
-    active: true
-  },
-  {
-    id: "job_03",
-    title: "Growth & Performance Marketer",
-    department: "Marketing",
-    location: "Noida / Hybrid",
-    type: "Full-Time",
-    experience: "1-3 Yrs",
-    description: "Manage performance marketing campaigns on Meta, Google Ads, and drive high-converting ROI funnels for tech clients.",
-    active: true
-  },
-  {
-    id: "job_04",
-    title: "UI/UX & Product Designer",
-    department: "Design",
-    location: "Noida / Remote",
-    type: "Full-Time",
-    experience: "1-3 Yrs",
-    description: "Craft modern, sleek web interfaces, design systems, and brand assets for scalable web applications.",
-    active: true
-  }
-];
-
-export const DEFAULT_BLOG_POSTS: BlogPostItem[] = [
-  {
-    id: "blog_01",
-    slug: "ai-and-automation-for-business",
-    title: "AI & Automation for Business: Smarter Workflows for Modern Growth",
-    seoTitle: "AI and Automation for Businesses: Smarter Workflows | Opsiys",
-    seoDesc: "Discover how AI and automation can help businesses streamline workflows, automate communication, manage leads, and scale smarter with Opsiys.",
-    category: "AI Business Automation",
-    publishDate: "2026-09-18",
-    readTime: "5 min read",
-    author: "Aditya Gupta",
-    authorRole: "Founder & CEO, Opsiys",
-    image: "/images/blog_online_presence.png",
-    excerpt: "Discover how AI and automation help businesses streamline workflows, automate client communication, manage leads in real-time, and scale operations effortlessly.",
-    content: `# AI and Automation for Growing Businesses
-
-> A comprehensive strategy guide by Opsiys on modernizing operations and capturing digital leads.
-
-## Introduction
-
-Artificial intelligence and automated workflows are **changing what businesses can do**. By combining triggers with automated lead capture, growing companies can scale faster without adding headcount.
-
-### Key Focus Areas
-
-- Lead capture & CRM synchronization
-- Instant WhatsApp response systems
-- Automated email follow-up sequences
-- Meta & Google Ads conversion tracking
-
-Learn more about our [Business Growth Solutions](https://www.opsiys.in/).`,
-    published: true
-  },
-  {
-    id: "blog_02",
-    slug: "how-to-improve-online-presence",
-    title: "How Small & Growing Businesses Can Build Strong Online Presence in 2026",
-    seoTitle: "How to Improve Business Online Presence & Visibility | Opsiys Guide",
-    seoDesc: "A practical, step-by-step guide for small businesses to build online presence, improve local search visibility, and capture leads without complex budgets.",
-    category: "Business Growth & SEO",
-    publishDate: "2026-09-15",
-    readTime: "6 min read",
-    author: "Aditya Gupta",
-    authorRole: "Founder & CEO, Opsiys",
-    image: "/images/blog_online_presence.png",
-    excerpt: "Building an effective online presence doesn't require a million-dollar budget. Discover practical steps to combine local search, clean website UX, and WhatsApp automations.",
-    content: `# How Small Businesses Build Digital Dominance in 2026
-
-Building a strong digital presence is no longer optional for business growth. Learn how to optimize SEO, speed up site load times, and structure converting landing pages.`,
-    published: true
-  }
-];
-
-// Helper to safely get cached array or populate with defaults
-const getCachedOrDefault = (key: string, defaultData: any[]) => {
-  const cached = getStorageItem(key, null);
-  if (cached && Array.isArray(cached) && cached.length > 0) {
-    return cached;
-  }
-  setStorageItem(key, defaultData);
-  return defaultData;
-};
-
 // --- ADMIN API SERVICES ---
 
 export const subscribeToEodReports = (callback: (reports: any[]) => void) => {
@@ -544,8 +238,8 @@ export const subscribeToEodReports = (callback: (reports: any[]) => void) => {
   console.log("Collection being queried: eod_reports");
   console.log("==================================================");
 
-  const initial = getCachedOrDefault("opsiys_eod_reports_cache", DEFAULT_EOD_REPORTS);
-  callback(initial);
+  const cached = getStorageItem("opsiys_eod_reports_cache", []);
+  callback(cached);
 
   try {
     const eodRef = collection(db, "eod_reports");
@@ -565,29 +259,24 @@ export const subscribeToEodReports = (callback: (reports: any[]) => void) => {
       eodRef,
       (snapshot) => {
         console.log("REALTIME SNAPSHOT -> Number of documents returned:", snapshot.docs.length);
-        if (snapshot.docs.length > 0) {
-          const reports = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          setStorageItem("opsiys_eod_reports_cache", reports);
-          callback(reports);
-        } else {
-          // If Firestore collection is empty, use initial default
-          callback(getCachedOrDefault("opsiys_eod_reports_cache", DEFAULT_EOD_REPORTS));
-        }
+        const reports = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        setStorageItem("opsiys_eod_reports_cache", reports);
+        callback(reports);
       },
       (err) => {
         console.error("ADMIN EOD QUERY ERROR:", err?.message || err);
-        callback(getCachedOrDefault("opsiys_eod_reports_cache", DEFAULT_EOD_REPORTS));
+        callback(getStorageItem("opsiys_eod_reports_cache", []));
       }
     );
   } catch (err: any) {
     console.error("FAILED TO SUBSCRIBE TO EOD REPORTS:", err?.message || err);
-    callback(getCachedOrDefault("opsiys_eod_reports_cache", DEFAULT_EOD_REPORTS));
+    callback(getStorageItem("opsiys_eod_reports_cache", []));
     return () => {};
   }
 };
 
 export const updateEodReportStatus = async (reportId: string, status: string) => {
-  const current = getCachedOrDefault("opsiys_eod_reports_cache", DEFAULT_EOD_REPORTS);
+  const current = getStorageItem("opsiys_eod_reports_cache", []);
   const updated = current.map((r: any) => r.id === reportId ? { ...r, status } : r);
   setStorageItem("opsiys_eod_reports_cache", updated);
 
@@ -600,7 +289,7 @@ export const updateEodReportStatus = async (reportId: string, status: string) =>
 };
 
 export const deleteEodReport = async (reportId: string) => {
-  const current = getCachedOrDefault("opsiys_eod_reports_cache", DEFAULT_EOD_REPORTS);
+  const current = getStorageItem("opsiys_eod_reports_cache", []);
   setStorageItem("opsiys_eod_reports_cache", current.filter((r: any) => r.id !== reportId));
 
   try {
@@ -612,41 +301,37 @@ export const deleteEodReport = async (reportId: string) => {
 };
 
 export const subscribeToAllLeads = (callback: (leads: any[]) => void) => {
-  const initial = getCachedOrDefault("opsiys_leads_cache", DEFAULT_LEADS);
-  callback(initial);
+  const cached = getStorageItem("opsiys_leads_cache", []);
+  callback(cached);
 
   try {
     const leadsRef = collection(db, "leads");
     return onSnapshot(
       leadsRef,
       (snapshot) => {
-        if (snapshot.docs.length > 0) {
-          const leads = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          leads.sort((a, b) => {
-            const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
-            const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
-            return tB - tA;
-          });
-          setStorageItem("opsiys_leads_cache", leads);
-          callback(leads);
-        } else {
-          callback(getCachedOrDefault("opsiys_leads_cache", DEFAULT_LEADS));
-        }
+        const leads = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        leads.sort((a, b) => {
+          const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
+          const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
+          return tB - tA;
+        });
+        setStorageItem("opsiys_leads_cache", leads);
+        callback(leads);
       },
       (err) => {
         console.warn("Admin leads subscription notice:", err?.message || err);
-        callback(getCachedOrDefault("opsiys_leads_cache", DEFAULT_LEADS));
+        callback(getStorageItem("opsiys_leads_cache", []));
       }
     );
   } catch (err) {
     console.warn("Failed to subscribe to all leads:", err);
-    callback(getCachedOrDefault("opsiys_leads_cache", DEFAULT_LEADS));
+    callback(getStorageItem("opsiys_leads_cache", []));
     return () => {};
   }
 };
 
 export const updateLeadStatus = async (leadId: string, status: string) => {
-  const currentLeads = getCachedOrDefault("opsiys_leads_cache", DEFAULT_LEADS);
+  const currentLeads = getStorageItem("opsiys_leads_cache", []);
   const updated = currentLeads.map((l: any) => l.id === leadId ? { ...l, status } : l);
   setStorageItem("opsiys_leads_cache", updated);
 
@@ -659,7 +344,7 @@ export const updateLeadStatus = async (leadId: string, status: string) => {
 };
 
 export const deleteLead = async (leadId: string) => {
-  const currentLeads = getCachedOrDefault("opsiys_leads_cache", DEFAULT_LEADS);
+  const currentLeads = getStorageItem("opsiys_leads_cache", []);
   setStorageItem("opsiys_leads_cache", currentLeads.filter((l: any) => l.id !== leadId));
 
   try {
@@ -671,41 +356,37 @@ export const deleteLead = async (leadId: string) => {
 };
 
 export const subscribeToCareerApplications = (callback: (apps: any[]) => void) => {
-  const initial = getCachedOrDefault("opsiys_apps_cache", DEFAULT_CAREER_APPLICATIONS);
-  callback(initial);
+  const cached = getStorageItem("opsiys_apps_cache", []);
+  callback(cached);
 
   try {
     const appsRef = collection(db, "career_applications");
     return onSnapshot(
       appsRef,
       (snapshot) => {
-        if (snapshot.docs.length > 0) {
-          const apps = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          apps.sort((a, b) => {
-            const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
-            const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
-            return tB - tA;
-          });
-          setStorageItem("opsiys_apps_cache", apps);
-          callback(apps);
-        } else {
-          callback(getCachedOrDefault("opsiys_apps_cache", DEFAULT_CAREER_APPLICATIONS));
-        }
+        const apps = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        apps.sort((a, b) => {
+          const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
+          const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
+          return tB - tA;
+        });
+        setStorageItem("opsiys_apps_cache", apps);
+        callback(apps);
       },
       (err) => {
         console.warn("Admin career apps subscription notice:", err?.message || err);
-        callback(getCachedOrDefault("opsiys_apps_cache", DEFAULT_CAREER_APPLICATIONS));
+        callback(getStorageItem("opsiys_apps_cache", []));
       }
     );
   } catch (err) {
     console.warn("Failed to subscribe to career applications:", err);
-    callback(getCachedOrDefault("opsiys_apps_cache", DEFAULT_CAREER_APPLICATIONS));
+    callback(getStorageItem("opsiys_apps_cache", []));
     return () => {};
   }
 };
 
 export const updateCareerApplicationStatus = async (appId: string, status: string) => {
-  const currentApps = getCachedOrDefault("opsiys_apps_cache", DEFAULT_CAREER_APPLICATIONS);
+  const currentApps = getStorageItem("opsiys_apps_cache", []);
   const updated = currentApps.map((a: any) => a.id === appId ? { ...a, status } : a);
   setStorageItem("opsiys_apps_cache", updated);
 
@@ -718,7 +399,7 @@ export const updateCareerApplicationStatus = async (appId: string, status: strin
 };
 
 export const deleteCareerApplication = async (appId: string) => {
-  const currentApps = getCachedOrDefault("opsiys_apps_cache", DEFAULT_CAREER_APPLICATIONS);
+  const currentApps = getStorageItem("opsiys_apps_cache", []);
   setStorageItem("opsiys_apps_cache", currentApps.filter((a: any) => a.id !== appId));
 
   try {
@@ -730,93 +411,81 @@ export const deleteCareerApplication = async (appId: string) => {
 };
 
 export const subscribeToPayments = (callback: (payments: any[]) => void) => {
-  const initial = getCachedOrDefault("opsiys_payments_cache", DEFAULT_PAYMENTS);
-  callback(initial);
+  const cached = getStorageItem("opsiys_payments_cache", []);
+  callback(cached);
 
   try {
     const paymentsRef = collection(db, "payments");
     return onSnapshot(
       paymentsRef,
       (snapshot) => {
-        if (snapshot.docs.length > 0) {
-          const payments = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          payments.sort((a, b) => {
-            const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
-            const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
-            return tB - tA;
-          });
-          setStorageItem("opsiys_payments_cache", payments);
-          callback(payments);
-        } else {
-          callback(getCachedOrDefault("opsiys_payments_cache", DEFAULT_PAYMENTS));
-        }
+        const payments = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        payments.sort((a, b) => {
+          const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
+          const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
+          return tB - tA;
+        });
+        setStorageItem("opsiys_payments_cache", payments);
+        callback(payments);
       },
       (err) => {
         console.warn("Admin payments subscription notice:", err?.message || err);
-        callback(getCachedOrDefault("opsiys_payments_cache", DEFAULT_PAYMENTS));
+        callback(getStorageItem("opsiys_payments_cache", []));
       }
     );
   } catch (err) {
     console.warn("Failed to subscribe to payments:", err);
-    callback(getCachedOrDefault("opsiys_payments_cache", DEFAULT_PAYMENTS));
+    callback(getStorageItem("opsiys_payments_cache", []));
     return () => {};
   }
 };
 
 export const subscribeToUsers = (callback: (users: any[]) => void) => {
-  const initial = getCachedOrDefault("opsiys_users_cache", DEFAULT_USERS);
-  callback(initial);
+  const cached = getStorageItem("opsiys_users_cache", []);
+  callback(cached);
 
   try {
     const usersRef = collection(db, "users");
     return onSnapshot(
       usersRef,
       (snapshot) => {
-        if (snapshot.docs.length > 0) {
-          const users = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          setStorageItem("opsiys_users_cache", users);
-          callback(users);
-        } else {
-          callback(getCachedOrDefault("opsiys_users_cache", DEFAULT_USERS));
-        }
+        const users = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        setStorageItem("opsiys_users_cache", users);
+        callback(users);
       },
       (err) => {
         console.warn("Admin users subscription notice:", err?.message || err);
-        callback(getCachedOrDefault("opsiys_users_cache", DEFAULT_USERS));
+        callback(getStorageItem("opsiys_users_cache", []));
       }
     );
   } catch (err) {
     console.warn("Failed to subscribe to users:", err);
-    callback(getCachedOrDefault("opsiys_users_cache", DEFAULT_USERS));
+    callback(getStorageItem("opsiys_users_cache", []));
     return () => {};
   }
 };
 
 export const subscribeToProfiles = (callback: (profiles: any[]) => void) => {
-  const initial = getCachedOrDefault("opsiys_profiles_cache", DEFAULT_PROFILES);
-  callback(initial);
+  const cached = getStorageItem("opsiys_profiles_cache", []);
+  callback(cached);
 
   try {
     const profilesRef = collection(db, "profiles");
     return onSnapshot(
       profilesRef,
       (snapshot) => {
-        if (snapshot.docs.length > 0) {
-          const profiles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          setStorageItem("opsiys_profiles_cache", profiles);
-          callback(profiles);
-        } else {
-          callback(getCachedOrDefault("opsiys_profiles_cache", DEFAULT_PROFILES));
-        }
+        const profiles = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        setStorageItem("opsiys_profiles_cache", profiles);
+        callback(profiles);
       },
       (err) => {
         console.warn("Admin profiles subscription notice:", err?.message || err);
-        callback(getCachedOrDefault("opsiys_profiles_cache", DEFAULT_PROFILES));
+        callback(getStorageItem("opsiys_profiles_cache", []));
       }
     );
   } catch (err) {
     console.warn("Failed to subscribe to profiles:", err);
-    callback(getCachedOrDefault("opsiys_profiles_cache", DEFAULT_PROFILES));
+    callback(getStorageItem("opsiys_profiles_cache", []));
     return () => {};
   }
 };
@@ -824,30 +493,26 @@ export const subscribeToProfiles = (callback: (profiles: any[]) => void) => {
 // --- Job Openings Service ---
 
 export const subscribeToJobOpenings = (callback: (jobs: any[]) => void) => {
-  const initial = getCachedOrDefault("opsiys_jobs_cache", DEFAULT_JOB_OPENINGS);
-  callback(initial);
+  const cached = getStorageItem("opsiys_jobs_cache", []);
+  callback(cached);
 
   try {
     const jobsRef = collection(db, "job_openings");
     return onSnapshot(
       jobsRef,
       (snapshot) => {
-        if (snapshot.docs.length > 0) {
-          const jobs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-          setStorageItem("opsiys_jobs_cache", jobs);
-          callback(jobs);
-        } else {
-          callback(getCachedOrDefault("opsiys_jobs_cache", DEFAULT_JOB_OPENINGS));
-        }
+        const jobs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        setStorageItem("opsiys_jobs_cache", jobs);
+        callback(jobs);
       },
       (err) => {
         console.warn("Job openings subscription notice:", err?.message || err);
-        callback(getCachedOrDefault("opsiys_jobs_cache", DEFAULT_JOB_OPENINGS));
+        callback(getStorageItem("opsiys_jobs_cache", []));
       }
     );
   } catch (err) {
     console.warn("Failed to subscribe to job openings:", err);
-    callback(getCachedOrDefault("opsiys_jobs_cache", DEFAULT_JOB_OPENINGS));
+    callback(getStorageItem("opsiys_jobs_cache", []));
     return () => {};
   }
 };

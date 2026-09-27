@@ -25,7 +25,7 @@ import {
   Send,
   AlertCircle
 } from "lucide-react";
-import { submitCareerApplication, subscribeToJobOpenings, DEFAULT_JOB_OPENINGS } from "../lib/firebase";
+import { submitCareerApplication, subscribeToJobOpenings } from "../lib/firebase";
 
 // --- Types ---
 interface JobOpening {
@@ -40,7 +40,7 @@ interface JobOpening {
 }
 
 // Configurable job openings list
-export const JOB_OPENINGS_LIST: JobOpening[] = DEFAULT_JOB_OPENINGS;
+export const JOB_OPENINGS_LIST: JobOpening[] = [];
 
 export const CareersPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
