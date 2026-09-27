@@ -667,8 +667,8 @@ export interface BlogPostItem {
 }
 
 export const subscribeToBlogPosts = (callback: (blogs: BlogPostItem[]) => void) => {
-  const initial = getCachedOrDefault("opsiys_blogs_cache", DEFAULT_BLOG_POSTS);
-  callback(initial);
+  const cached = getStorageItem("opsiys_blogs_cache", []);
+  callback(cached);
 
   const handleLocalUpdate = (e: any) => {
     if (e.detail) callback(e.detail);
@@ -680,17 +680,13 @@ export const subscribeToBlogPosts = (callback: (blogs: BlogPostItem[]) => void) 
     const unSub = onSnapshot(
       blogsRef,
       (snapshot) => {
-        if (snapshot.docs.length > 0) {
-          const blogs = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as BlogPostItem));
-          setStorageItem("opsiys_blogs_cache", blogs);
-          callback(blogs);
-        } else {
-          callback(getCachedOrDefault("opsiys_blogs_cache", DEFAULT_BLOG_POSTS));
-        }
+        const blogs = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as BlogPostItem));
+        setStorageItem("opsiys_blogs_cache", blogs);
+        callback(blogs);
       },
       (err) => {
         console.warn("Blog posts subscription notice:", err?.message || err);
-        callback(getCachedOrDefault("opsiys_blogs_cache", DEFAULT_BLOG_POSTS));
+        callback(getStorageItem("opsiys_blogs_cache", []));
       }
     );
     return () => {
@@ -699,7 +695,7 @@ export const subscribeToBlogPosts = (callback: (blogs: BlogPostItem[]) => void) 
     };
   } catch (err) {
     console.warn("Failed to subscribe to blog posts:", err);
-    callback(getCachedOrDefault("opsiys_blogs_cache", DEFAULT_BLOG_POSTS));
+    callback(getStorageItem("opsiys_blogs_cache", []));
     return () => {
       window.removeEventListener("opsiys-blogs-updated", handleLocalUpdate);
     };
