@@ -281,6 +281,105 @@ export const deleteEodReport = async (reportId: string) => {
   }
 };
 
+// --- TASKS MANAGEMENT SERVICE ---
+
+export interface TaskItem {
+  id?: string;
+  assignedTo: string;       // Target Employee Auth UID
+  assignedToName: string;   // Display Name of employee
+  assignedBy: string;       // Admin Auth UID
+  assignedByName: string;   // Admin Name
+  title: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high';
+  status: 'pending' | 'in-progress' | 'completed';
+  dueDate: string;          // YYYY-MM-DD
+  createdAt?: any;
+  updatedAt?: any;
+}
+
+export const subscribeToAllTasks = (callback: (tasks: TaskItem[]) => void) => {
+  const cached = getStorageItem("opsiys_tasks_cache", []);
+  callback(cached);
+
+  try {
+    const tasksRef = collection(db, "tasks");
+    return onSnapshot(
+      tasksRef,
+      (snapshot) => {
+        const tasks = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as TaskItem));
+        setStorageItem("opsiys_tasks_cache", tasks);
+        callback(tasks);
+      },
+      (err) => {
+        console.warn("Admin tasks listener notice:", err?.message || err);
+        callback(getStorageItem("opsiys_tasks_cache", []));
+      }
+    );
+  } catch (err: any) {
+    console.warn("Failed to subscribe to tasks:", err?.message || err);
+    callback(getStorageItem("opsiys_tasks_cache", []));
+    return () => {};
+  }
+};
+
+export const assignTask = async (taskData: TaskItem) => {
+  const taskId = taskData.id || ("task_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7));
+  const newRecord: TaskItem = {
+    ...taskData,
+    id: taskId,
+    priority: taskData.priority || "medium",
+    status: taskData.status || "pending",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  const currentTasks = getStorageItem("opsiys_tasks_cache", []);
+  const existingIdx = currentTasks.findIndex((t: any) => t.id === taskId);
+  if (existingIdx >= 0) {
+    currentTasks[existingIdx] = newRecord;
+  } else {
+    currentTasks.unshift(newRecord);
+  }
+  setStorageItem("opsiys_tasks_cache", currentTasks);
+
+  try {
+    const taskDoc = doc(db, "tasks", taskId);
+    await setDoc(taskDoc, {
+      ...newRecord,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (err) {
+    console.warn("Task assignment fallback notice:", err);
+  }
+};
+
+export const updateTaskStatus = async (taskId: string, status: 'pending' | 'in-progress' | 'completed') => {
+  const currentTasks = getStorageItem("opsiys_tasks_cache", []);
+  const updated = currentTasks.map((t: any) => t.id === taskId ? { ...t, status, updatedAt: new Date().toISOString() } : t);
+  setStorageItem("opsiys_tasks_cache", updated);
+
+  try {
+    const taskDoc = doc(db, "tasks", taskId);
+    await updateDoc(taskDoc, { status, updatedAt: serverTimestamp() });
+  } catch (err) {
+    console.warn("Task status update notice:", err);
+  }
+};
+
+export const deleteTask = async (taskId: string) => {
+  const currentTasks = getStorageItem("opsiys_tasks_cache", []);
+  setStorageItem("opsiys_tasks_cache", currentTasks.filter((t: any) => t.id !== taskId));
+
+  try {
+    const taskDoc = doc(db, "tasks", taskId);
+    await deleteDoc(taskDoc);
+  } catch (err) {
+    console.warn("Task deletion notice:", err);
+  }
+};
+
 export const subscribeToAllLeads = (callback: (leads: any[]) => void) => {
   const cached = getStorageItem("opsiys_leads_cache", []);
   callback(cached);

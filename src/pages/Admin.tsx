@@ -33,7 +33,12 @@ import {
   addAdminEmail,
   removeAdminEmail,
   AdminUserAccount,
-  DEFAULT_ADMIN_EMAILS
+  DEFAULT_ADMIN_EMAILS,
+  subscribeToAllTasks,
+  assignTask,
+  updateTaskStatus,
+  deleteTask,
+  TaskItem
 } from "../lib/firebase";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { 
@@ -90,10 +95,14 @@ export const AdminPage: React.FC = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [jobOpenings, setJobOpenings] = useState<any[]>([]);
   const [blogs, setBlogs] = useState<BlogPostItem[]>([]);
-  const [adminAccounts, setAdminAccounts] = useState<AdminUserAccount[]>([]);
-  const [systemSettings, setSystemSettings] = useState<any>({ maintenanceMode: false, message: "" });
-  const [customMsg, setCustomMsg] = useState("");
-  const [savingSettings, setSavingSettings] = useState(false);
+  const [allTasks, setAllTasks] = useState<TaskItem[]>([]);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskDescription, setNewTaskDescription] = useState("");
+  const [newTaskAssignee, setNewTaskAssignee] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState<"low" | "medium" | "high">("medium");
+  const [newTaskDueDate, setNewTaskDueDate] = useState(new Date().toISOString().split("T")[0]);
+  const [assigningTask, setAssigningTask] = useState(false);
+  const [taskMsg, setTaskMsg] = useState("");
 
   // New Admin Form State
   const [newAdminEmail, setNewAdminEmail] = useState("");
@@ -198,8 +207,8 @@ export const AdminPage: React.FC = () => {
     const unSubPayments = subscribeToPayments(setPayments);
     const unSubUsers = subscribeToUsers(setUsers);
     const unSubProfiles = subscribeToProfiles(setProfiles);
-    const unSubJobs = subscribeToJobOpenings(setJobOpenings);
     const unSubBlogs = subscribeToBlogPosts(setBlogs);
+    const unSubTasks = subscribeToAllTasks(setAllTasks);
     const unSubSettings = subscribeToSystemSettings((settings) => {
       setSystemSettings(settings);
       if (settings?.message && !customMsg) setCustomMsg(settings.message);
@@ -214,6 +223,7 @@ export const AdminPage: React.FC = () => {
       unSubProfiles();
       unSubJobs();
       unSubBlogs();
+      unSubTasks();
       unSubSettings();
     };
   }, [isAdmin]);
@@ -523,6 +533,42 @@ export const AdminPage: React.FC = () => {
       });
     } catch (err) {
       console.error("Error saving blog article:", err);
+    }
+  };
+
+  const handleAssignTaskSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskTitle.trim()) return;
+    setAssigningTask(true);
+    setTaskMsg("");
+
+    try {
+      const selectedEmp = allUsers.find(u => u.id === newTaskAssignee || u.email === newTaskAssignee) || {
+        id: newTaskAssignee || "UID_GENERAL",
+        displayName: newTaskAssignee || "Team Member"
+      };
+
+      const taskData: TaskItem = {
+        assignedTo: selectedEmp.id || newTaskAssignee,
+        assignedToName: selectedEmp.displayName || selectedEmp.email || "Team Member",
+        assignedBy: user?.uid || "ADMIN_UID",
+        assignedByName: user?.displayName || user?.email || "Super Admin",
+        title: newTaskTitle.trim(),
+        description: newTaskDescription.trim(),
+        priority: newTaskPriority,
+        status: "pending",
+        dueDate: newTaskDueDate
+      };
+
+      await assignTask(taskData);
+      setTaskMsg("Task successfully assigned & synced live with employee portal!");
+      setNewTaskTitle("");
+      setNewTaskDescription("");
+    } catch (err: any) {
+      console.error("Task assign error:", err);
+      setTaskMsg("Failed to assign task. Please try again.");
+    } finally {
+      setAssigningTask(false);
     }
   };
 
@@ -924,20 +970,180 @@ export const AdminPage: React.FC = () => {
               )}
 
               {eodSubTab === "tasks" && (
-                <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
-                  <h3 className="text-base font-bold uppercase tracking-tight text-white">Consolidated EOD Tasks Log</h3>
-                  <div className="space-y-3">
-                    {eodReports.map((r, idx) => (
-                      <div key={idx} className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl flex items-center justify-between">
-                        <div className="space-y-1">
-                          <p className="font-bold text-white text-xs">{r.keyAchievements || r.achievements || "FIREBASE EOD INTEGRATION TEST"}</p>
-                          <p className="text-[11px] text-zinc-400 font-mono">
-                            Logged by {r.memberName || r.name || "Test Runner User"} ({r.memberEmail || r.email || "test_runner@opsiys.com"})
-                          </p>
-                        </div>
-                        <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20">Completed</Badge>
+                <div className="space-y-6">
+                  {/* Task Assignment Form Card */}
+                  <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-6 shadow-xl">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-accent/10 border border-accent/20 text-accent flex items-center justify-center font-bold">
+                        <Plus className="w-5 h-5" />
                       </div>
-                    ))}
+                      <div>
+                        <h3 className="text-base font-bold uppercase tracking-tight text-white">Assign Task to Team Member</h3>
+                        <p className="text-xs text-zinc-400 font-sans">Tasks assigned here instantly sync to the Employee EOD Portal dashboard (`tasks` collection).</p>
+                      </div>
+                    </div>
+
+                    {taskMsg && (
+                      <div className={`p-3 rounded-xl text-xs font-mono border ${
+                        taskMsg.includes("successfully") 
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" 
+                          : "bg-red-500/10 border-red-500/30 text-red-400"
+                      }`}>
+                        {taskMsg}
+                      </div>
+                    )}
+
+                    <form onSubmit={handleAssignTaskSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-xs font-mono uppercase text-zinc-400">Target Employee / Member</label>
+                        <select 
+                          value={newTaskAssignee}
+                          onChange={e => setNewTaskAssignee(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 text-xs h-11 px-3 text-white rounded-xl outline-none focus:border-accent"
+                          required
+                        >
+                          <option value="">-- Select Team Member --</option>
+                          {allUsers.map((u, i) => (
+                            <option key={i} value={u.id || u.email}>
+                              {u.displayName || u.email} ({u.email || u.role || 'Member'})
+                            </option>
+                          ))}
+                          <option value="2GJRtEcaiqdqG9SNiSgMsuitk152">Test Runner User (2GJRtEcaiqdqG9SNiSgMsuitk152)</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-xs font-mono uppercase text-zinc-400">Task Title</label>
+                        <Input 
+                          placeholder="e.g. Implement Responsive UI Header & WhatsApp Form"
+                          value={newTaskTitle}
+                          onChange={e => setNewTaskTitle(e.target.value)}
+                          className="bg-zinc-950 border-zinc-800 text-xs h-11 text-white rounded-xl"
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-1.5 md:col-span-2">
+                        <label className="text-xs font-mono uppercase text-zinc-400">Task Instructions & Requirements</label>
+                        <textarea 
+                          placeholder="Detail specific deliverables, acceptance criteria, or links..."
+                          value={newTaskDescription}
+                          onChange={e => setNewTaskDescription(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 text-xs p-3 text-white rounded-xl h-24 outline-none resize-none focus:border-accent"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-mono uppercase text-zinc-400">Priority Level</label>
+                        <select 
+                          value={newTaskPriority}
+                          onChange={e => setNewTaskPriority(e.target.value as any)}
+                          className="w-full bg-zinc-950 border border-zinc-800 text-xs h-11 px-3 text-white rounded-xl outline-none"
+                        >
+                          <option value="high">High Priority</option>
+                          <option value="medium">Medium Priority</option>
+                          <option value="low">Low Priority</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-mono uppercase text-zinc-400">Due Date</label>
+                        <Input 
+                          type="date"
+                          value={newTaskDueDate}
+                          onChange={e => setNewTaskDueDate(e.target.value)}
+                          className="bg-zinc-950 border-zinc-800 text-xs h-11 text-white rounded-xl"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2 pt-2">
+                        <Button 
+                          type="submit"
+                          disabled={assigningTask}
+                          className="w-full h-12 bg-accent hover:bg-accent/90 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl shadow-lg"
+                        >
+                          {assigningTask ? "Assigning & Syncing..." : "Assign Task to Team Member"}
+                        </Button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Assigned Tasks Live Roster */}
+                  <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-bold uppercase tracking-tight text-white">Assigned Tasks Directory</h3>
+                      <Badge variant="outline" className="border-accent/30 text-accent font-mono text-[10px]">
+                        {allTasks.length} Live Tasks
+                      </Badge>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-zinc-800 bg-zinc-950/80 text-zinc-400 font-mono text-[10px] uppercase tracking-wider">
+                            <th className="p-4">Task Title & Details</th>
+                            <th className="p-4">Assigned To</th>
+                            <th className="p-4">Priority</th>
+                            <th className="p-4">Due Date</th>
+                            <th className="p-4">Status</th>
+                            <th className="p-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-zinc-800/60">
+                          {allTasks.length > 0 ? (
+                            allTasks.map((t) => (
+                              <tr key={t.id} className="hover:bg-zinc-800/40 transition-colors">
+                                <td className="p-4 space-y-1">
+                                  <p className="font-bold text-white text-xs">{t.title}</p>
+                                  {t.description && <p className="text-[11px] text-zinc-400 max-w-xs truncate">{t.description}</p>}
+                                </td>
+                                <td className="p-4 text-zinc-300 font-mono">
+                                  <span className="font-bold text-white block">{t.assignedToName || 'Team Member'}</span>
+                                  <span className="text-[10px] text-zinc-500">{t.assignedTo}</span>
+                                </td>
+                                <td className="p-4">
+                                  <Badge className={
+                                    t.priority === 'high' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                                    t.priority === 'medium' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                    'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                  }>
+                                    {(t.priority || 'medium').toUpperCase()}
+                                  </Badge>
+                                </td>
+                                <td className="p-4 text-zinc-400 font-mono whitespace-nowrap">{t.dueDate || 'Today'}</td>
+                                <td className="p-4">
+                                  <select 
+                                    value={t.status || 'pending'}
+                                    onChange={e => updateTaskStatus(t.id!, e.target.value as any)}
+                                    className="bg-zinc-950 border border-zinc-800 text-[11px] h-8 px-2 text-zinc-300 rounded-lg outline-none"
+                                  >
+                                    <option value="pending">Pending</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                  </select>
+                                </td>
+                                <td className="p-4 text-right">
+                                  <Button 
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => deleteTask(t.id!)}
+                                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 w-8 p-0 rounded-lg"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={6} className="p-8 text-center text-zinc-500 font-mono text-xs">
+                                No assigned tasks in the database yet. Use the form above to assign a task to team members!
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}
