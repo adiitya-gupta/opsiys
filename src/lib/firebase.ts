@@ -463,6 +463,32 @@ export const subscribeToPayments = (callback: (payments: any[]) => void) => {
   }
 };
 
+export const subscribeToUsers = (callback: (users: any[]) => void) => {
+  const cached = getStorageItem("opsiys_users_cache", []);
+  if (cached && Array.isArray(cached) && cached.length > 0) {
+    callback(cached);
+  }
+
+  try {
+    const usersRef = collection(db, "users");
+    return onSnapshot(
+      usersRef,
+      (snapshot) => {
+        const users = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        setStorageItem("opsiys_users_cache", users);
+        callback(users);
+      },
+      (err) => {
+        console.warn("Admin users subscription notice:", err?.message || err);
+        callback(getStorageItem("opsiys_users_cache", []));
+      }
+    );
+  } catch (err) {
+    console.warn("Failed to subscribe to users:", err);
+    return () => {};
+  }
+};
+
 export const subscribeToProfiles = (callback: (profiles: any[]) => void) => {
   const cached = getStorageItem("opsiys_profiles_cache", []);
   callback(cached);

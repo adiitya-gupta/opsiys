@@ -18,6 +18,7 @@ import {
   updateCareerApplicationStatus,
   deleteCareerApplication,
   subscribeToPayments,
+  subscribeToUsers,
   subscribeToProfiles,
   subscribeToJobOpenings,
   saveJobOpening,
@@ -76,7 +77,7 @@ const HARDCODED_ADMINS = ["adityaofficial9918@gmail.com", "kushwahakunal644@gmai
 export const AdminPage: React.FC = () => {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [activeTab, setActiveTab] = useState<"overview" | "eod" | "leads" | "careers" | "payments" | "profiles" | "jobs" | "blogs" | "settings">("eod");
+  const [activeTab, setActiveTab] = useState<"overview" | "eod" | "leads" | "careers" | "payments" | "profiles" | "jobs" | "blogs" | "settings">("overview");
   const [eodSubTab, setEodSubTab] = useState<"eod_reports" | "overview" | "employees" | "tasks">("eod_reports");
 
   // Real-time State
@@ -85,6 +86,7 @@ export const AdminPage: React.FC = () => {
   const [leads, setLeads] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<any[]>([]);
   const [jobOpenings, setJobOpenings] = useState<any[]>([]);
   const [blogs, setBlogs] = useState<BlogPostItem[]>([]);
@@ -194,6 +196,7 @@ export const AdminPage: React.FC = () => {
     const unSubLeads = subscribeToAllLeads(setLeads);
     const unSubApps = subscribeToCareerApplications(setApplications);
     const unSubPayments = subscribeToPayments(setPayments);
+    const unSubUsers = subscribeToUsers(setUsers);
     const unSubProfiles = subscribeToProfiles(setProfiles);
     const unSubJobs = subscribeToJobOpenings(setJobOpenings);
     const unSubBlogs = subscribeToBlogPosts(setBlogs);
@@ -207,6 +210,7 @@ export const AdminPage: React.FC = () => {
       unSubLeads();
       unSubApps();
       unSubPayments();
+      unSubUsers();
       unSubProfiles();
       unSubJobs();
       unSubBlogs();
@@ -253,9 +257,25 @@ export const AdminPage: React.FC = () => {
   const newLeadsCount = useMemo(() => leads.filter(l => l.status === "new").length, [leads]);
   const pendingAppsCount = useMemo(() => applications.filter(a => a.status === "under_review").length, [applications]);
 
-  // Synthesize comprehensive user directory from Profiles + Leads + Candidates + Payments
+  // Synthesize comprehensive user directory from Users + Profiles + Leads + Candidates + Payments + EOD Reports
   const allUsers = useMemo(() => {
     const aggregatedUsersMap = new Map<string, any>();
+
+    users.forEach(u => {
+      const emailKey = (u.email || u.id || "").toLowerCase().trim();
+      if (emailKey) {
+        aggregatedUsersMap.set(emailKey, {
+          id: u.id,
+          displayName: u.displayName || u.name || u.fullName || u.email || u.id,
+          email: u.email || u.id,
+          company: u.company || "N/A",
+          industry: u.industry || u.department || "Registered Account",
+          role: u.role || "Registered Account",
+          source: "User Auth Account",
+          updatedAt: u.updatedAt || u.createdAt
+        });
+      }
+    });
 
     profiles.forEach(p => {
       const emailKey = (p.email || p.id || "").toLowerCase().trim();
@@ -321,8 +341,24 @@ export const AdminPage: React.FC = () => {
       }
     });
 
+    eodReports.forEach(r => {
+      const emailKey = (r.memberEmail || r.email || r.userEmail || "").toLowerCase().trim();
+      if (emailKey && !aggregatedUsersMap.has(emailKey)) {
+        aggregatedUsersMap.set(emailKey, {
+          id: r.id,
+          displayName: r.memberName || r.name || r.employeeName || "Team Member",
+          email: emailKey,
+          company: "Opsiys Team Member",
+          industry: "Engineering / Operations",
+          role: "Team Contributor",
+          source: "EOD System",
+          updatedAt: r.createdAt
+        });
+      }
+    });
+
     return Array.from(aggregatedUsersMap.values());
-  }, [profiles, leads, applications, payments]);
+  }, [users, profiles, leads, applications, payments, eodReports]);
 
   const filteredUsers = useMemo(() => {
     const term = searchTerm.toLowerCase();
