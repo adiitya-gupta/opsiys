@@ -230,46 +230,27 @@ export const subscribeToUserLeads = (userId: string, callback: (leads: any[]) =>
 // --- ADMIN API SERVICES ---
 
 export const subscribeToEodReports = (callback: (reports: any[]) => void) => {
-  console.log("==================================================");
-  console.log("ADMIN EOD QUERY STARTED");
-  console.log("Firebase projectId:", firebaseConfig.projectId);
-  console.log("Firestore database:", firebaseConfig.firestoreDatabaseId);
-  console.log("Authenticated admin UID:", auth.currentUser?.uid || "unauthenticated");
-  console.log("Collection being queried: eod_reports");
-  console.log("==================================================");
-
   const cached = getStorageItem("opsiys_eod_reports_cache", []);
   callback(cached);
 
   try {
     const eodRef = collection(db, "eod_reports");
 
-    // Simple Direct Query Test
-    getDocs(eodRef).then((snap) => {
-      console.log("DIRECT TEST QUERY -> Number of documents returned:", snap.docs.length);
-      snap.docs.forEach(d => {
-        console.log("Document ID:", d.id, "Data:", d.data());
-      });
-    }).catch(err => {
-      console.error("DIRECT TEST QUERY ERROR:", err);
-    });
-
     // Real-time Listener
     return onSnapshot(
       eodRef,
       (snapshot) => {
-        console.log("REALTIME SNAPSHOT -> Number of documents returned:", snapshot.docs.length);
         const reports = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         setStorageItem("opsiys_eod_reports_cache", reports);
         callback(reports);
       },
       (err) => {
-        console.error("ADMIN EOD QUERY ERROR:", err?.message || err);
+        console.warn("Admin EOD reports listener notice:", err?.message || err);
         callback(getStorageItem("opsiys_eod_reports_cache", []));
       }
     );
   } catch (err: any) {
-    console.error("FAILED TO SUBSCRIBE TO EOD REPORTS:", err?.message || err);
+    console.warn("Failed to subscribe to EOD reports:", err?.message || err);
     callback(getStorageItem("opsiys_eod_reports_cache", []));
     return () => {};
   }
