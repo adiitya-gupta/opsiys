@@ -47,5 +47,9 @@ service cloud.firestore {
     match /eod_reports/{reportId} {
       allow read, write: if true;
     }
+
+    match /tasks/{taskId} {
+      allow read, write: if true;
+    }
   }
 }
