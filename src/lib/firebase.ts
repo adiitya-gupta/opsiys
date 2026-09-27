@@ -306,33 +306,25 @@ export const deleteEodReport = async (reportId: string) => {
 
 export const subscribeToAllLeads = (callback: (leads: any[]) => void) => {
   const cached = getStorageItem("opsiys_leads_cache", []);
-  callback(cached);
+  if (cached && Array.isArray(cached) && cached.length > 0) callback(cached);
 
   try {
     const leadsRef = collection(db, "leads");
-    const q = query(leadsRef, orderBy("createdAt", "desc"));
     return onSnapshot(
-      q,
+      leadsRef,
       (snapshot) => {
         const leads = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        leads.sort((a, b) => {
+          const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
+          const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
+          return tB - tA;
+        });
         setStorageItem("opsiys_leads_cache", leads);
         callback(leads);
       },
       (err) => {
         console.warn("Admin leads subscription notice:", err?.message || err);
-        // Fallback without ordering if index is building
-        onSnapshot(
-          leadsRef, 
-          (snap) => {
-            const leads = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            setStorageItem("opsiys_leads_cache", leads);
-            callback(leads);
-          },
-          (err2) => {
-            console.warn("Admin leads fallback notice:", err2?.message || err2);
-            callback(getStorageItem("opsiys_leads_cache", []));
-          }
-        );
+        callback(getStorageItem("opsiys_leads_cache", []));
       }
     );
   } catch (err) {
@@ -368,32 +360,25 @@ export const deleteLead = async (leadId: string) => {
 
 export const subscribeToCareerApplications = (callback: (apps: any[]) => void) => {
   const cached = getStorageItem("opsiys_apps_cache", []);
-  callback(cached);
+  if (cached && Array.isArray(cached) && cached.length > 0) callback(cached);
 
   try {
     const appsRef = collection(db, "career_applications");
-    const q = query(appsRef, orderBy("createdAt", "desc"));
     return onSnapshot(
-      q,
+      appsRef,
       (snapshot) => {
         const apps = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        apps.sort((a, b) => {
+          const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
+          const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
+          return tB - tA;
+        });
         setStorageItem("opsiys_apps_cache", apps);
         callback(apps);
       },
       (err) => {
         console.warn("Admin career apps subscription notice:", err?.message || err);
-        onSnapshot(
-          appsRef, 
-          (snap) => {
-            const apps = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            setStorageItem("opsiys_apps_cache", apps);
-            callback(apps);
-          },
-          (err2) => {
-            console.warn("Admin career apps fallback notice:", err2?.message || err2);
-            callback(getStorageItem("opsiys_apps_cache", []));
-          }
-        );
+        callback(getStorageItem("opsiys_apps_cache", []));
       }
     );
   } catch (err) {
@@ -429,32 +414,25 @@ export const deleteCareerApplication = async (appId: string) => {
 
 export const subscribeToPayments = (callback: (payments: any[]) => void) => {
   const cached = getStorageItem("opsiys_payments_cache", []);
-  callback(cached);
+  if (cached && Array.isArray(cached) && cached.length > 0) callback(cached);
 
   try {
     const paymentsRef = collection(db, "payments");
-    const q = query(paymentsRef, orderBy("createdAt", "desc"));
     return onSnapshot(
-      q,
+      paymentsRef,
       (snapshot) => {
         const payments = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        payments.sort((a, b) => {
+          const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
+          const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
+          return tB - tA;
+        });
         setStorageItem("opsiys_payments_cache", payments);
         callback(payments);
       },
       (err) => {
         console.warn("Admin payments subscription notice:", err?.message || err);
-        onSnapshot(
-          paymentsRef, 
-          (snap) => {
-            const payments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            setStorageItem("opsiys_payments_cache", payments);
-            callback(payments);
-          },
-          (err2) => {
-            console.warn("Admin payments fallback notice:", err2?.message || err2);
-            callback(getStorageItem("opsiys_payments_cache", []));
-          }
-        );
+        callback(getStorageItem("opsiys_payments_cache", []));
       }
     );
   } catch (err) {
