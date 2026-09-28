@@ -74,7 +74,10 @@ import {
   ShieldAlert,
   Power,
   UserPlus,
-  Shield
+  Shield,
+  CheckSquare,
+  Calendar,
+  User
 } from "lucide-react";
 
 const HARDCODED_ADMINS = ["adityaofficial9918@gmail.com", "kushwahakunal644@gmail.com", "krishnatktr1@gmail.com"];
@@ -2486,126 +2489,241 @@ export const AdminPage: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* EOD REPORT DETAIL MODAL */}
+      {/* EOD REPORT DETAIL MODAL — COMPLETE 6-SECTION VIEW */}
       <AnimatePresence>
-        {selectedEodReport && (
-          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-accent/20 text-accent font-black flex items-center justify-center text-sm border border-accent/30">
-                    {(selectedEodReport.memberName || selectedEodReport.name || "T").charAt(0).toUpperCase()}
+        {selectedEodReport && (() => {
+          const report = selectedEodReport;
+          const achievementsText = report.keyAchievements || report.achievements || report.tasksSummary || report.message || 'No key achievements specified.';
+          
+          const rawPending = report.pendingWork || report.pending_work || [];
+          const pendingWorkList: string[] = Array.isArray(rawPending) ? rawPending : (typeof rawPending === 'string' && rawPending.trim() ? [rawPending] : []);
+
+          const rawBlockers = report.blockers || report.challenges || [];
+          const blockersList: string[] = Array.isArray(rawBlockers) ? rawBlockers : (typeof rawBlockers === 'string' && rawBlockers.trim() ? [rawBlockers] : []);
+
+          const rawTomorrow = report.tomorrowPriorities || report.tomorrow_priorities || report.plans || report.tomorrowPlans || [];
+          const tomorrowPrioritiesList: string[] = Array.isArray(rawTomorrow) ? rawTomorrow : (typeof rawTomorrow === 'string' && rawTomorrow.trim() ? [rawTomorrow] : []);
+
+          const additionalUpdateText = report.additionalUpdate || report.additional_update || '';
+          const reportTasks: any[] = Array.isArray(report.tasks) ? report.tasks : [];
+
+          return (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-zinc-950 border border-zinc-800 rounded-3xl max-w-3xl w-full text-white shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+              >
+                {/* MODAL HEADER */}
+                <div className="p-6 bg-zinc-900/90 border-b border-zinc-800 flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-red-600/20 border border-red-500/30 text-red-500 font-black text-xl flex items-center justify-center uppercase">
+                      {report.memberName ? report.memberName.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black tracking-tight text-white uppercase">{report.memberName || report.name || "Team Member"}</h3>
+                      <p className="text-xs text-zinc-400 font-mono">{report.memberEmail || report.email || 'No email registered'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-extrabold uppercase tracking-tight text-white">
-                      {selectedEodReport.memberName || selectedEodReport.name || "Test Runner User"}
-                    </h3>
-                    <p className="text-xs text-zinc-400 font-mono">
-                      {selectedEodReport.memberEmail || selectedEodReport.email || "test_runner@opsiys.com"}
-                    </p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setSelectedEodReport(null)}
-                  className="w-9 h-9 rounded-full bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
 
-              {/* Meta information grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 bg-zinc-950 p-4 rounded-xl border border-zinc-800 text-xs font-mono">
-                <div>
-                  <span className="text-zinc-500 uppercase text-[10px] block">Report ID</span>
-                  <span className="text-zinc-300 font-bold truncate block">{selectedEodReport.id}</span>
-                </div>
-                <div>
-                  <span className="text-zinc-500 uppercase text-[10px] block">Date Submitted</span>
-                  <span className="text-zinc-300 font-bold block">
-                    {selectedEodReport.createdAt?.toDate ? selectedEodReport.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : (selectedEodReport.createdAt || selectedEodReport.date || "27 Sep 2026")}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-zinc-500 uppercase text-[10px] block">Current Status</span>
-                  <Badge className="mt-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
-                    {selectedEodReport.status || "Submitted"}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Achievements Section */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-mono uppercase text-accent font-bold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" /> Key Achievements & Deliverables
-                </h4>
-                <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-200 font-sans leading-relaxed whitespace-pre-wrap">
-                  {selectedEodReport.keyAchievements || selectedEodReport.achievements || selectedEodReport.tasksSummary || selectedEodReport.message || "FIREBASE EOD INTEGRATION TEST"}
-                </div>
-              </div>
-
-              {/* Blockers Section */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-mono uppercase text-amber-400 font-bold flex items-center gap-1.5">
-                  <AlertCircle className="w-4 h-4" /> Key Blockers & Challenges
-                </h4>
-                <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-300 font-sans leading-relaxed">
-                  {selectedEodReport.blockers || selectedEodReport.challenges || "No blockers reported for this cycle."}
-                </div>
-              </div>
-
-              {/* Tomorrow Plans */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-mono uppercase text-blue-400 font-bold flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" /> Tomorrow&apos;s Work Plan
-                </h4>
-                <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl text-xs text-zinc-300 font-sans leading-relaxed">
-                  {selectedEodReport.plans || selectedEodReport.tomorrowPlans || "Standard project roadmap continuation."}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-4 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-3">
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    await deleteEodReport(selectedEodReport.id);
-                    setSelectedEodReport(null);
-                  }}
-                  className="border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs font-bold uppercase rounded-xl"
-                >
-                  <Trash2 className="w-4 h-4 mr-1.5" /> Delete Report
-                </Button>
-
-                <div className="flex items-center gap-2">
-                  <Button 
-                    size="sm"
-                    onClick={async () => {
-                      await updateEodReportStatus(selectedEodReport.id, "approved");
-                      setSelectedEodReport({ ...selectedEodReport, status: "approved" });
-                    }}
-                    className="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs uppercase rounded-xl"
+                  <button
+                    onClick={() => setSelectedEodReport(null)}
+                    className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
                   >
-                    <CheckCircle2 className="w-4 h-4 mr-1.5" /> Approve Report
-                  </Button>
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* METADATA BAR */}
+                <div className="px-6 py-3 bg-zinc-900/50 border-b border-zinc-800/80 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold text-zinc-400 shrink-0 font-mono">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-zinc-500" />
+                    <span>Report Date: <strong className="text-white">{report.formattedDate || (report.createdAt?.toDate ? report.createdAt.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : report.reportDate || report.createdAt || "27 Sep 2026")}</strong></span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Badge className={
+                      (report.status || "").toLowerCase() === "approved"
+                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                        : "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                    }>
+                      ✓ {report.status || 'submitted'}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* SCROLLABLE 6-SECTION REPORT CONTENT */}
+                <div className="p-6 overflow-y-auto space-y-6 flex-1 text-zinc-300">
+                  
+                  {/* SECTION 1: TODAY'S WORK & TASKS */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                      <CheckSquare className="w-4 h-4 text-red-500" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-red-400 font-mono">
+                        1️⃣ TODAY&apos;S WORK & TASKS ({reportTasks.length})
+                      </h4>
+                    </div>
+
+                    {reportTasks.length > 0 ? (
+                      <div className="space-y-2.5">
+                        {reportTasks.map((task, idx) => (
+                          <div key={idx} className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="space-y-1">
+                              <p className="text-xs font-bold text-white leading-relaxed">
+                                {idx + 1}. {task.description || task.title}
+                              </p>
+                              {task.output && (
+                                <p className="text-[11px] text-zinc-400 pl-4 border-l-2 border-zinc-800 font-sans">
+                                  Output: {task.output}
+                                </p>
+                              )}
+                            </div>
+                            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-emerald-400 border border-zinc-700 shrink-0 self-start sm:self-auto font-mono">
+                              {task.status || 'Completed'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-zinc-500 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/50 font-mono">
+                        No tasks recorded in Section 1.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* SECTION 2: KEY ACHIEVEMENTS / OUTPUT */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 font-mono">
+                        2️⃣ KEY ACHIEVEMENTS & DELIVERABLES
+                      </h4>
+                    </div>
+                    <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-xs text-zinc-200 leading-relaxed whitespace-pre-line font-sans">
+                      {achievementsText}
+                    </div>
+                  </div>
+
+                  {/* SECTION 3: PENDING WORK */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                      <Clock className="w-4 h-4 text-amber-400" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
+                        3️⃣ PENDING WORK
+                      </h4>
+                    </div>
+                    {pendingWorkList.length > 0 ? (
+                      <ul className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-xs text-zinc-200 space-y-1.5 list-disc list-inside font-sans">
+                        {pendingWorkList.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-xs text-zinc-500 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/50 font-mono">
+                        No pending work recorded.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* SECTION 4: BLOCKERS / ISSUES */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                      <AlertCircle className="w-4 h-4 text-amber-500" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-amber-500 font-mono">
+                        4️⃣ BLOCKERS & CHALLENGES
+                      </h4>
+                    </div>
+                    {blockersList.length > 0 ? (
+                      <ul className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-xs text-zinc-200 space-y-1.5 list-disc list-inside font-sans">
+                        {blockersList.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-xs text-zinc-500 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/50 font-mono">
+                        No blockers recorded for this cycle.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* SECTION 5: TOMORROW'S PRIORITIES */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                      <Sparkles className="w-4 h-4 text-blue-400" />
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400 font-mono">
+                        5️⃣ TOMORROW&apos;S PRIORITIES
+                      </h4>
+                    </div>
+                    {tomorrowPrioritiesList.length > 0 ? (
+                      <ul className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-xs text-zinc-200 space-y-1.5 list-disc list-inside font-sans">
+                        {tomorrowPrioritiesList.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-xs text-zinc-500 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800/50 font-mono">
+                        No priorities specified for tomorrow.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* SECTION 6: ADDITIONAL UPDATE */}
+                  {additionalUpdateText && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+                        <User className="w-4 h-4 text-purple-400" />
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-purple-400 font-mono">
+                          6️⃣ ADDITIONAL UPDATE
+                        </h4>
+                      </div>
+                      <div className="bg-zinc-900 p-4 rounded-2xl border border-zinc-800 text-xs text-zinc-300 italic leading-relaxed font-sans">
+                        &quot;{additionalUpdateText}&quot;
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+                {/* MODAL FOOTER */}
+                <div className="p-4 bg-zinc-900/90 border-t border-zinc-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
                   <Button 
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedEodReport(null)}
-                    className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs font-bold uppercase rounded-xl"
+                    onClick={async () => {
+                      await deleteEodReport(selectedEodReport.id);
+                      setSelectedEodReport(null);
+                    }}
+                    className="border-red-500/30 text-red-400 hover:bg-red-500/10 text-xs font-bold uppercase rounded-xl"
                   >
-                    Close Window
+                    <Trash2 className="w-4 h-4 mr-1.5" /> Delete Report
                   </Button>
+
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      size="sm"
+                      onClick={async () => {
+                        await updateEodReportStatus(selectedEodReport.id, "approved");
+                        setSelectedEodReport({ ...selectedEodReport, status: "approved" });
+                      }}
+                      className="bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs uppercase rounded-xl"
+                    >
+                      <CheckCircle2 className="w-4 h-4 mr-1.5" /> Approve Report
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSelectedEodReport(null)}
+                      className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs font-bold uppercase rounded-xl"
+                    >
+                      Close Window
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
     </>
   );
