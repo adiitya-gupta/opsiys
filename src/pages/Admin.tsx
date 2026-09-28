@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEO } from "../components/SEO";
+import { AdminMemberWiseEODView } from "../components/AdminMemberWiseEODView";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -813,7 +814,7 @@ export const AdminPage: React.FC = () => {
                   {[
                     { id: "eod_reports", label: "EOD Reports" },
                     { id: "overview", label: "Overview" },
-                    { id: "employees", label: "Employees" },
+                    { id: "employees", label: "Member Directory" },
                     { id: "tasks", label: "Tasks" }
                   ].map(sub => (
                     <button
@@ -952,28 +953,12 @@ export const AdminPage: React.FC = () => {
               )}
 
               {eodSubTab === "employees" && (
-                <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6 space-y-4">
-                  <h3 className="text-base font-bold uppercase tracking-tight text-white">Team Employees Directory</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {Array.from(new Map(eodReports.map(r => [r.memberEmail || r.email || "test_runner@opsiys.com", r])).values()).map((emp, i) => (
-                      <div key={i} className="p-4 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-accent text-white font-black flex items-center justify-center text-sm">
-                            {(emp.memberName || emp.name || "Test Runner User").charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-white text-sm">{emp.memberName || emp.name || "Test Runner User"}</h4>
-                            <p className="text-xs text-zinc-400 font-mono">{emp.memberEmail || emp.email || "test_runner@opsiys.com"}</p>
-                          </div>
-                        </div>
-                        <div className="pt-2 border-t border-zinc-800 flex justify-between text-[11px] font-mono text-zinc-400">
-                          <span>Submissions: {eodReports.filter(r => (r.memberEmail || r.email) === (emp.memberEmail || emp.email)).length || 1}</span>
-                          <span className="text-emerald-400 font-bold">Active</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <AdminMemberWiseEODView 
+                  onOpenReportModal={(report) => setSelectedEodReport(report)}
+                  realtimeEodReports={eodReports}
+                  realtimeUsers={users}
+                  realtimeTasks={allTasks}
+                />
               )}
 
               {eodSubTab === "tasks" && (
