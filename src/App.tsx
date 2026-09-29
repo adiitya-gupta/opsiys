@@ -8,6 +8,31 @@ import {
   useNavigate
 } from "react-router-dom";
 import { SEO } from "./components/SEO";
+function lazyRetry<T extends React.ComponentType<any>>(
+  componentImport: () => Promise<{ default: T }>
+): React.LazyExoticComponent<T> {
+  return React.lazy(async () => {
+    try {
+      const page = await componentImport();
+      sessionStorage.removeItem("opsiys_chunk_reloaded");
+      return page;
+    } catch (error) {
+      console.warn("Lazy import retry notice:", error);
+      await new Promise((res) => setTimeout(res, 800));
+      try {
+        return await componentImport();
+      } catch (retryError) {
+        const hasReloaded = sessionStorage.getItem("opsiys_chunk_reloaded");
+        if (!hasReloaded) {
+          sessionStorage.setItem("opsiys_chunk_reloaded", "true");
+          window.location.reload();
+        }
+        throw retryError;
+      }
+    }
+  });
+}
+
 const loadAbout = () => import("./pages/About");
 const loadServices = () => import("./pages/Services");
 const loadServiceDetail = () => import("./pages/ServiceDetail");
@@ -24,21 +49,21 @@ const loadPackages = () => import("./pages/Packages");
 const loadNotFound = () => import("./pages/NotFound");
 const loadAdmin = () => import("./pages/Admin");
 
-const AboutPage = React.lazy(loadAbout);
-const ServicesPage = React.lazy(loadServices);
-const ServiceDetailPage = React.lazy(loadServiceDetail);
-const IndustriesPage = React.lazy(loadIndustries);
-const IndustryDetailPage = React.lazy(loadIndustryDetail);
-const LocationsPage = React.lazy(loadLocations);
-const LocationDetailPage = React.lazy(loadLocationDetail);
-const CaseStudiesPage = React.lazy(loadCaseStudies);
-const BlogPage = React.lazy(loadBlog);
-const BlogPostPage = React.lazy(loadBlogPost);
-const ContactPage = React.lazy(loadContact);
-const CareersPage = React.lazy(loadCareers);
-const PackagesPage = React.lazy(loadPackages);
-const NotFoundPage = React.lazy(loadNotFound);
-const AdminPage = React.lazy(loadAdmin);
+const AboutPage = lazyRetry(loadAbout);
+const ServicesPage = lazyRetry(loadServices);
+const ServiceDetailPage = lazyRetry(loadServiceDetail);
+const IndustriesPage = lazyRetry(loadIndustries);
+const IndustryDetailPage = lazyRetry(loadIndustryDetail);
+const LocationsPage = lazyRetry(loadLocations);
+const LocationDetailPage = lazyRetry(loadLocationDetail);
+const CaseStudiesPage = lazyRetry(loadCaseStudies);
+const BlogPage = lazyRetry(loadBlog);
+const BlogPostPage = lazyRetry(loadBlogPost);
+const ContactPage = lazyRetry(loadContact);
+const CareersPage = lazyRetry(loadCareers);
+const PackagesPage = lazyRetry(loadPackages);
+const NotFoundPage = lazyRetry(loadNotFound);
+const AdminPage = lazyRetry(loadAdmin);
 
 // Preload route chunks in background on idle so clicks respond instantly
 if (typeof window !== "undefined") {

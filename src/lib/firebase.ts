@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { 
   initializeFirestore,
   getFirestore, 
@@ -21,6 +21,11 @@ import firebaseConfig from "../../firebase-applet-config.json";
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
+
+// Explicitly set auth session persistence so user stays logged in across restarts and tab switching
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.warn("Auth persistence configuration notice:", err);
+});
 
 // Initialize Firestore with standard settings for high-speed WebSockets / direct fetch
 export const db = initializeFirestore(app, {

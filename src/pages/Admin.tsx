@@ -160,7 +160,13 @@ export const AdminPage: React.FC = () => {
 
   const [authError, setAuthError] = useState("");
   const [adminPasscode, setAdminPasscode] = useState("");
-  const [isPasscodeUnlocked, setIsPasscodeUnlocked] = useState(false);
+  const [isPasscodeUnlocked, setIsPasscodeUnlocked] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("opsiys_admin_unlocked_session") === "true";
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -168,6 +174,32 @@ export const AdminPage: React.FC = () => {
       setLoadingAuth(false);
     });
     return () => unsubscribe();
+  }, []);
+
+  // Auto-refresh token on tab focus to prevent idle disconnection errors after hours
+  useEffect(() => {
+    const handleFocus = async () => {
+      try {
+        if (auth.currentUser) {
+          await auth.currentUser.getIdToken(true);
+        }
+      } catch (err) {
+        console.warn("Auto-token refresh notice on focus:", err);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        handleFocus();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
   const handleGoogleSignIn = async () => {
@@ -188,9 +220,24 @@ export const AdminPage: React.FC = () => {
     e.preventDefault();
     if (adminPasscode === "opsiys2026" || adminPasscode === "aditya9918") {
       setIsPasscodeUnlocked(true);
+      try {
+        localStorage.setItem("opsiys_admin_unlocked_session", "true");
+      } catch (err) {
+        console.warn("Failed to store unlocked session:", err);
+      }
       setAuthError("");
     } else {
       setAuthError("Invalid Admin Passcode. Try again.");
+    }
+  };
+
+  const handleAdminLogout = async () => {
+    try {
+      localStorage.removeItem("opsiys_admin_unlocked_session");
+      setIsPasscodeUnlocked(false);
+      await logout();
+    } catch (err) {
+      console.warn("Logout error notice:", err);
     }
   };
 
@@ -645,7 +692,7 @@ export const AdminPage: React.FC = () => {
                 </Button>
               ) : (
                 <Button 
-                  onClick={logout}
+                  onClick={handleAdminLogout}
                   variant="outline"
                   className="w-full h-12 border-zinc-700 text-white hover:bg-zinc-800 font-bold text-xs uppercase tracking-widest rounded-xl"
                 >
@@ -703,7 +750,7 @@ export const AdminPage: React.FC = () => {
                 <span>{user?.email || "Admin Session"}</span>
               </div>
               <Button 
-                onClick={logout}
+                onClick={handleAdminLogout}
                 variant="outline"
                 size="sm"
                 className="border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 font-bold uppercase text-[10px] tracking-widest rounded-full"
