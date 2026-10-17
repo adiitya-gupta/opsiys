@@ -202,7 +202,8 @@ export const AdminPage: React.FC = () => {
   const handleGoogleSignIn = async () => {
     setAuthError("");
     try {
-      await signInWithGoogle();
+      const destination = `${window.location.origin}/admin`;
+      await signInWithGoogle(destination);
     } catch (err: any) {
       console.error("Google Sign-In Error:", err);
       setAuthError(err?.message || "Google Authentication failed. Please try again.");

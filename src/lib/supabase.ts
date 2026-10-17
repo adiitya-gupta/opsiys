@@ -91,13 +91,16 @@ export const normalizeSupabaseUser = (supabaseUser: any): NormalizedUser | null 
 /**
  * Google OAuth Sign-In via Supabase Auth
  */
-export const signInWithGoogle = async () => {
+export const signInWithGoogle = async (redirectTo?: string) => {
   try {
     const origin = window.location.origin;
+    const defaultDestination = origin.includes("localhost") ? origin : "https://www.opsiys.in";
+    const destination = redirectTo || defaultDestination;
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: origin,
+        redirectTo: destination,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
