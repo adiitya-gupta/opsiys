@@ -395,7 +395,7 @@ export const subscribeToAllLeads = (callback: (leads: any[]) => void) => {
       leadsRef,
       (snapshot) => {
         const leads = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        leads.sort((a, b) => {
+        leads.sort((a: any, b: any) => {
           const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
           const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
           return tB - tA;
@@ -450,7 +450,7 @@ export const subscribeToCareerApplications = (callback: (apps: any[]) => void) =
       appsRef,
       (snapshot) => {
         const apps = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        apps.sort((a, b) => {
+        apps.sort((a: any, b: any) => {
           const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
           const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
           return tB - tA;
@@ -505,7 +505,7 @@ export const subscribeToPayments = (callback: (payments: any[]) => void) => {
       paymentsRef,
       (snapshot) => {
         const payments = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        payments.sort((a, b) => {
+        payments.sort((a: any, b: any) => {
           const tA = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : (new Date(a.createdAt || 0).getTime() || 0);
           const tB = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : (new Date(b.createdAt || 0).getTime() || 0);
           return tB - tA;

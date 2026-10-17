@@ -113,7 +113,9 @@ import {
   Megaphone,
   ChevronRight,
   ShieldCheck,
-  Cpu
+  Cpu,
+  Phone,
+  ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
@@ -124,9 +126,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { signInWithGoogle, logout, auth, submitLead, updateProfile, getUserProfile, subscribeToUserLeads, subscribeToSystemSettings, subscribeToAdminEmails, AdminUserAccount } from "./lib/firebase";
+import { submitLead, subscribeToUserLeads, subscribeToSystemSettings, subscribeToAdminEmails, AdminUserAccount } from "./lib/firebase";
+import { signInWithGoogle, logout, onAuthStateChanged, NormalizedUser, getUserProfile, updateProfile } from "./lib/supabase";
+import { PhoneOnboardingModal, COUNTRY_CODES } from "./components/PhoneOnboardingModal";
 import { MaintenanceOverlay } from "./components/MaintenanceOverlay";
-import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 
 /**
  * BRAND COLORS:
@@ -449,10 +452,11 @@ const Navbar = ({
 };
 
 const AuthPortal = () => {
-  const [user, setUser] = React.useState<FirebaseUser | null>(null);
+  const [user, setUser] = React.useState<NormalizedUser | null>(null);
   const [adminAccounts, setAdminAccounts] = React.useState<AdminUserAccount[]>([]);
   const [showSettings, setShowSettings] = React.useState(false);
   const [showHistory, setShowHistory] = React.useState(false);
+  const [showPhoneModal, setShowPhoneModal] = React.useState(false);
   const [profile, setProfile] = React.useState<any>(null);
   const [leads, setLeads] = React.useState<any[]>([]);
   const [isSaving, setIsSaving] = React.useState(false);
@@ -471,14 +475,31 @@ const AuthPortal = () => {
   }, [user, adminAccounts]);
 
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const p = await getUserProfile(currentUser.uid);
-        setProfile(p || { displayName: currentUser.displayName || "", company: "", role: "", industry: "" });
+        const p = await getUserProfile(currentUser.id, currentUser.email);
+        const resolvedProfile = p || {
+          displayName: currentUser.displayName || "",
+          company: "",
+          role: "",
+          industry: "",
+          phone: currentUser.phone || "",
+          phoneCountryCode: currentUser.phoneCountryCode || "+91",
+          phoneVerified: currentUser.phoneVerified || false
+        };
+        setProfile(resolvedProfile);
+
+        // Check if phone number collection onboarding is needed
+        const dismissedKey = `opsiys_phone_dismissed_${currentUser.id}`;
+        const wasDismissed = sessionStorage.getItem(dismissedKey) === "true";
+        if (!resolvedProfile.phone && !wasDismissed) {
+          setShowPhoneModal(true);
+        }
       } else {
         setProfile(null);
         setLeads([]);
+        setShowPhoneModal(false);
       }
     });
     return () => unsubscribe();
@@ -487,7 +508,7 @@ const AuthPortal = () => {
   React.useEffect(() => {
     if (!user || !showHistory) return;
 
-    const unsubscribe = subscribeToUserLeads(user.uid, (fetchedLeads) => {
+    const unsubscribe = subscribeToUserLeads(user.id, (fetchedLeads) => {
       setLeads(fetchedLeads);
     });
 
@@ -499,7 +520,10 @@ const AuthPortal = () => {
     if (!user) return;
     setIsSaving(true);
     try {
-      await updateProfile(user.uid, profile);
+      await updateProfile(user.id, {
+        ...profile,
+        email: user.email
+      });
       setShowSettings(false);
     } catch (error) {
       console.error(error);
@@ -508,11 +532,32 @@ const AuthPortal = () => {
     }
   };
 
+  const handleSavePhoneFromModal = async (phone: string, countryCode: string) => {
+    if (!user) return;
+    const updated = {
+      ...profile,
+      phone,
+      phoneCountryCode: countryCode,
+      phoneVerified: false,
+      email: user.email,
+      displayName: profile?.displayName || user.displayName
+    };
+    await updateProfile(user.id, updated);
+    setProfile(updated);
+  };
+
+  const handleDismissPhoneModal = () => {
+    if (user) {
+      sessionStorage.setItem(`opsiys_phone_dismissed_${user.id}`, "true");
+    }
+    setShowPhoneModal(false);
+  };
+
   const handleSignIn = async () => {
     try {
       await signInWithGoogle();
     } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') return;
+      if (error?.code === 'auth/popup-closed-by-user' || error?.message?.includes('closed')) return;
       console.error("Authentication Error:", error);
     }
   };
@@ -527,6 +572,15 @@ const AuthPortal = () => {
         onOpenSettings={() => setShowSettings(true)}
         onOpenHistory={() => setShowHistory(true)}
         isUserAdmin={isUserAdmin}
+      />
+
+      {/* WhatsApp Phone Number Onboarding Modal */}
+      <PhoneOnboardingModal
+        isOpen={showPhoneModal}
+        userEmail={user?.email}
+        userName={profile?.displayName || user?.displayName}
+        onSave={handleSavePhoneFromModal}
+        onClose={handleDismissPhoneModal}
       />
       
       {/* Settings Modal */}
@@ -566,6 +620,50 @@ const AuthPortal = () => {
                       placeholder="Enter legal name"
                     />
                   </div>
+
+                  {/* WhatsApp Mobile Number Field */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                        <Phone size={12} /> WhatsApp Mobile Number
+                      </label>
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          "text-[9px] font-bold uppercase tracking-wider",
+                          profile?.phoneVerified 
+                            ? "border-emerald-300 bg-emerald-50 text-emerald-700" 
+                            : "border-amber-300 bg-amber-50 text-amber-700"
+                        )}
+                      >
+                        {profile?.phoneVerified ? "Verified" : "Unverified"}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="relative w-32 shrink-0">
+                        <select
+                          value={profile?.phoneCountryCode || "+91"}
+                          onChange={e => setProfile({ ...profile, phoneCountryCode: e.target.value })}
+                          className="w-full h-10 px-2 pr-6 bg-zinc-50 border border-border text-xs font-mono font-bold appearance-none rounded-none focus:outline-none focus:ring-1 focus:ring-black cursor-pointer"
+                        >
+                          {COUNTRY_CODES.map((item) => (
+                            <option key={item.code} value={item.code}>
+                              {item.flag} {item.code}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} className="absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground" />
+                      </div>
+                      <Input 
+                        type="tel"
+                        value={profile?.phone || ""} 
+                        onChange={e => setProfile({...profile, phone: e.target.value.replace(/\D/g, "")})}
+                        className="rounded-none focus-visible:ring-0 flex-1 font-mono text-xs" 
+                        placeholder="WhatsApp phone number"
+                      />
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
@@ -1790,10 +1888,10 @@ const HowItWorks = () => {
 
 
 const ToolDiscovery = () => {
-  const [user, setUser] = React.useState<FirebaseUser | null>(null);
+  const [user, setUser] = React.useState<NormalizedUser | null>(null);
 
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => setUser(u));
+    const unsubscribe = onAuthStateChanged((u) => setUser(u));
     return () => unsubscribe();
   }, []);
 
@@ -2013,7 +2111,7 @@ const Contact = () => {
   });
   const [status, setStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [feedback, setFeedback] = React.useState("");
-  const [user, setUser] = React.useState<FirebaseUser | null>(null);
+  const [user, setUser] = React.useState<NormalizedUser | null>(null);
 
   React.useEffect(() => {
     const handleServiceInquiry = (e: any) => {
@@ -2040,7 +2138,7 @@ const Contact = () => {
   }, []);
 
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       if (currentUser) {
         setFormData(prev => ({
@@ -2060,7 +2158,7 @@ const Contact = () => {
     try {
       await submitLead({
         ...formData,
-        userId: user?.uid
+        userId: user?.id || user?.uid
       });
       
       setStatus('success');

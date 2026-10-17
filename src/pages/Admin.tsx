@@ -6,9 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
-  auth, 
-  signInWithGoogle, 
-  logout,
   subscribeToEodReports,
   updateEodReportStatus,
   deleteEodReport,
@@ -41,7 +38,7 @@ import {
   deleteTask,
   TaskItem
 } from "../lib/firebase";
-import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
+import { signInWithGoogle, logout, onAuthStateChanged, NormalizedUser } from "../lib/supabase";
 import { 
   ShieldCheck, 
   Users, 
@@ -84,7 +81,7 @@ import {
 const HARDCODED_ADMINS = ["adityaofficial9918@gmail.com", "kushwahakunal644@gmail.com", "krishnatktr1@gmail.com"];
 
 export const AdminPage: React.FC = () => {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<NormalizedUser | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [activeTab, setActiveTab] = useState<"overview" | "eod" | "leads" | "careers" | "payments" | "profiles" | "jobs" | "blogs" | "settings">("overview");
   const [eodSubTab, setEodSubTab] = useState<"eod_reports" | "overview" | "employees" | "tasks">("eod_reports");
@@ -169,7 +166,7 @@ export const AdminPage: React.FC = () => {
   });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       setLoadingAuth(false);
     });
@@ -180,8 +177,8 @@ export const AdminPage: React.FC = () => {
   useEffect(() => {
     const handleFocus = async () => {
       try {
-        if (auth.currentUser) {
-          await auth.currentUser.getIdToken(true);
+        if (user?.getIdToken) {
+          await user.getIdToken(true);
         }
       } catch (err) {
         console.warn("Auto-token refresh notice on focus:", err);
@@ -200,7 +197,7 @@ export const AdminPage: React.FC = () => {
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [user]);
 
   const handleGoogleSignIn = async () => {
     setAuthError("");
@@ -208,11 +205,7 @@ export const AdminPage: React.FC = () => {
       await signInWithGoogle();
     } catch (err: any) {
       console.error("Google Sign-In Error:", err);
-      if (err?.code === "auth/unauthorized-domain" || err?.message?.includes("unauthorized-domain")) {
-        setAuthError("Domain Unauthorized in Firebase: Add your current domain to Firebase Console -> Authentication -> Settings -> Authorized domains.");
-      } else {
-        setAuthError(err?.message || "Google Authentication failed. Please try again.");
-      }
+      setAuthError(err?.message || "Google Authentication failed. Please try again.");
     }
   };
 
@@ -262,6 +255,7 @@ export const AdminPage: React.FC = () => {
     const unSubPayments = subscribeToPayments(setPayments);
     const unSubUsers = subscribeToUsers(setUsers);
     const unSubProfiles = subscribeToProfiles(setProfiles);
+    const unSubJobs = subscribeToJobOpenings(setJobOpenings);
     const unSubBlogs = subscribeToBlogPosts(setBlogs);
     const unSubTasks = subscribeToAllTasks(setAllTasks);
     const unSubSettings = subscribeToSystemSettings((settings) => {
