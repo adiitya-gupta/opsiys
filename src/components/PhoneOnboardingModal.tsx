@@ -139,15 +139,15 @@ export const PhoneOnboardingModal: React.FC<PhoneOnboardingModalProps> = ({
           <div className="space-y-2">
             <Badge className="bg-accent/10 text-accent hover:bg-accent/20 border-none px-3.5 py-1 rounded-full text-[9px] uppercase font-bold tracking-widest inline-flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-              Partner Onboarding
+              Profile Details
             </Badge>
 
             <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tighter text-black leading-tight">
-              Connect <span className="text-accent">WhatsApp</span>
+              Add Phone <span className="text-accent">Number</span>
             </h2>
 
             <p className="text-xs text-zinc-500 font-medium leading-relaxed max-w-sm mx-auto">
-              Link your WhatsApp contact to receive real-time project milestones, sprint updates, and direct coordination from our team.
+              Please enter your mobile phone number so our team can reach you regarding your projects and support.
             </p>
           </div>
 
@@ -157,7 +157,7 @@ export const PhoneOnboardingModal: React.FC<PhoneOnboardingModalProps> = ({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 ml-1">
-                  WhatsApp Mobile Number *
+                  Mobile Phone Number *
                 </label>
                 <span className="text-[9px] font-mono font-bold text-zinc-400">Default: India (+91)</span>
               </div>
@@ -236,10 +236,10 @@ export const PhoneOnboardingModal: React.FC<PhoneOnboardingModalProps> = ({
                 className="w-full h-12 sm:h-14 rounded-full bg-black hover:bg-zinc-800 text-white font-extrabold text-xs uppercase tracking-[0.2em] shadow-xl hover:shadow-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
-                  "Saving Details..."
+                  "Saving..."
                 ) : (
                   <>
-                    Confirm & Access Portal <ArrowRight size={14} />
+                    Save & Continue <ArrowRight size={14} />
                   </>
                 )}
               </Button>
@@ -249,7 +249,7 @@ export const PhoneOnboardingModal: React.FC<PhoneOnboardingModalProps> = ({
                 onClick={onClose}
                 className="w-full text-center text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-400 hover:text-black transition-colors py-1.5"
               >
-                Skip For Now & Continue
+                Skip for Now
               </button>
             </div>
           </form>

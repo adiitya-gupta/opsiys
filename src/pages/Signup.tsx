@@ -141,7 +141,7 @@ export default function SignupPage() {
               </h1>
 
               <p className="text-zinc-500 text-sm md:text-lg font-medium leading-relaxed max-w-lg">
-                Register your business to connect your project pipeline, access bespoke AI automation workflows, and receive direct WhatsApp sprint notifications from our solutions architect.
+                Register your business to connect your project pipeline, access bespoke AI automation workflows, and receive real-time project notifications from our team.
               </p>
             </div>
 
@@ -149,8 +149,8 @@ export default function SignupPage() {
             <div className="space-y-4 pt-4 border-t border-zinc-100">
               {[
                 { 
-                  title: "Direct WhatsApp Sprint Sync", 
-                  desc: "Milestone approvals, deployment logs, and priority updates sent directly to your mobile." 
+                  title: "Direct Sprint Sync", 
+                  desc: "Milestone approvals, deployment logs, and priority updates sent directly to your phone." 
                 },
                 { 
                   title: "Dedicated Leads & Growth Pipeline", 
@@ -188,10 +188,10 @@ export default function SignupPage() {
                   <Sparkles size={22} className="text-accent" />
                 </div>
                 <h2 className="font-black text-2xl md:text-3xl tracking-tighter uppercase text-black">
-                  Create Partner Profile
+                  Create Account
                 </h2>
                 <p className="text-xs text-zinc-500 font-medium">
-                  Enter your details once. We will connect your WhatsApp to your Google account.
+                  Enter your details once. We will link them to your Google account.
                 </p>
               </div>
 
@@ -223,11 +223,11 @@ export default function SignupPage() {
                   />
                 </div>
 
-                {/* WhatsApp Phone Number */}
+                {/* Phone Number */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 ml-1">
-                      WhatsApp Mobile Number *
+                      Phone Number *
                     </label>
                     <span className="text-[9px] font-mono font-bold text-zinc-400">Default: India (+91)</span>
                   </div>
@@ -304,7 +304,7 @@ export default function SignupPage() {
                   </Button>
 
                   <p className="text-center text-[10px] text-zinc-400 font-medium leading-relaxed">
-                    By signing up, you agree to receive project milestone alerts on WhatsApp. You can update or remove your number at any time in Account Settings.
+                    By signing up, you agree to receive project milestone alerts and account updates. You can update or remove your phone number at any time in Account Settings.
                   </p>
                 </div>
               </form>
