@@ -120,6 +120,43 @@ export const signInWithGoogle = async (redirectTo?: string) => {
 };
 
 /**
+ * Email/Password Sign-In via Supabase Auth
+ */
+export const signInWithEmail = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) throw error;
+  return normalizeSupabaseUser(data.user);
+};
+
+/**
+ * Email/Password Sign-Up via Supabase Auth
+ */
+export const signUpWithEmail = async (
+  email: string, 
+  password: string, 
+  metadata?: { displayName?: string; phone?: string; phoneCountryCode?: string; company?: string }
+) => {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        display_name: metadata?.displayName,
+        full_name: metadata?.displayName,
+        phone: metadata?.phone,
+        phone_country_code: metadata?.phoneCountryCode || "+91",
+        company: metadata?.company,
+      }
+    }
+  });
+  if (error) throw error;
+  return normalizeSupabaseUser(data.user);
+};
+
+/**
  * Sign Out via Supabase Auth
  */
 export const logout = async () => {

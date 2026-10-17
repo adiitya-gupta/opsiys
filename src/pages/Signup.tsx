@@ -10,22 +10,30 @@ import {
   User, 
   CheckCircle2, 
   ChevronDown, 
-  AlertCircle 
+  AlertCircle,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { COUNTRY_CODES } from "../components/PhoneOnboardingModal";
-import { signInWithGoogle, onAuthStateChanged, NormalizedUser, updateProfile } from "../lib/supabase";
+import { signInWithGoogle, signUpWithEmail, onAuthStateChanged, NormalizedUser, updateProfile } from "../lib/supabase";
 import { submitLead } from "../lib/firebase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function SignupPage() {
   const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [company, setCompany] = React.useState("");
   const [countryCode, setCountryCode] = React.useState("+91");
   const [phone, setPhone] = React.useState("");
   const [validationError, setValidationError] = React.useState("");
+  const [successMsg, setSuccessMsg] = React.useState("");
   const [user, setUser] = React.useState<NormalizedUser | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -44,6 +52,14 @@ export default function SignupPage() {
   };
 
   const validate = (): boolean => {
+    if (!name.trim()) {
+      setValidationError("Please enter your full name.");
+      return false;
+    }
+    if (!email.trim()) {
+      setValidationError("Please enter your email address.");
+      return false;
+    }
     if (!phone.trim()) {
       setValidationError("Please enter your WhatsApp contact number.");
       return false;
@@ -69,20 +85,72 @@ export default function SignupPage() {
     return true;
   };
 
-  const handleGoogleSignup = async (e: React.FormEvent) => {
+  const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validate()) return;
+    if (!password || password.length < 6) {
+      setValidationError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setValidationError("");
+    setSuccessMsg("");
+
+    try {
+      sessionStorage.setItem("opsiys_pending_whatsapp_phone", phone.trim());
+      sessionStorage.setItem("opsiys_pending_country_code", countryCode);
+      sessionStorage.setItem("opsiys_pending_name", name.trim());
+      if (company.trim()) sessionStorage.setItem("opsiys_pending_company", company.trim());
+
+      const created = await signUpWithEmail(email.trim(), password, {
+        displayName: name.trim(),
+        phone: phone.trim(),
+        phoneCountryCode: countryCode,
+        company: company.trim()
+      });
+
+      try {
+        await submitLead({
+          name: name.trim(),
+          email: email.trim(),
+          company: company.trim() || "Direct Sign Up",
+          phone: `${countryCode} ${phone.trim()}`,
+          projectType: "Partner Onboarding",
+          userId: created?.id || undefined,
+          status: "qualified"
+        });
+      } catch (syncErr) {
+        console.warn("Lead sync note:", syncErr);
+      }
+
+      if (created) {
+        window.location.href = "/";
+      } else {
+        setSuccessMsg("Account created! If email confirmation is required, please check your inbox.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      let msg = err?.message || "Failed to create account. Please try again.";
+      if (msg.includes("User already registered") || msg.includes("already exists")) {
+        msg = "An account with this email already exists. Please log in instead.";
+      }
+      setValidationError(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
     if (!validate()) return;
 
     setIsSubmitting(true);
     try {
-      // 1. Store pending onboarding details in sessionStorage so they are automatically
-      // bound to the user's Supabase profile and lead record upon Google OAuth return
       sessionStorage.setItem("opsiys_pending_whatsapp_phone", phone.trim());
       sessionStorage.setItem("opsiys_pending_country_code", countryCode);
       if (name.trim()) sessionStorage.setItem("opsiys_pending_name", name.trim());
       if (company.trim()) sessionStorage.setItem("opsiys_pending_company", company.trim());
 
-      // 2. If user is already authenticated, update directly
       if (user) {
         await updateProfile(user.id, {
           displayName: name.trim() || user.displayName,
@@ -107,7 +175,6 @@ export default function SignupPage() {
         return;
       }
 
-      // 3. Initiate Google OAuth returning strictly to OPSIYS website
       await signInWithGoogle(`${window.location.origin}/`);
     } catch (err: any) {
       console.error(err);
@@ -196,30 +263,33 @@ export default function SignupPage() {
               </div>
 
               {/* Form */}
-              <form onSubmit={handleGoogleSignup} className="space-y-4">
+              <form onSubmit={handleEmailSignup} className="space-y-4">
                 {/* Full Name */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 ml-1">
-                    Full Name / Contact Name
+                    Full Name *
                   </label>
                   <Input
-                    placeholder="Aditya Gupta"
+                    placeholder="e.g. Rahul Sharma"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="rounded-xl h-12 md:h-14 border-zinc-200 bg-zinc-50/70 text-black placeholder:text-zinc-400 focus-visible:ring-black px-4 font-bold text-xs md:text-sm transition-all focus-visible:bg-white"
+                    required
+                    className="rounded-xl h-11 md:h-12 border-zinc-200 bg-zinc-50/70 text-black placeholder:text-zinc-400 focus-visible:ring-black px-4 font-bold text-xs md:text-sm transition-all focus-visible:bg-white"
                   />
                 </div>
 
-                {/* Company / Organization */}
+                {/* Email Address */}
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 ml-1">
-                    Company / Organization
+                    Email Address *
                   </label>
                   <Input
-                    placeholder="Acme Growth Systems"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    className="rounded-xl h-12 md:h-14 border-zinc-200 bg-zinc-50/70 text-black placeholder:text-zinc-400 focus-visible:ring-black px-4 font-bold text-xs md:text-sm transition-all focus-visible:bg-white"
+                    type="email"
+                    placeholder="name@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="rounded-xl h-11 md:h-12 border-zinc-200 bg-zinc-50/70 text-black placeholder:text-zinc-400 focus-visible:ring-black px-4 font-bold text-xs md:text-sm transition-all focus-visible:bg-white"
                   />
                 </div>
 
@@ -227,13 +297,12 @@ export default function SignupPage() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 ml-1">
-                      Phone Number *
+                      Phone / WhatsApp Number *
                     </label>
                     <span className="text-[9px] font-mono font-bold text-zinc-400">Default: India (+91)</span>
                   </div>
 
                   <div className="flex gap-2">
-                    {/* Country Code Dropdown */}
                     <div className="relative w-28 shrink-0">
                       <select
                         value={countryCode}
@@ -241,7 +310,7 @@ export default function SignupPage() {
                           setCountryCode(e.target.value);
                           if (validationError) setValidationError("");
                         }}
-                        className="w-full h-12 md:h-14 px-3 pr-7 bg-zinc-50/70 border border-zinc-200 text-xs font-mono font-bold appearance-none rounded-xl focus:outline-none focus:border-black focus:bg-white transition-all cursor-pointer text-black"
+                        className="w-full h-11 md:h-12 px-3 pr-7 bg-zinc-50/70 border border-zinc-200 text-xs font-mono font-bold appearance-none rounded-xl focus:outline-none focus:border-black focus:bg-white transition-all cursor-pointer text-black"
                       >
                         {COUNTRY_CODES.map((item) => (
                           <option key={item.code} value={item.code}>
@@ -255,57 +324,134 @@ export default function SignupPage() {
                       />
                     </div>
 
-                    {/* Number Input */}
                     <div className="flex-1">
                       <Input
                         type="tel"
                         inputMode="numeric"
-                        placeholder={countryCode === "+91" ? "98765 43210" : "Mobile number"}
+                        placeholder={countryCode === "+91" ? "10-digit mobile" : "Mobile number"}
                         value={phone}
                         onChange={handlePhoneChange}
-                        className="rounded-xl h-12 md:h-14 border-zinc-200 bg-zinc-50/70 text-black placeholder:text-zinc-400 focus-visible:ring-black px-4 font-bold text-xs md:text-sm tracking-wide font-mono transition-all focus-visible:bg-white"
+                        required
+                        className="rounded-xl h-11 md:h-12 border-zinc-200 bg-zinc-50/70 text-black placeholder:text-zinc-400 focus-visible:ring-black px-4 font-bold text-xs md:text-sm tracking-wide font-mono transition-all focus-visible:bg-white"
                       />
                     </div>
                   </div>
-
-                  {validationError && (
-                    <p className="text-[10px] text-red-600 font-bold flex items-center gap-1.5 pt-1 pl-1">
-                      <AlertCircle size={12} /> {validationError}
-                    </p>
-                  )}
                 </div>
 
-                {/* Submit with Google Button */}
-                <div className="pt-3 space-y-3">
+                {/* Password */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 ml-1">
+                    Password (min 6 characters) *
+                  </label>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create secure password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="rounded-xl h-11 md:h-12 border-zinc-200 bg-zinc-50/70 text-black placeholder:text-zinc-400 focus-visible:ring-black px-4 pr-10 font-bold text-xs md:text-sm transition-all focus-visible:bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Company / Organization (Optional) */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-500 ml-1">
+                    Company / Organization (Optional)
+                  </label>
+                  <Input
+                    placeholder="Acme Growth Systems"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="rounded-xl h-11 md:h-12 border-zinc-200 bg-zinc-50/70 text-black placeholder:text-zinc-400 focus-visible:ring-black px-4 font-bold text-xs md:text-sm transition-all focus-visible:bg-white"
+                  />
+                </div>
+
+                {validationError && (
+                  <p className="text-[10px] text-red-600 font-bold flex items-center gap-1.5 pt-1 pl-1">
+                    <AlertCircle size={12} /> {validationError}
+                  </p>
+                )}
+
+                {successMsg && (
+                  <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1.5 pt-1 pl-1">
+                    <CheckCircle2 size={12} /> {successMsg}
+                  </p>
+                )}
+
+                {/* Submit Button */}
+                <div className="pt-2 space-y-3">
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 md:h-14 rounded-full bg-black hover:bg-zinc-800 text-white font-extrabold text-xs uppercase tracking-[0.2em] shadow-xl hover:shadow-2xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                    className="w-full h-11 md:h-12 rounded-xl bg-accent hover:bg-accent/90 text-white font-extrabold text-xs uppercase tracking-[0.15em] shadow-lg hover:shadow-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? "Creating Account..." : "Create Account"}
+                    <ArrowRight size={14} />
+                  </Button>
+
+                  {/* Standard or continue with divider */}
+                  <div className="relative py-1">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-zinc-200" />
+                    </div>
+                    <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+                      <span className="bg-white px-3">or continue with</span>
+                    </div>
+                  </div>
+
+                  {/* Optional Google Button */}
+                  <Button
+                    type="button"
+                    onClick={handleGoogleSignup}
+                    disabled={isSubmitting}
+                    variant="outline"
+                    className="w-full h-11 md:h-12 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-bold text-xs transition-all flex items-center justify-center gap-2.5 active:scale-[0.99] shadow-sm"
                   >
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path
-                        fill="currentColor"
+                        fill="#4285F4"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       />
                       <path
-                        fill="currentColor"
+                        fill="#34A853"
                         d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
                       />
                       <path
-                        fill="currentColor"
+                        fill="#FBBC05"
                         d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
                       />
                       <path
-                        fill="currentColor"
+                        fill="#EA4335"
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                       />
                     </svg>
-                    {isSubmitting ? "Connecting..." : "Continue with Google"}
+                    Continue with Google
                   </Button>
 
-                  <p className="text-center text-[10px] text-zinc-400 font-medium leading-relaxed">
-                    By signing up, you agree to receive project milestone alerts and account updates. You can update or remove your phone number at any time in Account Settings.
-                  </p>
+                  <div className="pt-2 text-center">
+                    <Link
+                      to="/"
+                      onClick={() => {
+                        setTimeout(() => {
+                          window.dispatchEvent(new CustomEvent("open-auth-modal", { detail: { tab: 'login' } }));
+                        }, 100);
+                      }}
+                      className="text-xs font-semibold text-zinc-500 hover:text-black transition-colors"
+                    >
+                      Already have an account? <span className="font-bold text-black underline">Log in</span>
+                    </Link>
+                  </div>
                 </div>
               </form>
             </motion.div>

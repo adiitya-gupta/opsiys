@@ -104,6 +104,10 @@ import {
   Instagram,
   LogIn,
   LogOut,
+  UserPlus,
+  Eye,
+  EyeOff,
+  Lock,
   Info,
   Globe,
   Code2,
@@ -130,7 +134,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { submitLead, subscribeToUserLeads, subscribeToSystemSettings, subscribeToAdminEmails, AdminUserAccount } from "./lib/firebase";
-import { signInWithGoogle, logout, onAuthStateChanged, NormalizedUser, getUserProfile, updateProfile } from "./lib/supabase";
+import { signInWithGoogle, signInWithEmail, signUpWithEmail, logout, onAuthStateChanged, NormalizedUser, getUserProfile, updateProfile } from "./lib/supabase";
 import { PhoneOnboardingModal, COUNTRY_CODES } from "./components/PhoneOnboardingModal";
 import { MaintenanceOverlay } from "./components/MaintenanceOverlay";
 
@@ -183,6 +187,8 @@ const ScrollToRoute = () => {
 const Navbar = ({ 
   user, 
   handleSignIn, 
+  onOpenLogin,
+  onOpenSignup,
   logout, 
   profile, 
   onOpenSettings, 
@@ -190,7 +196,9 @@ const Navbar = ({
   isUserAdmin
 }: { 
   user: any, 
-  handleSignIn: any, 
+  handleSignIn?: any, 
+  onOpenLogin?: () => void,
+  onOpenSignup?: () => void,
   logout: any, 
   profile: any,
   onOpenSettings: () => void,
@@ -331,14 +339,23 @@ const Navbar = ({
                 </AnimatePresence>
               </div>
             ) : (
-              <Button 
-                onClick={handleSignIn}
-                className="bg-accent/90 hover:bg-accent text-white hover:scale-105 active:scale-95 transition-all rounded-full h-8 md:h-9 px-3 md:px-5 text-[9px] md:text-[10px] font-extrabold uppercase tracking-widest shadow-lg"
-              >
-                <LogIn size={12} className="mr-0 md:mr-2" /> 
-                <span className="hidden sm:inline">Partner Portal</span>
-                <span className="sm:hidden">Login</span>
-              </Button>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Button 
+                  onClick={onOpenLogin || handleSignIn}
+                  variant="ghost"
+                  className="text-zinc-300 hover:text-white hover:bg-white/10 rounded-full h-8 md:h-9 px-3 md:px-4 text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider transition-all"
+                >
+                  <LogIn size={13} className="mr-1.5" />
+                  Log In
+                </Button>
+                <Button 
+                  onClick={onOpenSignup || handleSignIn}
+                  className="bg-accent hover:bg-accent/90 text-white rounded-full h-8 md:h-9 px-3.5 md:px-5 text-[10px] md:text-[11px] font-extrabold uppercase tracking-wider shadow-lg hover:scale-105 active:scale-95 transition-all"
+                >
+                  <UserPlus size={13} className="mr-1.5 hidden sm:inline" />
+                  Sign Up
+                </Button>
+              </div>
             )}
 
             <a href="/#contact" className="hidden sm:block transition-all">
@@ -416,7 +433,7 @@ const Navbar = ({
                 ))}
               </div>
 
-              {user && (
+              {user ? (
                 <div className="pt-8 border-t border-white/10 flex flex-col items-center gap-6 w-full">
                   <button 
                     onClick={() => { onOpenHistory(); setIsOpen(false); }}
@@ -436,6 +453,22 @@ const Navbar = ({
                   >
                     <LogOut size={24} /> Sign Out
                   </button>
+                </div>
+              ) : (
+                <div className="pt-8 border-t border-white/10 flex flex-col items-center gap-3 w-full">
+                  <Button 
+                    onClick={() => { (onOpenLogin || handleSignIn)(); setIsOpen(false); }}
+                    variant="outline"
+                    className="w-full h-12 rounded-full border-white/20 bg-white/5 text-white font-extrabold text-xs uppercase tracking-widest hover:bg-white/10"
+                  >
+                    <LogIn size={14} className="mr-2" /> Log In
+                  </Button>
+                  <Button 
+                    onClick={() => { (onOpenSignup || handleSignIn)(); setIsOpen(false); }}
+                    className="w-full h-12 rounded-full bg-accent hover:bg-accent/90 text-white font-extrabold text-xs uppercase tracking-widest shadow-lg"
+                  >
+                    <UserPlus size={14} className="mr-2" /> Sign Up Free
+                  </Button>
                 </div>
               )}
               
@@ -467,10 +500,31 @@ const AuthPortal = () => {
     if (typeof window === "undefined") return false;
     return sessionStorage.getItem("opsiys_welcome_seen") !== "true";
   });
+  const [authModalTab, setAuthModalTab] = React.useState<'login' | 'signup'>('login');
+  const [authEmail, setAuthEmail] = React.useState("");
+  const [authPassword, setAuthPassword] = React.useState("");
+  const [authName, setAuthName] = React.useState("");
+  const [authPhone, setAuthPhone] = React.useState("");
+  const [authCountryCode, setAuthCountryCode] = React.useState("+91");
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [isAuthLoading, setIsAuthLoading] = React.useState(false);
+  const [authError, setAuthError] = React.useState("");
+  const [authSuccess, setAuthSuccess] = React.useState("");
 
   React.useEffect(() => {
     const unSubAdmins = subscribeToAdminEmails(setAdminAccounts);
-    return () => unSubAdmins();
+    const handleCustomOpenAuth = (e: any) => {
+      const tab = e?.detail?.tab === 'signup' ? 'signup' : 'login';
+      setAuthModalTab(tab);
+      setAuthError("");
+      setAuthSuccess("");
+      setShowWelcome(true);
+    };
+    window.addEventListener("open-auth-modal", handleCustomOpenAuth);
+    return () => {
+      unSubAdmins();
+      window.removeEventListener("open-auth-modal", handleCustomOpenAuth);
+    };
   }, []);
 
   const isUserAdmin = React.useMemo(() => {
@@ -617,14 +671,145 @@ const AuthPortal = () => {
     setShowPhoneModal(false);
   };
 
-  const handleSignIn = async () => {
+  const handleOpenLogin = () => {
+    setAuthModalTab('login');
+    setAuthError("");
+    setAuthSuccess("");
+    setShowWelcome(true);
+  };
+
+  const handleOpenSignup = () => {
+    setAuthModalTab('signup');
+    setAuthError("");
+    setAuthSuccess("");
+    setShowWelcome(true);
+  };
+
+  const handleGoogleSignIn = async () => {
     try {
+      setIsAuthLoading(true);
+      setAuthError("");
       sessionStorage.setItem("opsiys_welcome_seen", "true");
+      if (authPhone.trim()) {
+        sessionStorage.setItem("opsiys_pending_whatsapp_phone", authPhone.trim());
+        sessionStorage.setItem("opsiys_pending_country_code", authCountryCode);
+      }
+      if (authName.trim()) {
+        sessionStorage.setItem("opsiys_pending_name", authName.trim());
+      }
       await signInWithGoogle(`${window.location.origin}/`);
       setShowWelcome(false);
     } catch (error: any) {
       if (error?.code === 'auth/popup-closed-by-user' || error?.message?.includes('closed')) return;
-      console.error("Authentication Error:", error);
+      console.error("Google Sign-In Error:", error);
+      setAuthError(error?.message || "Failed to sign in with Google. Please try again.");
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail.trim() || !authPassword) {
+      setAuthError("Please enter your email and password.");
+      return;
+    }
+    setIsAuthLoading(true);
+    setAuthError("");
+    setAuthSuccess("");
+
+    try {
+      sessionStorage.setItem("opsiys_welcome_seen", "true");
+      const normalized = await signInWithEmail(authEmail.trim(), authPassword);
+      if (normalized) {
+        setUser(normalized);
+        setShowWelcome(false);
+      }
+    } catch (error: any) {
+      console.error("Login Error:", error);
+      let msg = error?.message || "Invalid email or password.";
+      if (msg.includes("Invalid login credentials") || msg.includes("invalid_grant")) {
+        msg = "Invalid email or password. Please check your credentials or create an account.";
+      } else if (msg.includes("Email not confirmed")) {
+        msg = "Please verify your email address before logging in.";
+      }
+      setAuthError(msg);
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
+  const handleEmailSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authName.trim()) {
+      setAuthError("Please enter your full name.");
+      return;
+    }
+    if (!authEmail.trim()) {
+      setAuthError("Please enter your email address.");
+      return;
+    }
+    if (!authPassword || authPassword.length < 6) {
+      setAuthError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    const cleanPhone = authPhone.replace(/\D/g, "");
+    if (cleanPhone) {
+      if (authCountryCode === "+91" && (cleanPhone.length !== 10 || !/^[6-9]\d{9}$/.test(cleanPhone))) {
+        setAuthError("Please enter a valid 10-digit Indian mobile number.");
+        return;
+      }
+    }
+
+    setIsAuthLoading(true);
+    setAuthError("");
+    setAuthSuccess("");
+
+    try {
+      sessionStorage.setItem("opsiys_welcome_seen", "true");
+      
+      if (cleanPhone) {
+        sessionStorage.setItem("opsiys_pending_whatsapp_phone", cleanPhone);
+        sessionStorage.setItem("opsiys_pending_country_code", authCountryCode);
+      }
+      sessionStorage.setItem("opsiys_pending_name", authName.trim());
+
+      const createdUser = await signUpWithEmail(authEmail.trim(), authPassword, {
+        displayName: authName.trim(),
+        phone: cleanPhone,
+        phoneCountryCode: authCountryCode
+      });
+
+      try {
+        await submitLead({
+          name: authName.trim(),
+          email: authEmail.trim(),
+          phone: cleanPhone ? `${authCountryCode} ${cleanPhone}` : "Not provided",
+          company: "Direct Sign Up",
+          projectType: "Website Partner Registration",
+          userId: createdUser?.id || undefined,
+          status: "qualified"
+        });
+      } catch (leadErr) {
+        console.warn("Lead sync note:", leadErr);
+      }
+
+      if (createdUser) {
+        setUser(createdUser);
+        setShowWelcome(false);
+      } else {
+        setAuthSuccess("Account created successfully! If email verification is required, please check your inbox to confirm your account.");
+      }
+    } catch (error: any) {
+      console.error("Signup Error:", error);
+      let msg = error?.message || "Failed to create account. Please try again.";
+      if (msg.includes("User already registered") || msg.includes("already exists")) {
+        msg = "An account with this email already exists. Please log in instead.";
+      }
+      setAuthError(msg);
+    } finally {
+      setIsAuthLoading(false);
     }
   };
 
@@ -632,7 +817,9 @@ const AuthPortal = () => {
     <>
       <Navbar 
         user={user} 
-        handleSignIn={() => setShowWelcome(true)} 
+        handleSignIn={handleOpenLogin} 
+        onOpenLogin={handleOpenLogin}
+        onOpenSignup={handleOpenSignup}
         logout={logout} 
         profile={profile} 
         onOpenSettings={() => setShowSettings(true)}
@@ -845,7 +1032,7 @@ const AuthPortal = () => {
         )}
       </AnimatePresence>
 
-      {/* Login Modal */}
+      {/* Login & Signup Form Modal */}
       <AnimatePresence>
         {showWelcome && !user && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -857,14 +1044,14 @@ const AuthPortal = () => {
                 sessionStorage.setItem("opsiys_welcome_seen", "true");
                 setShowWelcome(false);
               }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div 
-              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-[210] w-full max-w-sm bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.15)] border border-zinc-200 p-8 sm:p-10 text-center space-y-6"
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="relative z-[210] w-full max-w-md bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.22)] border border-zinc-200 p-6 sm:p-8 text-left space-y-4 max-h-[92vh] overflow-y-auto no-scrollbar"
             >
               {/* Close Button */}
               <button 
@@ -872,64 +1059,296 @@ const AuthPortal = () => {
                   sessionStorage.setItem("opsiys_welcome_seen", "true");
                   setShowWelcome(false);
                 }}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-black flex items-center justify-center transition-all active:scale-95"
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 hover:text-black flex items-center justify-center transition-all active:scale-95 z-10"
                 aria-label="Close"
               >
                 <X size={16} />
               </button>
 
-              {/* Icon */}
-              <div className="w-16 h-16 bg-black text-white rounded-full flex items-center justify-center mx-auto shadow-xl">
-                <ArrowRight size={28} />
+              {/* Segmented Controls: Log In / Sign Up */}
+              <div className="flex bg-zinc-100 p-1 rounded-2xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthModalTab('login');
+                    setAuthError("");
+                    setAuthSuccess("");
+                  }}
+                  className={cn(
+                    "flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5",
+                    authModalTab === 'login'
+                      ? "bg-white text-black shadow-sm"
+                      : "text-zinc-500 hover:text-black"
+                  )}
+                >
+                  <LogIn size={13} />
+                  Log In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthModalTab('signup');
+                    setAuthError("");
+                    setAuthSuccess("");
+                  }}
+                  className={cn(
+                    "flex-1 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition-all duration-200 flex items-center justify-center gap-1.5",
+                    authModalTab === 'signup'
+                      ? "bg-white text-black shadow-sm"
+                      : "text-zinc-500 hover:text-black"
+                  )}
+                >
+                  <UserPlus size={13} />
+                  Sign Up
+                </button>
               </div>
 
-              {/* Heading */}
-              <div className="space-y-2">
-                <h2 className="text-3xl font-black uppercase tracking-tighter text-black">
-                  Log In
+              {/* Header */}
+              <div className="space-y-1">
+                <h2 className="text-2xl font-black uppercase tracking-tight text-black">
+                  {authModalTab === 'login' ? "Log In" : "Sign Up"}
                 </h2>
-                <p className="text-zinc-500 text-xs font-medium leading-relaxed max-w-xs mx-auto">
-                  Sign in to explore our collection of AI tools designed to help you work smarter.
+                <p className="text-zinc-500 text-xs font-medium leading-relaxed">
+                  {authModalTab === 'login' 
+                    ? "Enter your email and password to log in to your portal." 
+                    : "Create your partner account to access the AI Suite and manage projects."}
                 </p>
               </div>
 
-              {/* Actions */}
-              <div className="space-y-3 pt-2">
-                <Button 
-                  onClick={handleSignIn}
-                  className="w-full h-12 rounded-full bg-black hover:bg-zinc-800 text-white font-extrabold text-xs uppercase tracking-[0.15em] shadow-lg transition-all flex items-center justify-center gap-3 active:scale-95"
-                >
-                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                  </svg>
-                  Connect with Google
-                </Button>
-
-                <div className="flex items-center justify-between pt-2">
-                  <Link
-                    to="/signup"
-                    onClick={() => {
-                      sessionStorage.setItem("opsiys_welcome_seen", "true");
-                      setShowWelcome(false);
-                    }}
-                    className="text-[10px] font-bold uppercase tracking-wider text-accent hover:underline"
-                  >
-                    Create Account →
-                  </Link>
-
-                  <button 
-                    onClick={() => {
-                      sessionStorage.setItem("opsiys_welcome_seen", "true");
-                      setShowWelcome(false);
-                    }}
-                    className="text-[10px] font-bold uppercase tracking-[0.15em] text-zinc-400 hover:text-black transition-colors"
-                  >
-                    Continue as Guest
-                  </button>
+              {/* Error & Success Messages */}
+              {authError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs font-medium flex items-start gap-2">
+                  <AlertCircle size={15} className="shrink-0 mt-0.5" />
+                  <span className="leading-tight">{authError}</span>
                 </div>
+              )}
+              {authSuccess && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-xs font-medium flex items-start gap-2">
+                  <CheckCircle2 size={15} className="shrink-0 mt-0.5" />
+                  <span className="leading-tight">{authSuccess}</span>
+                </div>
+              )}
+
+              {/* Log In Form */}
+              {authModalTab === 'login' ? (
+                <form onSubmit={handleEmailLogin} className="space-y-3.5">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 flex items-center gap-1.5">
+                      <Mail size={12} className="text-zinc-400" /> Email Address
+                    </label>
+                    <Input
+                      type="email"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      placeholder="name@company.com"
+                      required
+                      autoComplete="email"
+                      className="h-10 text-xs rounded-xl border-zinc-200 focus-visible:ring-black"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 flex items-center gap-1.5">
+                        <Lock size={12} className="text-zinc-400" /> Password
+                      </label>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        autoComplete="current-password"
+                        className="h-10 text-xs rounded-xl border-zinc-200 focus-visible:ring-black pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isAuthLoading}
+                    className="w-full h-11 rounded-xl bg-black hover:bg-zinc-800 text-white font-extrabold text-xs uppercase tracking-widest shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+                  >
+                    {isAuthLoading ? "Logging In..." : "Log In"}
+                    <ArrowRight size={14} />
+                  </Button>
+                </form>
+              ) : (
+                /* Sign Up Form */
+                <form onSubmit={handleEmailSignup} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 flex items-center gap-1.5">
+                      <User size={12} className="text-zinc-400" /> Full Name
+                    </label>
+                    <Input
+                      type="text"
+                      value={authName}
+                      onChange={(e) => setAuthName(e.target.value)}
+                      placeholder="e.g. Rahul Sharma"
+                      required
+                      autoComplete="name"
+                      className="h-10 text-xs rounded-xl border-zinc-200 focus-visible:ring-black"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 flex items-center gap-1.5">
+                      <Mail size={12} className="text-zinc-400" /> Email Address
+                    </label>
+                    <Input
+                      type="email"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      placeholder="name@company.com"
+                      required
+                      autoComplete="email"
+                      className="h-10 text-xs rounded-xl border-zinc-200 focus-visible:ring-black"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 flex items-center gap-1.5">
+                        <Phone size={12} className="text-zinc-400" /> Phone / WhatsApp
+                      </label>
+                      <span className="text-[9px] text-zinc-400 font-medium">For project updates</span>
+                    </div>
+                    <div className="flex rounded-xl border border-zinc-200 bg-white overflow-hidden focus-within:ring-2 focus-within:ring-black focus-within:border-transparent">
+                      <div className="relative bg-zinc-50 border-r border-zinc-200 shrink-0">
+                        <select 
+                          value={authCountryCode} 
+                          onChange={(e) => setAuthCountryCode(e.target.value)}
+                          className="h-10 pl-3 pr-7 text-xs font-bold appearance-none bg-transparent cursor-pointer outline-none"
+                        >
+                          {COUNTRY_CODES.map(c => (
+                            <option key={c.code} value={c.code}>{c.code} ({c.name})</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400" />
+                      </div>
+                      <Input 
+                        type="tel"
+                        value={authPhone}
+                        onChange={(e) => setAuthPhone(e.target.value.replace(/\D/g, ""))}
+                        placeholder={authCountryCode === "+91" ? "10-digit mobile number" : "Mobile number"}
+                        maxLength={authCountryCode === "+91" ? 10 : 15}
+                        className="border-0 shadow-none focus-visible:ring-0 rounded-none h-10 text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-600 flex items-center gap-1.5">
+                      <Lock size={12} className="text-zinc-400" /> Password (min 6 characters)
+                    </label>
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        placeholder="Create secure password"
+                        required
+                        minLength={6}
+                        autoComplete="new-password"
+                        className="h-10 text-xs rounded-xl border-zinc-200 focus-visible:ring-black pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={isAuthLoading}
+                    className="w-full h-11 rounded-xl bg-accent hover:bg-accent/90 text-white font-extrabold text-xs uppercase tracking-widest shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+                  >
+                    {isAuthLoading ? "Creating Account..." : "Sign Up"}
+                    <ArrowRight size={14} />
+                  </Button>
+                </form>
+              )}
+
+              {/* Optional Google Divider */}
+              <div className="relative py-1">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-zinc-200" />
+                </div>
+                <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+                  <span className="bg-white px-3">or continue with</span>
+                </div>
+              </div>
+
+              {/* Optional Continue with Google Button */}
+              <Button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={isAuthLoading}
+                variant="outline"
+                className="w-full h-11 rounded-xl border border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300 text-zinc-800 font-bold text-xs transition-all flex items-center justify-center gap-2.5 active:scale-[0.99] shadow-sm"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                {authModalTab === 'login' ? "Log in with Google" : "Sign up with Google"}
+              </Button>
+
+              {/* Bottom Switcher & Guest Link */}
+              <div className="pt-2 flex items-center justify-between text-xs border-t border-zinc-100">
+                {authModalTab === 'login' ? (
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setAuthModalTab('signup');
+                      setAuthError("");
+                      setAuthSuccess("");
+                    }}
+                    className="text-[11px] font-semibold text-zinc-500 hover:text-black transition-colors"
+                  >
+                    Don't have an account? <span className="font-bold text-accent underline">Sign up</span>
+                  </button>
+                ) : (
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setAuthModalTab('login');
+                      setAuthError("");
+                      setAuthSuccess("");
+                    }}
+                    className="text-[11px] font-semibold text-zinc-500 hover:text-black transition-colors"
+                  >
+                    Already have an account? <span className="font-bold text-black underline">Log in</span>
+                  </button>
+                )}
+
+                <button 
+                  type="button"
+                  onClick={() => {
+                    sessionStorage.setItem("opsiys_welcome_seen", "true");
+                    setShowWelcome(false);
+                  }}
+                  className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-600 transition-colors"
+                >
+                  Continue as Guest
+                </button>
               </div>
             </motion.div>
           </div>
@@ -2107,26 +2526,24 @@ const ToolDiscovery = () => {
                       Sign in or create your partner profile to access our curated library of business growth tools.
                     </p>
                   </div>
-                  <div className="pt-2 flex flex-col items-center gap-3">
+                  <div className="pt-2 flex flex-col items-center gap-2.5 w-full">
                     <Button 
-                      onClick={async () => {
-                        try {
-                          await signInWithGoogle(`${window.location.origin}/`);
-                        } catch (error: any) {
-                          if (error.code === 'auth/popup-closed-by-user') return;
-                          console.error("Auth Error:", error);
-                        }
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent("open-auth-modal", { detail: { tab: 'login' } }));
                       }}
-                      className="w-full h-12 md:h-14 rounded-full bg-black text-white font-extrabold text-xs uppercase tracking-[0.2em] hover:bg-zinc-800 transition-all shadow-xl active:scale-95 flex items-center justify-center gap-2"
+                      className="w-full h-11 md:h-12 rounded-xl bg-black text-white font-extrabold text-xs uppercase tracking-[0.15em] hover:bg-zinc-800 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
                     >
-                      Connect with Google <ArrowRight size={14} />
+                      <LogIn size={14} /> Log In to Access AI Suite
                     </Button>
-                    <Link
-                      to="/signup"
-                      className="text-[10px] font-bold uppercase tracking-wider text-accent hover:underline flex items-center gap-1"
+                    <Button 
+                      onClick={() => {
+                        window.dispatchEvent(new CustomEvent("open-auth-modal", { detail: { tab: 'signup' } }));
+                      }}
+                      variant="outline"
+                      className="w-full h-11 md:h-12 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-extrabold text-xs uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2"
                     >
-                      New Partner? Register First →
-                    </Link>
+                      <UserPlus size={14} /> Create Free Account
+                    </Button>
                   </div>
                 </motion.div>
               </div>
