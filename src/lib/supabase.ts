@@ -3,19 +3,34 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { db } from './firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// Environment variables for Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://kcvbsjppdtzsjnmacgpw.supabase.co";
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "sb_publishable_tSG_0zzcaEtyy8JGBAryEg_ocEnXqou";
+// Helper to sanitize Supabase URL in case dashboard URL was provided
+function formatSupabaseUrl(rawUrl?: string): string {
+  const fallback = "https://kcvbsjppdtzsjnmacgpw.supabase.co";
+  if (!rawUrl) return fallback;
+  const trimmed = rawUrl.trim().replace(/\/+$/, "");
 
-// Warn in development if real keys are not yet configured
-if (
-  (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) &&
-  import.meta.env.DEV
-) {
-  console.info(
-    "Supabase Configuration Notice: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY not set in .env. Using fallback client."
-  );
+  // If user passed dashboard link like https://supabase.com/dashboard/project/kcvbsjppdtzsjnmacgpw
+  const dashboardMatch = trimmed.match(/dashboard\/project\/([a-zA-Z0-9_-]+)/);
+  if (dashboardMatch) {
+    return `https://${dashboardMatch[1]}.supabase.co`;
+  }
+
+  // If user passed only the project ref like "kcvbsjppdtzsjnmacgpw"
+  if (/^[a-zA-Z0-9_-]{15,30}$/.test(trimmed)) {
+    return `https://${trimmed}.supabase.co`;
+  }
+
+  // Ensure https:// prefix
+  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+    return `https://${trimmed}`;
+  }
+
+  return trimmed;
 }
+
+// Environment variables for Supabase
+const supabaseUrl = formatSupabaseUrl(import.meta.env.VITE_SUPABASE_URL);
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "sb_publishable_tSG_0zzcaEtyy8JGBAryEg_ocEnXqou";
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
