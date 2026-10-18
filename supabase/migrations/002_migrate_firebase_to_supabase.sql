@@ -1,18 +1,18 @@
 -- ==============================================================================
--- OPSIYS Website — Complete Firebase to Supabase Migration Script
+-- OPSIYS Website — Complete Firebase to Supabase Migration Script (V2 Robust)
 -- Project Ref: kcvbsjppdtzsjnmacgpw
--- Generated At: 2026-10-18T10:19:09.297Z
+-- Generated At: 2026-10-18T11:25:35.381Z
 -- ==============================================================================
 
--- 1. Enable required extensions
+-- 1. Enable required PostgreSQL extensions
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 2. Create public.profiles table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT NOT NULL UNIQUE,
-  display_name TEXT,
+  email TEXT NOT NULL,
+  display_name TEXT DEFAULT '',
   avatar_url TEXT DEFAULT '',
   phone_country_code TEXT DEFAULT '+91',
   phone TEXT DEFAULT '',
@@ -25,6 +25,18 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure profiles email is unique and indexed
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'profiles_email_key'
+  ) THEN
+    ALTER TABLE public.profiles ADD CONSTRAINT profiles_email_key UNIQUE (email);
+  END IF;
+EXCEPTION
+  WHEN OTHERS THEN NULL;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_phone ON public.profiles(phone);
@@ -76,7 +88,7 @@ BEGIN
     created_at,
     updated_at
   )
-  VALUES (
+  SELECT
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'display_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
@@ -87,12 +99,15 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'company', ''),
     NOW(),
     NOW()
-  )
-  ON CONFLICT (email) DO UPDATE SET
-    display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-    phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-    company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-    updated_at = NOW();
+  WHERE NOT EXISTS (SELECT 1 FROM public.profiles WHERE email = NEW.email);
+
+  UPDATE public.profiles SET
+    display_name = COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'display_name', public.profiles.display_name),
+    phone = CASE WHEN COALESCE(NEW.raw_user_meta_data->>'phone', '') <> '' THEN NEW.raw_user_meta_data->>'phone' ELSE public.profiles.phone END,
+    company = CASE WHEN COALESCE(NEW.raw_user_meta_data->>'company', '') <> '' THEN NEW.raw_user_meta_data->>'company' ELSE public.profiles.company END,
+    updated_at = NOW()
+  WHERE email = NEW.email;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -105,7 +120,7 @@ CREATE TRIGGER on_auth_user_created
 -- ==============================================================================
 -- 5. MIGRATE FIREBASE LOGIN ACCOUNTS INTO auth.users
 -- ==============================================================================
--- Insert login accounts into auth.users (Default password: OpsiysUser2026!)
+-- Insert login accounts into auth.users (uses WHERE NOT EXISTS to prevent conflict errors)
 INSERT INTO auth.users (
   instance_id,
   id,
@@ -120,7 +135,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -134,7 +150,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'adityaofficial9918@gmail.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -150,7 +168,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -164,7 +183,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'kushwahakunal645@gmail.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -180,7 +201,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -194,7 +216,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'kushwahakunal644@gmail.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -210,7 +234,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -224,7 +249,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'opsiyss@gmail.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -240,7 +267,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -254,7 +282,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'hellodavid@gmail.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -270,7 +300,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -284,7 +315,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'testuser_1742350000@opsiys.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -300,7 +333,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -314,7 +348,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'kushwahakunal1970@gmail.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -330,7 +366,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -344,7 +381,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'test_runner@opsiys.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -360,7 +399,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -374,7 +414,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'aditya@opsiys.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -390,7 +432,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -404,7 +447,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'frontiernitesh@gmail.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -420,7 +465,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -434,7 +480,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'admin@opsiys.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -450,7 +498,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -464,7 +513,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'krishnatktr@gmail.com'
+);
 
 INSERT INTO auth.users (
   instance_id,
@@ -480,7 +531,8 @@ INSERT INTO auth.users (
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -494,7 +546,9 @@ INSERT INTO auth.users (
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = 'member@opsiys.com'
+);
 
 -- ==============================================================================
 -- 6. MIGRATE FIREBASE PROFILES INTO public.profiles
@@ -510,7 +564,8 @@ INSERT INTO public.profiles (
   legacy_firebase_uid,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'adityaofficial9918@gmail.com',
   'Aditya Gupta',
   '7355583185',
@@ -521,13 +576,19 @@ INSERT INTO public.profiles (
   '3a8206b6-733f-48c9-b221-a0ba76469e34',
   NOW(),
   NOW()
-) ON CONFLICT (email) DO UPDATE SET
-  display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-  phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-  company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-  wacrm_welcome_sent = EXCLUDED.wacrm_welcome_sent,
-  legacy_firebase_uid = EXCLUDED.legacy_firebase_uid,
-  updated_at = NOW();
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.profiles WHERE email = 'adityaofficial9918@gmail.com'
+);
+
+UPDATE public.profiles SET
+  display_name = CASE WHEN 'Aditya Gupta' <> '' THEN 'Aditya Gupta' ELSE public.profiles.display_name END,
+  phone = CASE WHEN '7355583185' <> '' THEN '7355583185' ELSE public.profiles.phone END,
+  company = CASE WHEN '' <> '' THEN '' ELSE public.profiles.company END,
+  wacrm_welcome_sent = false,
+  legacy_firebase_uid = '3a8206b6-733f-48c9-b221-a0ba76469e34',
+  updated_at = NOW()
+WHERE email = 'adityaofficial9918@gmail.com';
+
 INSERT INTO public.profiles (
   email,
   display_name,
@@ -539,7 +600,8 @@ INSERT INTO public.profiles (
   legacy_firebase_uid,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'kushwahakunal645@gmail.com',
   'Kunal Kushwaha',
   '8429446870',
@@ -550,13 +612,19 @@ INSERT INTO public.profiles (
   'BU56kJs5pyfJPm7492hb3yj3mcw2',
   NOW(),
   NOW()
-) ON CONFLICT (email) DO UPDATE SET
-  display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-  phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-  company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-  wacrm_welcome_sent = EXCLUDED.wacrm_welcome_sent,
-  legacy_firebase_uid = EXCLUDED.legacy_firebase_uid,
-  updated_at = NOW();
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.profiles WHERE email = 'kushwahakunal645@gmail.com'
+);
+
+UPDATE public.profiles SET
+  display_name = CASE WHEN 'Kunal Kushwaha' <> '' THEN 'Kunal Kushwaha' ELSE public.profiles.display_name END,
+  phone = CASE WHEN '8429446870' <> '' THEN '8429446870' ELSE public.profiles.phone END,
+  company = CASE WHEN '' <> '' THEN '' ELSE public.profiles.company END,
+  wacrm_welcome_sent = false,
+  legacy_firebase_uid = 'BU56kJs5pyfJPm7492hb3yj3mcw2',
+  updated_at = NOW()
+WHERE email = 'kushwahakunal645@gmail.com';
+
 INSERT INTO public.profiles (
   email,
   display_name,
@@ -568,7 +636,8 @@ INSERT INTO public.profiles (
   legacy_firebase_uid,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'kushwahakunal644@gmail.com',
   'Kunal Kushwaha',
   '8429446870',
@@ -579,13 +648,19 @@ INSERT INTO public.profiles (
   'WJhMuEpsnbMDD47NjfyYo7UQL5F3',
   NOW(),
   NOW()
-) ON CONFLICT (email) DO UPDATE SET
-  display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-  phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-  company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-  wacrm_welcome_sent = EXCLUDED.wacrm_welcome_sent,
-  legacy_firebase_uid = EXCLUDED.legacy_firebase_uid,
-  updated_at = NOW();
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.profiles WHERE email = 'kushwahakunal644@gmail.com'
+);
+
+UPDATE public.profiles SET
+  display_name = CASE WHEN 'Kunal Kushwaha' <> '' THEN 'Kunal Kushwaha' ELSE public.profiles.display_name END,
+  phone = CASE WHEN '8429446870' <> '' THEN '8429446870' ELSE public.profiles.phone END,
+  company = CASE WHEN 'DriveX' <> '' THEN 'DriveX' ELSE public.profiles.company END,
+  wacrm_welcome_sent = true,
+  legacy_firebase_uid = 'WJhMuEpsnbMDD47NjfyYo7UQL5F3',
+  updated_at = NOW()
+WHERE email = 'kushwahakunal644@gmail.com';
+
 INSERT INTO public.profiles (
   email,
   display_name,
@@ -597,7 +672,8 @@ INSERT INTO public.profiles (
   legacy_firebase_uid,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'opsiyss@gmail.com',
   '',
   '8808705136',
@@ -608,13 +684,19 @@ INSERT INTO public.profiles (
   'b99be81c-8770-4f1d-ae9b-4c8690591d65',
   NOW(),
   NOW()
-) ON CONFLICT (email) DO UPDATE SET
-  display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-  phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-  company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-  wacrm_welcome_sent = EXCLUDED.wacrm_welcome_sent,
-  legacy_firebase_uid = EXCLUDED.legacy_firebase_uid,
-  updated_at = NOW();
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.profiles WHERE email = 'opsiyss@gmail.com'
+);
+
+UPDATE public.profiles SET
+  display_name = CASE WHEN '' <> '' THEN '' ELSE public.profiles.display_name END,
+  phone = CASE WHEN '8808705136' <> '' THEN '8808705136' ELSE public.profiles.phone END,
+  company = CASE WHEN '' <> '' THEN '' ELSE public.profiles.company END,
+  wacrm_welcome_sent = false,
+  legacy_firebase_uid = 'b99be81c-8770-4f1d-ae9b-4c8690591d65',
+  updated_at = NOW()
+WHERE email = 'opsiyss@gmail.com';
+
 INSERT INTO public.profiles (
   email,
   display_name,
@@ -626,7 +708,8 @@ INSERT INTO public.profiles (
   legacy_firebase_uid,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'hellodavid@gmail.com',
   'Aditya Gupta',
   '8808705136',
@@ -637,13 +720,19 @@ INSERT INTO public.profiles (
   'dPTEvw4rqvPfmDLqH5ZIEMdf7Ua2',
   NOW(),
   NOW()
-) ON CONFLICT (email) DO UPDATE SET
-  display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-  phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-  company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-  wacrm_welcome_sent = EXCLUDED.wacrm_welcome_sent,
-  legacy_firebase_uid = EXCLUDED.legacy_firebase_uid,
-  updated_at = NOW();
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.profiles WHERE email = 'hellodavid@gmail.com'
+);
+
+UPDATE public.profiles SET
+  display_name = CASE WHEN 'Aditya Gupta' <> '' THEN 'Aditya Gupta' ELSE public.profiles.display_name END,
+  phone = CASE WHEN '8808705136' <> '' THEN '8808705136' ELSE public.profiles.phone END,
+  company = CASE WHEN '' <> '' THEN '' ELSE public.profiles.company END,
+  wacrm_welcome_sent = true,
+  legacy_firebase_uid = 'dPTEvw4rqvPfmDLqH5ZIEMdf7Ua2',
+  updated_at = NOW()
+WHERE email = 'hellodavid@gmail.com';
+
 INSERT INTO public.profiles (
   email,
   display_name,
@@ -655,7 +744,8 @@ INSERT INTO public.profiles (
   legacy_firebase_uid,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'testuser_1742350000@opsiys.com',
   'Aditya Verification',
   '9876543210',
@@ -666,13 +756,19 @@ INSERT INTO public.profiles (
   'fQL2h9VLllRo50rmyA7Nye4hclc2',
   NOW(),
   NOW()
-) ON CONFLICT (email) DO UPDATE SET
-  display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-  phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-  company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-  wacrm_welcome_sent = EXCLUDED.wacrm_welcome_sent,
-  legacy_firebase_uid = EXCLUDED.legacy_firebase_uid,
-  updated_at = NOW();
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.profiles WHERE email = 'testuser_1742350000@opsiys.com'
+);
+
+UPDATE public.profiles SET
+  display_name = CASE WHEN 'Aditya Verification' <> '' THEN 'Aditya Verification' ELSE public.profiles.display_name END,
+  phone = CASE WHEN '9876543210' <> '' THEN '9876543210' ELSE public.profiles.phone END,
+  company = CASE WHEN '' <> '' THEN '' ELSE public.profiles.company END,
+  wacrm_welcome_sent = true,
+  legacy_firebase_uid = 'fQL2h9VLllRo50rmyA7Nye4hclc2',
+  updated_at = NOW()
+WHERE email = 'testuser_1742350000@opsiys.com';
+
 INSERT INTO public.profiles (
   email,
   display_name,
@@ -684,7 +780,8 @@ INSERT INTO public.profiles (
   legacy_firebase_uid,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'kushwahakunal1970@gmail.com',
   'Kunal',
   '8429446870',
@@ -695,13 +792,18 @@ INSERT INTO public.profiles (
   'qtPM0fKxIqZaKUDiOUauiLfDmnP2',
   NOW(),
   NOW()
-) ON CONFLICT (email) DO UPDATE SET
-  display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-  phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-  company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-  wacrm_welcome_sent = EXCLUDED.wacrm_welcome_sent,
-  legacy_firebase_uid = EXCLUDED.legacy_firebase_uid,
-  updated_at = NOW();
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.profiles WHERE email = 'kushwahakunal1970@gmail.com'
+);
+
+UPDATE public.profiles SET
+  display_name = CASE WHEN 'Kunal' <> '' THEN 'Kunal' ELSE public.profiles.display_name END,
+  phone = CASE WHEN '8429446870' <> '' THEN '8429446870' ELSE public.profiles.phone END,
+  company = CASE WHEN '' <> '' THEN '' ELSE public.profiles.company END,
+  wacrm_welcome_sent = true,
+  legacy_firebase_uid = 'qtPM0fKxIqZaKUDiOUauiLfDmnP2',
+  updated_at = NOW()
+WHERE email = 'kushwahakunal1970@gmail.com';
 
 -- ==============================================================================
 -- 7. MIGRATE FIREBASE LEADS INTO public.leads
@@ -721,7 +823,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Kunal',
   'kushwahakunal1970@gmail.com',
   '+91 8429446870',
@@ -736,6 +839,8 @@ INSERT INTO public.leads (
   '28M3fhB7YJu4gyujfLdP',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = '28M3fhB7YJu4gyujfLdP'
 );
 INSERT INTO public.leads (
   name,
@@ -752,7 +857,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+91 7355583185',
@@ -767,6 +873,8 @@ INSERT INTO public.leads (
   '3x2EYrmhi5nGTi11klOj',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = '3x2EYrmhi5nGTi11klOj'
 );
 INSERT INTO public.leads (
   name,
@@ -783,7 +891,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+91 7355583185',
@@ -798,6 +907,8 @@ INSERT INTO public.leads (
   '5oNj3vNP5TvCDtGr8rh2',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = '5oNj3vNP5TvCDtGr8rh2'
 );
 INSERT INTO public.leads (
   name,
@@ -814,7 +925,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+91 7355583185',
@@ -829,6 +941,8 @@ INSERT INTO public.leads (
   '6jiT5Sq7p3mOn6G9rLIA',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = '6jiT5Sq7p3mOn6G9rLIA'
 );
 INSERT INTO public.leads (
   name,
@@ -845,7 +959,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'satya',
   'aaaltoofaltoo@gmail.com',
   '+91 8808705136',
@@ -860,6 +975,8 @@ INSERT INTO public.leads (
   'B3g66PPR5MU1dQAfOZQT',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'B3g66PPR5MU1dQAfOZQT'
 );
 INSERT INTO public.leads (
   name,
@@ -876,7 +993,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'hellodavid@gmail.com',
   '+91 8808705136',
@@ -891,6 +1009,8 @@ INSERT INTO public.leads (
   'DMkTbZv2DUORFRZ5apF4',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'DMkTbZv2DUORFRZ5apF4'
 );
 INSERT INTO public.leads (
   name,
@@ -907,7 +1027,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Demon Desire',
   'esconder.estricto@gmail.com',
   '+917355583185',
@@ -922,6 +1043,8 @@ INSERT INTO public.leads (
   'F3r4xTep9VL0BbNaculv',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'F3r4xTep9VL0BbNaculv'
 );
 INSERT INTO public.leads (
   name,
@@ -938,7 +1061,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+91 7355583185',
@@ -953,6 +1077,8 @@ INSERT INTO public.leads (
   'FbtRVc3vvbbLUr2h0E5A',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'FbtRVc3vvbbLUr2h0E5A'
 );
 INSERT INTO public.leads (
   name,
@@ -969,7 +1095,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'aidrew4u@gmail.com',
   '+91 7355583185',
@@ -984,6 +1111,8 @@ INSERT INTO public.leads (
   'KRWPx8PFvvKpm1uD7jK8',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'KRWPx8PFvvKpm1uD7jK8'
 );
 INSERT INTO public.leads (
   name,
@@ -1000,7 +1129,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+91 7355583185',
@@ -1015,6 +1145,8 @@ INSERT INTO public.leads (
   'LqF81UPEdmsL3xa8f8BZ',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'LqF81UPEdmsL3xa8f8BZ'
 );
 INSERT INTO public.leads (
   name,
@@ -1031,7 +1163,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+917355583185',
@@ -1046,6 +1179,8 @@ INSERT INTO public.leads (
   'Sg45YsQ3dDjzBSsXJ8fX',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'Sg45YsQ3dDjzBSsXJ8fX'
 );
 INSERT INTO public.leads (
   name,
@@ -1062,7 +1197,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Verification',
   'testuser_1742350000@opsiys.com',
   '+91 9876543210',
@@ -1077,6 +1213,8 @@ INSERT INTO public.leads (
   'SswyN2Lz61iidgoGugQe',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'SswyN2Lz61iidgoGugQe'
 );
 INSERT INTO public.leads (
   name,
@@ -1093,7 +1231,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+91 7355583185',
@@ -1108,6 +1247,8 @@ INSERT INTO public.leads (
   'ZkdGh7h52j71tkdJYxpP',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'ZkdGh7h52j71tkdJYxpP'
 );
 INSERT INTO public.leads (
   name,
@@ -1124,7 +1265,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'krishna kumar',
   'krishnatktr@gmail.com',
   '+919369170812',
@@ -1139,6 +1281,8 @@ INSERT INTO public.leads (
   'ZpQIFRYHyPlE5oxAIwyR',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'ZpQIFRYHyPlE5oxAIwyR'
 );
 INSERT INTO public.leads (
   name,
@@ -1155,7 +1299,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '7355583185',
@@ -1170,6 +1315,8 @@ INSERT INTO public.leads (
   'a2Vn8IVfq9a2Of7rsaem',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'a2Vn8IVfq9a2Of7rsaem'
 );
 INSERT INTO public.leads (
   name,
@@ -1186,7 +1333,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Kunal Kushwaha',
   'kushwahakunal645@gmail.com',
   '+91 8429446870',
@@ -1201,6 +1349,8 @@ INSERT INTO public.leads (
   'arBeooXqsPZNV1A2L6Ao',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'arBeooXqsPZNV1A2L6Ao'
 );
 INSERT INTO public.leads (
   name,
@@ -1217,7 +1367,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Kunal',
   'kushwahakunal1970@gmail.com',
   '+91 8429446870',
@@ -1232,6 +1383,8 @@ INSERT INTO public.leads (
   'ctcM8hqfhYj5RbcgIwx3',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'ctcM8hqfhYj5RbcgIwx3'
 );
 INSERT INTO public.leads (
   name,
@@ -1248,7 +1401,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+91 7355583185',
@@ -1263,6 +1417,8 @@ INSERT INTO public.leads (
   'deacC35ODxfukmgT1IvN',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'deacC35ODxfukmgT1IvN'
 );
 INSERT INTO public.leads (
   name,
@@ -1279,7 +1435,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+91 7355583185',
@@ -1294,6 +1451,8 @@ INSERT INTO public.leads (
   'fvcNf1gXwZwlLxe53oq2',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'fvcNf1gXwZwlLxe53oq2'
 );
 INSERT INTO public.leads (
   name,
@@ -1310,7 +1469,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Verification',
   'testuser_1742350000@opsiys.com',
   '+91 9876543210',
@@ -1325,6 +1485,8 @@ INSERT INTO public.leads (
   'n0JRuYKhN5CO7zmtHQHj',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'n0JRuYKhN5CO7zmtHQHj'
 );
 INSERT INTO public.leads (
   name,
@@ -1341,7 +1503,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Kunal Kushwaha',
   'kushwahakunal644@gmail.com',
   '+918429446870',
@@ -1356,6 +1519,8 @@ INSERT INTO public.leads (
   'tqnHzIdx1uchZU2d9ktO',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'tqnHzIdx1uchZU2d9ktO'
 );
 INSERT INTO public.leads (
   name,
@@ -1372,7 +1537,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'satyaa',
   'opsiyss@gmail.com',
   '+91 8808705136',
@@ -1387,6 +1553,8 @@ INSERT INTO public.leads (
   'u0vDvDlrKsuIg6YvaHsr',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'u0vDvDlrKsuIg6YvaHsr'
 );
 INSERT INTO public.leads (
   name,
@@ -1403,7 +1571,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'hellodavid@gmail.com',
   '+91 8808705136',
@@ -1418,6 +1587,8 @@ INSERT INTO public.leads (
   'uX4uWrVU6VZnJHMMZ388',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'uX4uWrVU6VZnJHMMZ388'
 );
 INSERT INTO public.leads (
   name,
@@ -1434,7 +1605,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+91 7355583185',
@@ -1449,6 +1621,8 @@ INSERT INTO public.leads (
   'vXkxoHHv0plt0Y5kiw4b',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'vXkxoHHv0plt0Y5kiw4b'
 );
 INSERT INTO public.leads (
   name,
@@ -1465,7 +1639,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Adii',
   'aaaltoofaltoo@gmail.com',
   '+91 8808705136',
@@ -1480,6 +1655,8 @@ INSERT INTO public.leads (
   'w37GtKiW9lALJljVbWdV',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'w37GtKiW9lALJljVbWdV'
 );
 INSERT INTO public.leads (
   name,
@@ -1496,7 +1673,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Aditya Gupta',
   'adityaofficial9918@gmail.com',
   '+917355583185',
@@ -1511,6 +1689,8 @@ INSERT INTO public.leads (
   'xZnNLXwabsOO1PGOwziT',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'xZnNLXwabsOO1PGOwziT'
 );
 INSERT INTO public.leads (
   name,
@@ -1527,7 +1707,8 @@ INSERT INTO public.leads (
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   'Kunal Kushwaha',
   'kushwahakunal645@gmail.com',
   '+91 8429446870',
@@ -1542,4 +1723,6 @@ INSERT INTO public.leads (
   'zEKbZocTuoJSGt8Yqaep',
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = 'zEKbZocTuoJSGt8Yqaep'
 );

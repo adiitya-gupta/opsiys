@@ -5,20 +5,20 @@ const dumpPath = path.join(__dirname, '..', 'firebase_dump.json');
 const dump = JSON.parse(fs.readFileSync(dumpPath, 'utf8'));
 
 let sql = `-- ==============================================================================
--- OPSIYS Website — Complete Firebase to Supabase Migration Script
+-- OPSIYS Website — Complete Firebase to Supabase Migration Script (V2 Robust)
 -- Project Ref: kcvbsjppdtzsjnmacgpw
 -- Generated At: ${new Date().toISOString()}
 -- ==============================================================================
 
--- 1. Enable required extensions
+-- 1. Enable required PostgreSQL extensions
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 2. Create public.profiles table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT NOT NULL UNIQUE,
-  display_name TEXT,
+  email TEXT NOT NULL,
+  display_name TEXT DEFAULT '',
   avatar_url TEXT DEFAULT '',
   phone_country_code TEXT DEFAULT '+91',
   phone TEXT DEFAULT '',
@@ -31,6 +31,18 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure profiles email is unique and indexed
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'profiles_email_key'
+  ) THEN
+    ALTER TABLE public.profiles ADD CONSTRAINT profiles_email_key UNIQUE (email);
+  END IF;
+EXCEPTION
+  WHEN OTHERS THEN NULL;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_phone ON public.profiles(phone);
@@ -82,7 +94,7 @@ BEGIN
     created_at,
     updated_at
   )
-  VALUES (
+  SELECT
     NEW.id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'display_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
@@ -93,12 +105,15 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'company', ''),
     NOW(),
     NOW()
-  )
-  ON CONFLICT (email) DO UPDATE SET
-    display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-    phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-    company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-    updated_at = NOW();
+  WHERE NOT EXISTS (SELECT 1 FROM public.profiles WHERE email = NEW.email);
+
+  UPDATE public.profiles SET
+    display_name = COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'display_name', public.profiles.display_name),
+    phone = CASE WHEN COALESCE(NEW.raw_user_meta_data->>'phone', '') <> '' THEN NEW.raw_user_meta_data->>'phone' ELSE public.profiles.phone END,
+    company = CASE WHEN COALESCE(NEW.raw_user_meta_data->>'company', '') <> '' THEN NEW.raw_user_meta_data->>'company' ELSE public.profiles.company END,
+    updated_at = NOW()
+  WHERE email = NEW.email;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
@@ -142,7 +157,7 @@ for (const u of dump.users) {
   }
 }
 
-sql += `-- Insert login accounts into auth.users (Default password: OpsiysUser2026!)\n`;
+sql += `-- Insert login accounts into auth.users (uses WHERE NOT EXISTS to prevent conflict errors)\n`;
 for (const [email, meta] of accountsMap.entries()) {
   sql += `INSERT INTO auth.users (
   instance_id,
@@ -158,7 +173,8 @@ for (const [email, meta] of accountsMap.entries()) {
   updated_at,
   confirmation_token,
   recovery_token
-) VALUES (
+)
+SELECT
   '00000000-0000-0000-0000-000000000000',
   gen_random_uuid(),
   'authenticated',
@@ -172,7 +188,9 @@ for (const [email, meta] of accountsMap.entries()) {
   NOW(),
   '',
   ''
-) ON CONFLICT (email) DO NOTHING;\n\n`;
+WHERE NOT EXISTS (
+  SELECT 1 FROM auth.users WHERE email = ${escapeSql(email)}
+);\n\n`;
 }
 
 sql += `-- ==============================================================================
@@ -201,7 +219,8 @@ for (const p of dump.profiles) {
   legacy_firebase_uid,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   ${escapeSql(cleanEmail)},
   ${escapeSql(displayName)},
   ${escapeSql(phone)},
@@ -212,16 +231,21 @@ for (const p of dump.profiles) {
   ${escapeSql(firebaseUid)},
   NOW(),
   NOW()
-) ON CONFLICT (email) DO UPDATE SET
-  display_name = COALESCE(EXCLUDED.display_name, public.profiles.display_name),
-  phone = CASE WHEN EXCLUDED.phone <> '' THEN EXCLUDED.phone ELSE public.profiles.phone END,
-  company = CASE WHEN EXCLUDED.company <> '' THEN EXCLUDED.company ELSE public.profiles.company END,
-  wacrm_welcome_sent = EXCLUDED.wacrm_welcome_sent,
-  legacy_firebase_uid = EXCLUDED.legacy_firebase_uid,
-  updated_at = NOW();\n`;
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.profiles WHERE email = ${escapeSql(cleanEmail)}
+);
+
+UPDATE public.profiles SET
+  display_name = CASE WHEN ${escapeSql(displayName)} <> '' THEN ${escapeSql(displayName)} ELSE public.profiles.display_name END,
+  phone = CASE WHEN ${escapeSql(phone)} <> '' THEN ${escapeSql(phone)} ELSE public.profiles.phone END,
+  company = CASE WHEN ${escapeSql(company)} <> '' THEN ${escapeSql(company)} ELSE public.profiles.company END,
+  wacrm_welcome_sent = ${wacrmSent},
+  legacy_firebase_uid = ${escapeSql(firebaseUid)},
+  updated_at = NOW()
+WHERE email = ${escapeSql(cleanEmail)};\n\n`;
 }
 
-sql += `\n-- ==============================================================================
+sql += `-- ==============================================================================
 -- 7. MIGRATE FIREBASE LEADS INTO public.leads
 -- ==============================================================================
 `;
@@ -255,7 +279,8 @@ for (const l of dump.leads) {
   legacy_firebase_id,
   created_at,
   updated_at
-) VALUES (
+)
+SELECT
   ${escapeSql(name)},
   ${escapeSql(email)},
   ${escapeSql(phone)},
@@ -270,6 +295,8 @@ for (const l of dump.leads) {
   ${escapeSql(legacyId)},
   NOW(),
   NOW()
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.leads WHERE legacy_firebase_id = ${escapeSql(legacyId)}
 );\n`;
 }
 
@@ -279,4 +306,4 @@ if (!fs.existsSync(outDir)) {
 }
 const outPath = path.join(outDir, '002_migrate_firebase_to_supabase.sql');
 fs.writeFileSync(outPath, sql);
-console.log('SUCCESS: Generated ' + outPath + ' (' + sql.length + ' chars)');
+console.log('SUCCESS: Regenerated ' + outPath + ' (' + sql.length + ' chars)');
