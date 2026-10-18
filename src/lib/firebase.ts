@@ -1,5 +1,17 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged as firebaseOnAuthStateChanged, 
+  setPersistence, 
+  browserLocalPersistence,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile as updateAuthProfile,
+  User as FirebaseUser
+} from "firebase/auth";
 import { 
   initializeFirestore,
   getFirestore, 
@@ -32,16 +44,105 @@ export const db = initializeFirestore(app, {
   ignoreUndefinedProperties: true,
 }, firebaseConfig.firestoreDatabaseId);
 
-export const googleProvider = new GoogleAuthProvider();
+export interface NormalizedUser {
+  id: string;
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL: string;
+  phone?: string;
+  phoneCountryCode?: string;
+  phoneVerified?: boolean;
+  emailVerified: boolean;
+  rawUser?: any;
+  getIdToken?: (forceRefresh?: boolean) => Promise<string>;
+}
 
-export const signInWithGoogle = async () => {
+export const normalizeFirebaseUser = (firebaseUser: any): NormalizedUser | null => {
+  if (!firebaseUser) return null;
+  const uid = firebaseUser.uid || firebaseUser.id || "";
+  const email = firebaseUser.email || "";
+  const displayName = firebaseUser.displayName || (email ? email.split('@')[0] : "Partner");
+  const photoURL = firebaseUser.photoURL || "";
+  return {
+    id: uid,
+    uid: uid,
+    email: email,
+    displayName: displayName,
+    photoURL: photoURL,
+    phone: firebaseUser.phoneNumber || "",
+    phoneCountryCode: "+91",
+    phoneVerified: Boolean(firebaseUser.phoneNumber),
+    emailVerified: Boolean(firebaseUser.emailVerified),
+    rawUser: firebaseUser,
+    getIdToken: async (forceRefresh?: boolean) => {
+      if (typeof firebaseUser.getIdToken === 'function') {
+        return await firebaseUser.getIdToken(forceRefresh);
+      }
+      return "";
+    }
+  };
+};
+
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+export const signInWithGoogle = async (): Promise<NormalizedUser | null> => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    return result.user;
+    return normalizeFirebaseUser(result.user);
   } catch (error) {
     console.error("Google Sign-In Error:", error);
     throw error;
   }
+};
+
+export const signInWithEmail = async (email: string, password: string): Promise<NormalizedUser | null> => {
+  const result = await signInWithEmailAndPassword(auth, email.trim(), password);
+  return normalizeFirebaseUser(result.user);
+};
+
+export const signUpWithEmail = async (
+  email: string,
+  password: string,
+  metadata?: { displayName?: string; phone?: string; phoneCountryCode?: string; company?: string }
+): Promise<NormalizedUser | null> => {
+  const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
+  const user = result.user;
+  if (user) {
+    if (metadata?.displayName) {
+      try {
+        await updateAuthProfile(user, { displayName: metadata.displayName });
+      } catch (e) {
+        console.warn("Could not set display name:", e);
+      }
+    }
+    try {
+      await updateProfile(user.uid, {
+        displayName: metadata?.displayName || user.displayName || "Partner",
+        phone: metadata?.phone || "",
+        phoneCountryCode: metadata?.phoneCountryCode || "+91",
+        phoneVerified: false,
+        company: metadata?.company || "",
+        email: user.email || email.trim()
+      });
+    } catch (e) {
+      console.warn("Could not save initial profile:", e);
+    }
+  }
+  const normalized = normalizeFirebaseUser(user);
+  if (normalized && metadata) {
+    if (metadata.displayName) normalized.displayName = metadata.displayName;
+    if (metadata.phone) normalized.phone = metadata.phone;
+    if (metadata.phoneCountryCode) normalized.phoneCountryCode = metadata.phoneCountryCode;
+  }
+  return normalized;
+};
+
+export const onAuthStateChanged = (callback: (user: NormalizedUser | null) => void) => {
+  return firebaseOnAuthStateChanged(auth, (user) => {
+    callback(normalizeFirebaseUser(user));
+  });
 };
 
 export const logout = () => signOut(auth);
@@ -67,10 +168,17 @@ const setStorageItem = (key: string, value: any) => {
 // --- Profile Service ---
 
 export const updateProfile = async (userId: string, profileData: {
-  displayName: string;
+  displayName?: string;
   company?: string;
   role?: string;
   industry?: string;
+  phone?: string;
+  phoneCountryCode?: string;
+  phoneVerified?: boolean;
+  email?: string;
+  wacrmWelcomeSent?: boolean;
+  wacrmWelcomeSentAt?: string;
+  [key: string]: any;
 }) => {
   const profileRecord = {
     id: userId,
@@ -78,20 +186,41 @@ export const updateProfile = async (userId: string, profileData: {
     updatedAt: new Date().toISOString(),
   };
 
-  // Update local profiles cache
+  // 1. Direct per-user localStorage key for immediate, synchronous retrieval
+  let merged: any = profileRecord;
+  try {
+    const existingRaw = localStorage.getItem(`opsiys_profile_${userId}`);
+    const existing = existingRaw ? JSON.parse(existingRaw) : {};
+    merged = { ...existing, id: userId, updatedAt: profileRecord.updatedAt };
+    for (const [key, val] of Object.entries(profileData)) {
+      if (val !== undefined && val !== null) {
+        // Do not wipe out an existing valid phone or displayName with an empty string
+        if (typeof val === 'string' && val.trim() === '' && existing[key] && String(existing[key]).trim() !== '') {
+          continue;
+        }
+        merged[key] = val;
+      }
+    }
+    localStorage.setItem(`opsiys_profile_${userId}`, JSON.stringify(merged));
+  } catch (e) {
+    console.warn("Direct profile storage notice:", e);
+  }
+
+  // 2. Update local profiles cache
   const currentProfiles = getStorageItem("opsiys_profiles_cache", []);
   const existingIdx = currentProfiles.findIndex((p: any) => p.id === userId);
   if (existingIdx >= 0) {
-    currentProfiles[existingIdx] = { ...currentProfiles[existingIdx], ...profileRecord };
+    currentProfiles[existingIdx] = { ...currentProfiles[existingIdx], ...merged };
   } else {
-    currentProfiles.push(profileRecord);
+    currentProfiles.push(merged);
   }
   setStorageItem("opsiys_profiles_cache", currentProfiles);
 
+  // 3. Save to Firestore profiles
   try {
     const profileRef = doc(db, "profiles", userId);
     await setDoc(profileRef, {
-      ...profileData,
+      ...merged,
       updatedAt: serverTimestamp(),
     }, { merge: true });
   } catch (error) {
@@ -99,18 +228,68 @@ export const updateProfile = async (userId: string, profileData: {
   }
 };
 
-export const getUserProfile = async (userId: string) => {
+export const getUserProfile = async (userId: string, emailFallback?: string) => {
+  let profileData: any = null;
+
+  // 1. Check direct localStorage key (instant)
+  try {
+    const direct = localStorage.getItem(`opsiys_profile_${userId}`);
+    if (direct) {
+      profileData = JSON.parse(direct);
+    }
+  } catch (e) {}
+
+  // 2. Check Firestore profiles collection
   try {
     const profileRef = doc(db, "profiles", userId);
     const snap = await getDoc(profileRef);
     if (snap.exists()) {
-      return snap.data();
+      const remoteData = snap.data();
+      profileData = { ...(remoteData || {}), ...(profileData || {}) };
     }
   } catch (error) {
     console.warn("Firestore profile fetch notice:", error);
   }
-  const currentProfiles = getStorageItem("opsiys_profiles_cache", []);
-  return currentProfiles.find((p: any) => p.id === userId) || null;
+
+  // 3. Check profiles cache array
+  if (!profileData || !profileData.phone || !profileData.displayName) {
+    const currentProfiles = getStorageItem("opsiys_profiles_cache", []);
+    const cleanEmail = emailFallback ? emailFallback.toLowerCase().trim() : "";
+    const found = currentProfiles.find((p: any) => p.id === userId || (cleanEmail && p.email?.toLowerCase().trim() === cleanEmail));
+    if (found) {
+      profileData = {
+        ...found,
+        ...(profileData || {}),
+        displayName: (profileData?.displayName && profileData.displayName !== "Partner") ? profileData.displayName : (found.displayName || profileData?.displayName || ""),
+        phone: (profileData?.phone && profileData.phone.trim() !== "") ? profileData.phone : (found.phone || ""),
+        company: (profileData?.company && profileData.company.trim() !== "") ? profileData.company : (found.company || "")
+      };
+    }
+  }
+
+  // 4. Fallback to leads cache/records so user phone and name are NEVER lost
+  if (!profileData?.phone || !profileData?.displayName || profileData.displayName === "Partner") {
+    const cleanEmail = emailFallback ? emailFallback.toLowerCase().trim() : (profileData?.email ? profileData.email.toLowerCase().trim() : "");
+    const currentLeads = getStorageItem("opsiys_leads_cache", []);
+    const matchedLead = currentLeads.find((l: any) => 
+      (userId && l.userId === userId) ||
+      (cleanEmail && l.email && l.email.toLowerCase().trim() === cleanEmail)
+    );
+    if (matchedLead) {
+      const cleanPhoneDigits = (matchedLead.phone || "").replace(/^\+\d+\s*/, "").replace(/\D/g, "");
+      profileData = {
+        ...(profileData || {}),
+        displayName: (profileData?.displayName && profileData.displayName !== "Partner") ? profileData.displayName : (matchedLead.name || profileData?.displayName || ""),
+        phone: (profileData?.phone && profileData.phone.trim() !== "") ? profileData.phone : (cleanPhoneDigits || matchedLead.phone || ""),
+        phoneCountryCode: profileData?.phoneCountryCode || "+91",
+        company: (profileData?.company && profileData.company.trim() !== "") ? profileData.company : (matchedLead.company !== "Direct Sign Up" && matchedLead.company !== "Partner Onboarding" ? matchedLead.company : "") || "",
+        email: profileData?.email || matchedLead.email || emailFallback || "",
+        phoneVerified: Boolean(profileData?.phoneVerified)
+      };
+    }
+  }
+
+  return profileData;
 };
 
 // --- Leads Service ---
@@ -127,31 +306,93 @@ export const submitLead = async (leadData: {
   userId?: string;
   source?: string;
   status?: string;
+  wacrmWelcomeSent?: boolean;
 }) => {
-  const leadId = "lead_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
-  const newLead = {
-    id: leadId,
-    ...leadData,
-    createdAt: new Date().toISOString(),
-    status: leadData.status || "new",
-  };
+  const cleanEmail = (leadData.email || "").toLowerCase().trim();
 
-  // Update local cache
+  // Deduplicate in local cache
   const currentLeads = getStorageItem("opsiys_leads_cache", []);
-  setStorageItem("opsiys_leads_cache", [newLead, ...currentLeads]);
+  const existingLeadIndex = currentLeads.findIndex((l: any) => 
+    (cleanEmail && l.email && l.email.toLowerCase().trim() === cleanEmail) ||
+    (leadData.userId && l.userId && l.userId === leadData.userId)
+  );
+
+  let leadId = "lead_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
+
+  if (existingLeadIndex >= 0) {
+    leadId = currentLeads[existingLeadIndex].id || leadId;
+    currentLeads[existingLeadIndex] = {
+      ...currentLeads[existingLeadIndex],
+      ...leadData,
+      email: cleanEmail,
+      updatedAt: new Date().toISOString(),
+    };
+    setStorageItem("opsiys_leads_cache", currentLeads);
+  } else {
+    const newLead = {
+      id: leadId,
+      ...leadData,
+      email: cleanEmail,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      status: leadData.status || "new",
+    };
+    setStorageItem("opsiys_leads_cache", [newLead, ...currentLeads]);
+  }
 
   try {
     const leadsRef = collection(db, "leads");
     const submissionData = Object.fromEntries(
-      Object.entries(leadData).filter(([_, v]) => v !== undefined && v !== "")
+      Object.entries({
+        ...leadData,
+        email: cleanEmail
+      }).filter(([_, v]) => v !== undefined && v !== "")
     );
-    await addDoc(leadsRef, {
-      ...submissionData,
-      createdAt: serverTimestamp(),
-      status: leadData.status || "new",
-    });
+
+    // Check if lead already exists in Firestore by email or userId
+    let existingDoc = null;
+    if (cleanEmail) {
+      try {
+        const q = query(leadsRef, where("email", "==", cleanEmail));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          existingDoc = snap.docs[0];
+        }
+      } catch (qErr) {
+        console.warn("Firestore lead email query notice:", qErr);
+      }
+    }
+    if (!existingDoc && leadData.userId) {
+      try {
+        const q = query(leadsRef, where("userId", "==", leadData.userId));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          existingDoc = snap.docs[0];
+        }
+      } catch (qErr) {
+        console.warn("Firestore lead userId query notice:", qErr);
+      }
+    }
+
+    if (existingDoc) {
+      // Update existing record to prevent duplicate entries
+      await updateDoc(existingDoc.ref, {
+        ...submissionData,
+        updatedAt: serverTimestamp(),
+      });
+      return existingDoc.id;
+    } else {
+      const docRef = await addDoc(leadsRef, {
+        ...submissionData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        status: leadData.status || "new",
+      });
+      return docRef.id;
+    }
   } catch (error) {
     console.warn("Lead submitted with local cache backup:", error);
+    return leadId;
   }
 };
 

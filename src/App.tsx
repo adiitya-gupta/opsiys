@@ -133,10 +133,24 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { submitLead, subscribeToUserLeads, subscribeToSystemSettings, subscribeToAdminEmails, AdminUserAccount } from "./lib/firebase";
-import { signInWithGoogle, signInWithEmail, signUpWithEmail, logout, onAuthStateChanged, NormalizedUser, getUserProfile, updateProfile } from "./lib/supabase";
+import { 
+  submitLead, 
+  subscribeToUserLeads, 
+  subscribeToSystemSettings, 
+  subscribeToAdminEmails, 
+  AdminUserAccount,
+  signInWithGoogle, 
+  signInWithEmail, 
+  signUpWithEmail, 
+  logout, 
+  onAuthStateChanged, 
+  NormalizedUser, 
+  getUserProfile, 
+  updateProfile 
+} from "./lib/firebase";
 import { PhoneOnboardingModal, COUNTRY_CODES } from "./components/PhoneOnboardingModal";
 import { MaintenanceOverlay } from "./components/MaintenanceOverlay";
+import { sendWacrmWelcome } from "./lib/wacrm";
 
 /**
  * BRAND COLORS:
@@ -579,26 +593,22 @@ const AuthPortal = () => {
           sessionStorage.removeItem("opsiys_pending_company");
         }
 
-        const resolvedProfile = p || {
-          displayName: currentUser.displayName || "",
-          company: "",
-          role: "",
-          industry: "",
-          phone: currentUser.phone || "",
-          phoneCountryCode: currentUser.phoneCountryCode || "+91",
-          phoneVerified: currentUser.phoneVerified || false
+        const resolvedProfile = {
+          displayName: (p?.displayName && p.displayName !== "Partner") ? p.displayName : (currentUser.displayName || ""),
+          company: p?.company || "",
+          role: p?.role || "",
+          industry: p?.industry || "",
+          phone: p?.phone || currentUser.phone || "",
+          phoneCountryCode: p?.phoneCountryCode || currentUser.phoneCountryCode || "+91",
+          phoneVerified: Boolean(p?.phoneVerified || currentUser.phoneVerified),
+          email: currentUser.email || p?.email || "",
+          wacrmWelcomeSent: Boolean(p?.wacrmWelcomeSent),
+          wacrmWelcomeSentAt: p?.wacrmWelcomeSentAt
         };
         setProfile(resolvedProfile);
 
-        // Check if phone number collection onboarding is needed
-        // ONLY prompt if phone is STILL missing AND user hasn't dismissed it this session
-        const dismissedKey = `opsiys_phone_dismissed_${currentUser.id}`;
-        const wasDismissed = sessionStorage.getItem(dismissedKey) === "true";
-        if (!resolvedProfile.phone && !wasDismissed) {
-          setShowPhoneModal(true);
-        } else {
-          setShowPhoneModal(false);
-        }
+        // Phone onboarding modal disabled to keep login smooth and seamless
+        setShowPhoneModal(false);
       } else {
         setProfile(null);
         setLeads([]);
@@ -607,6 +617,28 @@ const AuthPortal = () => {
     });
     return () => unsubscribe();
   }, []);
+
+  // Whenever Settings modal is opened, sync profile to ensure no fields are left blank
+  React.useEffect(() => {
+    if (showSettings && user) {
+      getUserProfile(user.id, user.email).then((p) => {
+        if (p) {
+          setProfile((prev: any) => ({
+            displayName: (p.displayName && p.displayName !== "Partner") ? p.displayName : (prev?.displayName || user.displayName || ""),
+            company: p.company || prev?.company || "",
+            role: p.role || prev?.role || "",
+            industry: p.industry || prev?.industry || "",
+            phone: p.phone || prev?.phone || user.phone || "",
+            phoneCountryCode: p.phoneCountryCode || prev?.phoneCountryCode || "+91",
+            phoneVerified: Boolean(p.phoneVerified || prev?.phoneVerified || user.phoneVerified),
+            email: user.email || p.email || "",
+            wacrmWelcomeSent: Boolean(p.wacrmWelcomeSent || prev?.wacrmWelcomeSent),
+            wacrmWelcomeSentAt: p.wacrmWelcomeSentAt || prev?.wacrmWelcomeSentAt
+          }));
+        }
+      });
+    }
+  }, [showSettings, user]);
 
   React.useEffect(() => {
     if (!user || !showHistory) return;
@@ -627,6 +659,35 @@ const AuthPortal = () => {
         ...profile,
         email: user.email
       });
+
+      // Send WACRM WhatsApp welcome message if phone was provided and not sent yet
+      if (profile?.phone) {
+        const cleanDigits = String(profile.phone).replace(/\D/g, "");
+        if (cleanDigits && !profile.wacrmWelcomeSent) {
+          const fullPhone = `${profile.phoneCountryCode || "+91"}${cleanDigits}`;
+          try {
+            await sendWacrmWelcome({
+              to: fullPhone,
+              name: profile.displayName || user.displayName,
+              email: user.email,
+              userId: user.id
+            });
+            const updatedProfile = {
+              ...profile,
+              wacrmWelcomeSent: true,
+              wacrmWelcomeSentAt: new Date().toISOString()
+            };
+            setProfile(updatedProfile);
+            await updateProfile(user.id, {
+              wacrmWelcomeSent: true,
+              wacrmWelcomeSentAt: new Date().toISOString()
+            });
+          } catch (wErr) {
+            console.warn("[WACRM] Profile phone welcome notice:", wErr);
+          }
+        }
+      }
+
       setShowSettings(false);
     } catch (error) {
       console.error(error);
@@ -697,10 +758,51 @@ const AuthPortal = () => {
       if (authName.trim()) {
         sessionStorage.setItem("opsiys_pending_name", authName.trim());
       }
-      await signInWithGoogle(`${window.location.origin}/`);
-      setShowWelcome(false);
+      const loggedInUser = await signInWithGoogle();
+      if (loggedInUser) {
+        setUser(loggedInUser);
+        setShowWelcome(false);
+
+        // Deduplication & first-time WhatsApp welcome check
+        try {
+          const profile = await getUserProfile(loggedInUser.id, loggedInUser.email);
+          const cleanPhone = authPhone.trim().replace(/\D/g, "");
+
+          if (cleanPhone && !profile?.wacrmWelcomeSent) {
+            const fullPhone = `${authCountryCode}${cleanPhone}`;
+            await updateProfile(loggedInUser.id, {
+              phone: cleanPhone,
+              phoneCountryCode: authCountryCode,
+              wacrmWelcomeSent: true,
+              wacrmWelcomeSentAt: new Date().toISOString()
+            });
+
+            await submitLead({
+              name: authName.trim() || loggedInUser.displayName,
+              email: loggedInUser.email,
+              phone: fullPhone,
+              company: "Google Partner Sign Up",
+              projectType: "Website Partner Registration",
+              userId: loggedInUser.id,
+              status: "qualified",
+              wacrmWelcomeSent: true
+            });
+
+            await sendWacrmWelcome({
+              to: fullPhone,
+              name: authName.trim() || loggedInUser.displayName,
+              email: loggedInUser.email,
+              userId: loggedInUser.id
+            });
+          }
+        } catch (postErr) {
+          console.warn("[Auth] Post Google sign-in note:", postErr);
+        }
+      }
     } catch (error: any) {
-      if (error?.code === 'auth/popup-closed-by-user' || error?.message?.includes('closed')) return;
+      if (error?.code === 'auth/popup-closed-by-user' || error?.message?.includes('closed') || error?.code === 'auth/cancelled-popup-request') {
+        return;
+      }
       console.error("Google Sign-In Error:", error);
       setAuthError(error?.message || "Failed to sign in with Google. Please try again.");
     } finally {
@@ -728,10 +830,17 @@ const AuthPortal = () => {
     } catch (error: any) {
       console.error("Login Error:", error);
       let msg = error?.message || "Invalid email or password.";
-      if (msg.includes("Invalid login credentials") || msg.includes("invalid_grant")) {
-        msg = "Invalid email or password. Please check your credentials or create an account.";
-      } else if (msg.includes("Email not confirmed")) {
-        msg = "Please verify your email address before logging in.";
+      if (
+        error?.code === "auth/user-not-found" || 
+        error?.code === "auth/wrong-password" || 
+        error?.code === "auth/invalid-credential" ||
+        msg.includes("invalid-credential") ||
+        msg.includes("wrong-password") ||
+        msg.includes("user-not-found")
+      ) {
+        msg = "Invalid email or password. If you originally signed in with Google, please click 'Log in with Google'.";
+      } else if (error?.code === "auth/too-many-requests") {
+        msg = "Too many failed attempts. Please try again in a few minutes.";
       }
       setAuthError(msg);
     } finally {
@@ -789,23 +898,63 @@ const AuthPortal = () => {
           company: "Direct Sign Up",
           projectType: "Website Partner Registration",
           userId: createdUser?.id || undefined,
-          status: "qualified"
+          status: "qualified",
+          wacrmWelcomeSent: Boolean(cleanPhone)
         });
       } catch (leadErr) {
         console.warn("Lead sync note:", leadErr);
       }
 
+      // Trigger WACRM WhatsApp welcome message only on new signup with phone
+      if (createdUser && cleanPhone) {
+        const fullPhone = `${authCountryCode}${cleanPhone}`;
+        try {
+          await sendWacrmWelcome({
+            to: fullPhone,
+            name: authName.trim(),
+            email: authEmail.trim(),
+            userId: createdUser.id
+          });
+          await updateProfile(createdUser.id, {
+            wacrmWelcomeSent: true,
+            wacrmWelcomeSentAt: new Date().toISOString()
+          });
+        } catch (wacrmErr) {
+          console.warn("[WACRM] Welcome message dispatch notice:", wacrmErr);
+        }
+      }
+
       if (createdUser) {
+        const userProfile = {
+          displayName: authName.trim(),
+          phone: cleanPhone,
+          phoneCountryCode: authCountryCode,
+          company: "",
+          role: "",
+          industry: "",
+          email: authEmail.trim(),
+          phoneVerified: false,
+          wacrmWelcomeSent: Boolean(cleanPhone),
+          wacrmWelcomeSentAt: cleanPhone ? new Date().toISOString() : undefined
+        };
+        setProfile(userProfile);
+        try {
+          localStorage.setItem(`opsiys_profile_${createdUser.id}`, JSON.stringify({
+            id: createdUser.id,
+            ...userProfile
+          }));
+        } catch (e) {}
         setUser(createdUser);
         setShowWelcome(false);
-      } else {
-        setAuthSuccess("Account created successfully! If email verification is required, please check your inbox to confirm your account.");
       }
     } catch (error: any) {
       console.error("Signup Error:", error);
       let msg = error?.message || "Failed to create account. Please try again.";
-      if (msg.includes("User already registered") || msg.includes("already exists")) {
-        msg = "An account with this email already exists. Please log in instead.";
+      if (error?.code === "auth/email-already-in-use" || msg.includes("already in use") || msg.includes("already exists")) {
+        msg = "An account with this email already exists. If you previously signed in with Google, please log in with Google, or enter your password to log in.";
+        setAuthModalTab('login');
+      } else if (error?.code === "auth/weak-password") {
+        msg = "Password should be at least 6 characters long.";
       }
       setAuthError(msg);
     } finally {
@@ -1231,7 +1380,7 @@ const AuthPortal = () => {
                           className="h-10 pl-3 pr-7 text-xs font-bold appearance-none bg-transparent cursor-pointer outline-none"
                         >
                           {COUNTRY_CODES.map(c => (
-                            <option key={c.code} value={c.code}>{c.code} ({c.name})</option>
+                            <option key={c.code} value={c.code}>{c.code} ({c.country})</option>
                           ))}
                         </select>
                         <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400" />

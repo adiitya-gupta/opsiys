@@ -11,7 +11,10 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const args = process.argv.slice(2);
+  const portIndex = args.indexOf("--port");
+  const portArg = portIndex !== -1 && args[portIndex + 1] ? parseInt(args[portIndex + 1], 10) : undefined;
+  const PORT = portArg || (process.env.PORT ? parseInt(process.env.PORT, 10) : 5173);
 
   app.use(express.json());
 
@@ -58,6 +61,17 @@ async function startServer() {
     } catch (error) {
       console.error("Razorpay order handler error:", error);
       return res.status(500).json({ error: "Razorpay order creation failed" });
+    }
+  });
+
+  // API Route: WACRM WhatsApp Welcome Message
+  app.post("/api/send-wacrm-welcome", async (req, res) => {
+    try {
+      const wacrmHandler = (await import("./api/send-wacrm-welcome.js")).default;
+      return wacrmHandler(req, res);
+    } catch (error) {
+      console.error("WACRM welcome handler error:", error);
+      return res.status(500).json({ error: "WACRM welcome dispatch failed" });
     }
   });
 

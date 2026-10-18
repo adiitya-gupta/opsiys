@@ -20,11 +20,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { COUNTRY_CODES } from "../components/PhoneOnboardingModal";
-import { signInWithGoogle, signUpWithEmail, onAuthStateChanged, NormalizedUser, updateProfile } from "../lib/supabase";
-import { submitLead } from "../lib/firebase";
+import { signInWithGoogle, signUpWithEmail, onAuthStateChanged, NormalizedUser, updateProfile, submitLead } from "../lib/firebase";
+import { sendWacrmWelcome } from "../lib/wacrm";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function SignupPage() {
+  const navigate = useNavigate();
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -115,25 +116,59 @@ export default function SignupPage() {
           name: name.trim(),
           email: email.trim(),
           company: company.trim() || "Direct Sign Up",
-          phone: `${countryCode} ${phone.trim()}`,
+          phone: phone.trim() ? `${countryCode} ${phone.trim()}` : "Not provided",
           projectType: "Partner Onboarding",
           userId: created?.id || undefined,
-          status: "qualified"
+          status: "qualified",
+          wacrmWelcomeSent: Boolean(phone.trim())
         });
       } catch (syncErr) {
         console.warn("Lead sync note:", syncErr);
       }
 
+      // Dispatch WACRM WhatsApp welcome message
+      if (created && phone.trim()) {
+        const fullPhone = `${countryCode}${phone.trim()}`;
+        try {
+          await sendWacrmWelcome({
+            to: fullPhone,
+            name: name.trim(),
+            email: email.trim(),
+            userId: created.id
+          });
+          await updateProfile(created.id, {
+            wacrmWelcomeSent: true,
+            wacrmWelcomeSentAt: new Date().toISOString()
+          });
+        } catch (wErr) {
+          console.warn("[WACRM] Welcome message dispatch notice:", wErr);
+        }
+      }
+
       if (created) {
-        window.location.href = "/";
+        // Immediate local storage key so App.tsx and Account Management have instant access
+        try {
+          const directProf = {
+            id: created.id,
+            displayName: name.trim(),
+            company: company.trim(),
+            phone: phone.trim(),
+            phoneCountryCode: countryCode,
+            email: email.trim(),
+            phoneVerified: false,
+            wacrmWelcomeSent: Boolean(phone.trim())
+          };
+          localStorage.setItem(`opsiys_profile_${created.id}`, JSON.stringify(directProf));
+        } catch (e) {}
+        navigate("/");
       } else {
-        setSuccessMsg("Account created! If email confirmation is required, please check your inbox.");
+        setSuccessMsg("Account created! You can now log in.");
       }
     } catch (err: any) {
       console.error(err);
       let msg = err?.message || "Failed to create account. Please try again.";
-      if (msg.includes("User already registered") || msg.includes("already exists")) {
-        msg = "An account with this email already exists. Please log in instead.";
+      if (err?.code === "auth/email-already-in-use" || msg.includes("already exists") || msg.includes("already registered") || msg.includes("already in use")) {
+        msg = "An account with this email already exists. If you previously signed in with Google, please log in with Google, or enter your password to log in.";
       }
       setValidationError(msg);
     } finally {
@@ -152,6 +187,7 @@ export default function SignupPage() {
       if (company.trim()) sessionStorage.setItem("opsiys_pending_company", company.trim());
 
       if (user) {
+        const fullPhone = `${countryCode} ${phone.trim()}`;
         await updateProfile(user.id, {
           displayName: name.trim() || user.displayName,
           company: company.trim(),
@@ -159,24 +195,95 @@ export default function SignupPage() {
           phoneCountryCode: countryCode,
           phoneVerified: false,
           email: user.email,
+          wacrmWelcomeSent: true,
+          wacrmWelcomeSentAt: new Date().toISOString()
         });
 
         await submitLead({
           name: name.trim() || user.displayName,
           email: user.email,
           company: company.trim() || "Partner Onboarding",
-          phone: `${countryCode} ${phone.trim()}`,
+          phone: fullPhone,
           projectType: "Partner Onboarding",
           userId: user.id,
-          status: "qualified"
+          status: "qualified",
+          wacrmWelcomeSent: true
         });
+
+        try {
+          await sendWacrmWelcome({
+            to: `${countryCode}${phone.trim()}`,
+            name: name.trim() || user.displayName,
+            email: user.email,
+            userId: user.id
+          });
+        } catch (wErr) {
+          console.warn("[WACRM] Welcome message dispatch notice:", wErr);
+        }
 
         window.location.href = "/";
         return;
       }
 
-      await signInWithGoogle(`${window.location.origin}/`);
+      const signedInUser = await signInWithGoogle();
+      if (signedInUser) {
+        if (phone.trim()) {
+          const fullPhone = `${countryCode}${phone.trim()}`;
+          try {
+            await updateProfile(signedInUser.id, {
+              displayName: name.trim() || signedInUser.displayName,
+              company: company.trim(),
+              phone: phone.trim(),
+              phoneCountryCode: countryCode,
+              phoneVerified: false,
+              email: signedInUser.email,
+              wacrmWelcomeSent: true,
+              wacrmWelcomeSentAt: new Date().toISOString()
+            });
+
+            await submitLead({
+              name: name.trim() || signedInUser.displayName,
+              email: signedInUser.email,
+              company: company.trim() || "Partner Onboarding",
+              phone: fullPhone,
+              projectType: "Partner Onboarding",
+              userId: signedInUser.id,
+              status: "qualified",
+              wacrmWelcomeSent: true
+            });
+
+            await sendWacrmWelcome({
+              to: fullPhone,
+              name: name.trim() || signedInUser.displayName,
+              email: signedInUser.email,
+              userId: signedInUser.id
+            });
+
+            try {
+              const directProf = {
+                id: signedInUser.id,
+                displayName: name.trim() || signedInUser.displayName,
+                company: company.trim(),
+                phone: phone.trim(),
+                phoneCountryCode: countryCode,
+                email: signedInUser.email,
+                phoneVerified: false,
+                wacrmWelcomeSent: true
+              };
+              localStorage.setItem(`opsiys_profile_${signedInUser.id}`, JSON.stringify(directProf));
+            } catch (e) {}
+          } catch (e) {
+            console.warn("Lead / WACRM sync note:", e);
+          }
+        }
+        navigate("/");
+        return;
+      }
     } catch (err: any) {
+      if (err?.code === 'auth/popup-closed-by-user' || err?.message?.includes('closed') || err?.code === 'auth/cancelled-popup-request') {
+        setIsSubmitting(false);
+        return;
+      }
       console.error(err);
       setValidationError(err?.message || "Sign-up failed. Please try again.");
       setIsSubmitting(false);

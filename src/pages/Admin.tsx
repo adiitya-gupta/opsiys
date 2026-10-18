@@ -5,6 +5,7 @@ import { AdminMemberWiseEODView } from "../components/AdminMemberWiseEODView";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
 import { 
   subscribeToEodReports,
   updateEodReportStatus,
@@ -36,9 +37,12 @@ import {
   assignTask,
   updateTaskStatus,
   deleteTask,
-  TaskItem
+  TaskItem,
+  signInWithGoogle, 
+  logout, 
+  onAuthStateChanged, 
+  NormalizedUser
 } from "../lib/firebase";
-import { signInWithGoogle, logout, onAuthStateChanged, NormalizedUser } from "../lib/supabase";
 import { 
   ShieldCheck, 
   Users, 
@@ -75,7 +79,8 @@ import {
   Shield,
   CheckSquare,
   Calendar,
-  User
+  User,
+  ArrowLeft
 } from "lucide-react";
 
 const HARDCODED_ADMINS = ["adityaofficial9918@gmail.com", "kushwahakunal644@gmail.com", "krishnatktr1@gmail.com"];
@@ -202,9 +207,11 @@ export const AdminPage: React.FC = () => {
   const handleGoogleSignIn = async () => {
     setAuthError("");
     try {
-      const destination = `${window.location.origin}/admin`;
-      await signInWithGoogle(destination);
+      await signInWithGoogle();
     } catch (err: any) {
+      if (err?.code === 'auth/popup-closed-by-user' || err?.message?.includes('closed') || err?.code === 'auth/cancelled-popup-request') {
+        return;
+      }
       console.error("Google Sign-In Error:", err);
       setAuthError(err?.message || "Google Authentication failed. Please try again.");
     }
@@ -712,6 +719,20 @@ export const AdminPage: React.FC = () => {
                     Unlock
                   </Button>
                 </form>
+              </div>
+
+              {/* Escape Button back to website */}
+              <div className="pt-2 border-t border-zinc-800/60">
+                <Link to="/">
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    className="w-full h-11 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    Return to OPSIYS Website
+                  </Button>
+                </Link>
               </div>
             </div>
           </motion.div>

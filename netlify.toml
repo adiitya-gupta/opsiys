@@ -23,6 +23,16 @@
   to = "/.netlify/functions/chat"
   status = 200
 
+[[redirects]]
+  from = "/api/create-razorpay-order"
+  to = "/.netlify/functions/create-razorpay-order"
+  status = 200
+
+[[redirects]]
+  from = "/api/send-wacrm-welcome"
+  to = "/.netlify/functions/send-wacrm-welcome"
+  status = 200
+
 # Serve the React app for direct visits and refreshes on client-side routes.
 [[redirects]]
   from = "/*"
